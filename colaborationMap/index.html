@@ -7,7 +7,7 @@
   stroke: #ccc;
 }
 
-.node text {
+.node foreignObject,text{
   pointer-events: none;
   font: 10px sans-serif;
 }
@@ -52,23 +52,14 @@ d3.json("coauthorship.json", function(json) {
       .attr("name", function(d)  {return d.name})
       .call(force.drag);
 
-/*  node.append("image")
-      .attr("xlink:href", "https://github.com/favicon.ico")
-      .attr("x", -8)
-      .attr("y", -8)
-      .attr("width", 16)
-      .attr("height", 16);
-*/
    var coauthors = node.filter(function(d) { return d.name != "Bello" && d.type == "people"; });
    coauthors.append("circle") // co-authors
       .attr("r", 5)
-      .attr("class", function(d) { return d.name })
       .style("fill", function(d) { return color(0); });
 
    var pubs=node.filter(function(d) { return d.type == "pub"; })
    pubs.append("circle") // publications
       .attr("r", function(d) {return d.cited*5;})
-      .attr("class", function(d) { return d.name })
       .style("fill", function(d) { return color(1); });
 
   var me = node.filter(function(d) { return d.name == 'Bello'; })
@@ -79,11 +70,21 @@ d3.json("coauthorship.json", function(json) {
       .attr("width", 16)
       .attr("height", 16);
   
-  pubs.append("text")
+/*  pubs.append("text")
       .attr("dx", 12)
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
       .text(function(d) { return d.name });
+*/
+  pubs.append("foreignObject")
+    .attr("x", function(d) { return d._children ? -8 : -50; }) /*the position of the text (left to right)*/
+    .attr("y", -5) /*the position of the text (Up and Down)*/
+    .attr("text-anchor", "middle")
+    .attr("width", 100)
+    .attr("height", 200)
+    .append("xhtml:body")
+    .append("p").attr("align","center")
+    .text(function(d) { return d.name; });
  
   coauthors.append("text")
       .attr("dy", "1.35em")
