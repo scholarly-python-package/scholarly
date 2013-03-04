@@ -28,8 +28,9 @@ var svg = d3.select("body").append("svg")
     .attr("height", height);
 
 var force = d3.layout.force()
-    .linkDistance(50)
-    .charge(-130)
+    .gravity(0.1)
+    .linkDistance(100)
+    .charge(-330)
     .size([width, height]);
 
 var color = d3.scale.category20();
@@ -64,21 +65,15 @@ d3.json("coauthorship.json", function(json) {
 
   var me = node.filter(function(d) { return d.name == 'Bello'; })
   me.append("image")
-      .attr("xlink:href", "https://github.com/favicon.ico")
+      .attr("xlink:href", "lucianobello.png")
       .attr("x", -8)
       .attr("y", -8)
-      .attr("width", 16)
-      .attr("height", 16);
+      .attr("width", 20)
+      .attr("height", 20);
   
-/*  pubs.append("text")
-      .attr("dx", 12)
-      .attr("dy", ".35em")
-      .attr("text-anchor", "middle")
-      .text(function(d) { return d.name });
-*/
   pubs.append("foreignObject")
     .attr("x", function(d) { return d._children ? -8 : -50; }) /*the position of the text (left to right)*/
-    .attr("y", -5) /*the position of the text (Up and Down)*/
+    .attr("y", -10) /*the position of the text (Up and Down)*/
     .attr("text-anchor", "middle")
     .attr("width", 100)
     .attr("height", 200)

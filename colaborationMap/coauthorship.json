@@ -1,19 +1,43 @@
 {
   "nodes":[
-    {"name":"Bello","type":"people"}
-    ,{"name":"Taint mode","type":"pub","cited":2}
+     {"name":"Bello","type":"people"}
+    ,{"name":"Towards a Taint Mode for Cloud Computing Web Applications","type":"pub","cited":2}
     ,{"name":"Russo","type":"people"}
-    ,{"name":"Exploiting DSA-1571: How \n to break PFS in SSL with EDH","type":"pub","cited":5}
-    ,{"name":"Key-stroke","type":"pub","cited":3}
+    ,{"name":"Exploiting DSA-1571: How \n to break PFS in SSL with EDH","type":"pub","cited":5}	
+    ,{"name":"Collection and publication of a fixed text keystroke dynamics dataset","type":"pub","cited":3}
     ,{"name":"Bertacchini","type":"people"}
     ,{"name":"Sabelfeld","type":"people"}
+    ,{"name":"Abeni","type":"people"}
+    ,{"name":"Benitez","type":"people"}	
+    ,{"name":"Cipriano","type":"people"}
+    ,{"name":"Pizzoni","type":"people"}	
+    ,{"name":"Bonelli","type":"people"}	
+    ,{"name":"DSA-1571-1 openssl-predictable random number generator","type":"pub","cited":4}
+    ,{"name":"Predictable PRNG In The Vulnerable Debian OpenSSL Package","type":"pub","cited":2}
+    ,{"name":"On-the-fly inlining of dynamic dependency monitors for secure information flow","type":"pub","cited":1}
+    ,{"name":"JSFlow: a Security-enhanced JavaScript Interpreter in JavaScript","type":"pub","cited":1}
+    ,{"name":"Hedin","type":"people"}	
+    ,{"name":"Birgisson","type":"people"}	
   ],
   "links":[
-     {"source":1,"target":0,"value":1}
-    ,{"source":1,"target":2,"value":1}
-    ,{"source":3,"target":0,"value":1}
-    ,{"source":3,"target":5,"value":1}
-    ,{"source":4,"target":0,"value":1}
-    ,{"source":4,"target":5,"value":1}
+     {"source":1,  "target":0,  "value":1}
+    ,{"source":1,  "target":2,  "value":1}
+    ,{"source":3,  "target":0,  "value":1}
+    ,{"source":3,  "target":5,  "value":1}
+    ,{"source":3,  "target":7,  "value":1}
+    ,{"source":4,  "target":0,  "value":1}
+    ,{"source":4,  "target":5,  "value":1}
+    ,{"source":4,  "target":8,  "value":1}
+    ,{"source":4,  "target":9,  "value":1}
+    ,{"source":4,  "target":10, "value":1}
+    ,{"source":13, "target":0,  "value":1}
+    ,{"source":12, "target":0,  "value":1}
+    ,{"source":13, "target":5,  "value":1}
+    ,{"source":14, "target":0,  "value":1}
+    ,{"source":14, "target":11, "value":1}
+    ,{"source":15, "target":0,  "value":1}
+    ,{"source":15, "target":16, "value":1}
+    ,{"source":15, "target":17, "value":1}
+    ,{"source":15, "target":6,  "value":1}
   ]
 }
