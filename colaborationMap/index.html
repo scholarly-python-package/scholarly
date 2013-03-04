@@ -30,7 +30,7 @@ var svg = d3.select("body").append("svg")
 var force = d3.layout.force()
     .gravity(0.1)
     .linkDistance(100)
-    .charge(-330)
+    .charge(-430)
     .size([width, height]);
 
 var color = d3.scale.category20();
@@ -66,10 +66,10 @@ d3.json("coauthorship.json", function(json) {
   var me = node.filter(function(d) { return d.name == 'Bello'; })
   me.append("image")
       .attr("xlink:href", "lucianobello.png")
-      .attr("x", -8)
-      .attr("y", -8)
-      .attr("width", 20)
-      .attr("height", 20);
+      .attr("x", -15)
+      .attr("y", -15)
+      .attr("width", 30)
+      .attr("height", 30);
   
   pubs.append("foreignObject")
     .attr("x", function(d) { return d._children ? -8 : -50; }) /*the position of the text (left to right)*/
