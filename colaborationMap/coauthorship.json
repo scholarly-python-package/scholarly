@@ -1,0 +1,19 @@
+{
+  "nodes":[
+    {"name":"Bello","type":"people"}
+    ,{"name":"Taint mode","type":"pub","cited":2}
+    ,{"name":"Russo","type":"people"}
+    ,{"name":"Exploiting DSA-1571: How \n to break PFS in SSL with EDH","type":"pub","cited":5}
+    ,{"name":"Key-stroke","type":"pub","cited":3}
+    ,{"name":"Bertacchini","type":"people"}
+    ,{"name":"Sabelfeld","type":"people"}
+  ],
+  "links":[
+     {"source":1,"target":0,"value":1}
+    ,{"source":1,"target":2,"value":1}
+    ,{"source":3,"target":0,"value":1}
+    ,{"source":3,"target":5,"value":1}
+    ,{"source":4,"target":0,"value":1}
+    ,{"source":4,"target":5,"value":1}
+  ]
+}
