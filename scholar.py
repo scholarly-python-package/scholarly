@@ -21,6 +21,9 @@ def getSoupfromScholar(request):
         print resp.status, resp.reason
         exit(-1)
 
+class Publication():
+    def __init__(self, publicationTR): pass
+
 class Author():
     def __init__(self, authorTR):
         self.authorTR=authorTR
@@ -28,9 +31,19 @@ class Author():
         self.profileURL=authorTR('a')[-1]['href']
         self.name=''.join(authorTR('a')[-1].findAll(text=True))
         self.info=authorTR.findAll(text=True)
+        self.filledIN=False
 
     def fillInAuthor(self):
-        soup=getSoupfromScholar(self.profileURL+'&pagesize=100')
+        pagesize=100
+        soup=getSoupfromScholar(self.profileURL+'&pagesize='+str(pagesize))
+        table=soup.find('table',{'class':'cit-table'})
+        self.pubTR=filter(lambda x: bool(x('input',{'type':'checkbox'})),table.findAll('tr'))
+        self.pubTRincomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
+        self.affiliation=soup.find('span',{'id':'cit-affiliation-display'}).text
+        self.interests=BeautifulSoup(soup.find('span',{'id':'cit-int-read'}).text,convertEntities=BeautifulSoup.HTML_ENTITIES)
+        print self.interests
+        self.filledIN=True
+        return soup
 
     def __str__(self):
         ret= "Name:       %s\n" % self.name
