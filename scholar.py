@@ -23,21 +23,20 @@ def getSoupfromScholar(request):
 
 class Author():
     def __init__(self, authorTR):
-        self.authorTR=authorTR
-        self.pictureURL=authorTR('img')[0]['src']
-        self.profileURL=authorTR('a')[-1]['href']
-        self.name=''.join(authorTR('a')[-1].findAll(text=True))
-        self.info=authorTR.findAll(text=True)
+        '''authorTR: if called with str or unicode, authorTR should be the userID'''
+        if isinstance(authorTR, (str, unicode)): self.profileURL='/citations?user=%s&hl=en' % authorTR
+        else: 
+                self.profileURL=authorTR('a')[-1]['href']
+                self.pictureURL=authorTR('img')[0]['src']
+                self.name=''.join(authorTR('a')[-1].findAll(text=True))
+                self.info=authorTR.findAll(text=True)
 
-    def fillInAuthor(self):
+    def fillInAuthor(self): #TODO bad name
         soup=getSoupfromScholar(self.profileURL+'&pagesize=100')
 
     def __str__(self):
-        ret= "Name:       %s\n" % self.name
-        ret+="profileURL: %s\n" % self.profileURL
-        ret+="pictureURL: %s\n" % self.pictureURL
-        ret+="info:\n%s\n" % self.info
-        return ret
+        self.fillInAuthor()
+        return str(vars(self))
 
 def searchAuthor(author):
     conn = httplib.HTTPConnection(SCHOLARHOST)
