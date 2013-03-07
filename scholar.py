@@ -24,7 +24,7 @@ def getSoupfromScholar(request):
 class Author():
     def __init__(self, authorTR):
         '''authorTR: if called with str or unicode, authorTR should be the userID'''
-        if isinstance(authorTR, (str, unicode)): self.profileURL='/citations?user=%s&hl=en' % authorTR
+        if isinstance(authorTR, (str, unicode)): self.profileURL='/citations?user=%s&hl=en' % urllib2.quote(authorTR)
         else: 
                 self.profileURL=authorTR('a')[-1]['href']
                 self.pictureURL=authorTR('img')[0]['src']
