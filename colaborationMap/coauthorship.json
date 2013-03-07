@@ -20,24 +20,24 @@
     ,{"name":"Birgisson","type":"people"}	
   ],
   "links":[
-     {"source":1,  "target":0,  "value":1}
-    ,{"source":1,  "target":2,  "value":1}
-    ,{"source":3,  "target":0,  "value":1}
-    ,{"source":3,  "target":5,  "value":1}
-    ,{"source":3,  "target":7,  "value":1}
-    ,{"source":4,  "target":0,  "value":1}
-    ,{"source":4,  "target":5,  "value":1}
-    ,{"source":4,  "target":8,  "value":1}
-    ,{"source":4,  "target":9,  "value":1}
-    ,{"source":4,  "target":10, "value":1}
-    ,{"source":13, "target":0,  "value":1}
-    ,{"source":12, "target":0,  "value":1}
-    ,{"source":13, "target":5,  "value":1}
-    ,{"source":14, "target":0,  "value":1}
-    ,{"source":14, "target":11, "value":1}
-    ,{"source":15, "target":0,  "value":1}
-    ,{"source":15, "target":16, "value":1}
-    ,{"source":15, "target":17, "value":1}
-    ,{"source":15, "target":6,  "value":1}
+     {"source":1,  "target":0}
+    ,{"source":1,  "target":2}
+    ,{"source":3,  "target":0}
+    ,{"source":3,  "target":5}
+    ,{"source":3,  "target":7}
+    ,{"source":4,  "target":0}
+    ,{"source":4,  "target":5}
+    ,{"source":4,  "target":8}
+    ,{"source":4,  "target":9}
+    ,{"source":4,  "target":10}
+    ,{"source":13, "target":0}
+    ,{"source":12, "target":0}
+    ,{"source":13, "target":5}
+    ,{"source":14, "target":0}
+    ,{"source":14, "target":11}
+    ,{"source":15, "target":0}
+    ,{"source":15, "target":16}
+    ,{"source":15, "target":17}
+    ,{"source":15, "target":6}
   ]
 }
