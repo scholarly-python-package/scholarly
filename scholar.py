@@ -43,6 +43,16 @@ class Publication():
         for k,v in self.__dict__.items(): ret+=k+' : '+str(v)+'\n'
         return ret
 
+class CitationIndex():
+    def __init__(self, lbb):
+        self.graph=lbb.find('img')['src']
+        t=lbb.find('td')
+        self.sinceYear=t.findAll('td',{'class':'cit-borderleft'})[1].text.split(' ')[1]
+        nums=t.findAll('td',{'class':'cit-borderleft cit-data'})
+        (self.all,self.since)=(int(nums[0].text),int(nums[1].text))
+        (self.hindexAll,self.hindexSince)=(int(nums[2].text),int(nums[3].text))
+        (self.i10indexAll,self.i10indexSince)=(int(nums[4].text),int(nums[5].text))
+
 class Author():
     def __init__(self, authorTR):
         if isinstance(authorTR, (str, unicode)): self.profileURL='/citations?user=%s&hl=en' % urllib2.quote(authorTR)
@@ -61,8 +71,10 @@ class Author():
         self.pictureURL=userinfo.find('img')['src']
         self.affiliation=userinfo.find('span',{'id':'cit-affiliation-display'}).text
         self.interests=[ i.strip() for i in BeautifulSoup(userinfo.find('span',{'id':'cit-int-read'}).text,convertEntities=BeautifulSoup.HTML_ENTITIES).text.split('-')]
-        table=soup.find('table',{'class':'cit-table'})
-        self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),table.findAll('tr'))]
+        self.pictureURL=userinfo.find('img')['src']
+        self.citationIndex=CitationIndex(soup.find('div',{'class':'cit-lbb'}))
+        pubs=soup.find('table',{'class':'cit-table'})
+        self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),pubs.findAll('tr'))]
         self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
         self.filledIN=True
         return soup
