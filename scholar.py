@@ -22,7 +22,26 @@ def getSoupfromScholar(request):
         exit(-1)
 
 class Publication():
-    def __init__(self, publicationTR): pass
+    def __init__(self, publicationTR):
+        titleLink=publicationTR.find('a',{'class':'cit-dark-large-link'})
+        self.title=titleLink.text
+        self.href=titleLink['href']
+        self.year=publicationTR.find('td',{'id':'col-year'}).text
+        self.citedBy=publicationTR.find('td',{'id':'col-citedby'}).text
+        self.citedBy=int(BeautifulSoup(unicode(self.citedBy),convertEntities=BeautifulSoup.HTML_ENTITIES).text) if self.citedBy else 0
+        self.asterisk='&lowast;' in publicationTR.find('td',{'id':'col-asterisk'}).text
+        moreinfo=publicationTR.findAll('span',{'class':'cit-gray'})
+        self.authors= [ i.strip() for i in moreinfo[0].text.split(',')]
+        if '...' in self.authors[-1]: #incomplete list of authors
+            self.authors[-1]=self.authors[-1].strip('. ')
+            self.authors.append(unicode('...'))
+        self.venue= moreinfo[1].text if len(moreinfo) > 1 else ''
+        self.filledIN=False
+
+    def __str__(self):
+        ret='===\n'
+        for k,v in self.__dict__.items(): ret+=k+' : '+str(v)+'\n'
+        return ret
 
 class Author():
     def __init__(self, authorTR):
@@ -38,17 +57,17 @@ class Author():
         pagesize=100
         soup=getSoupfromScholar(self.profileURL+'&pagesize='+str(pagesize))
         table=soup.find('table',{'class':'cit-table'})
-        self.pubTR=filter(lambda x: bool(x('input',{'type':'checkbox'})),table.findAll('tr'))
-        self.pubTRincomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
+        self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),table.findAll('tr'))]
+        self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
         self.affiliation=soup.find('span',{'id':'cit-affiliation-display'}).text
         self.interests=BeautifulSoup(soup.find('span',{'id':'cit-int-read'}).text,convertEntities=BeautifulSoup.HTML_ENTITIES)
-        print self.interests
         self.filledIN=True
         return soup
 
     def __str__(self):
-        self.fillIn()
-        return str(vars(self))
+        ret='--\n'
+        for k,v in self.__dict__.items(): ret+=k+' : '+str(v)+'\n'
+        return ret
 
 def searchAuthor(author):
     conn = httplib.HTTPConnection(SCHOLARHOST)
