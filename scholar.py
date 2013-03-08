@@ -56,18 +56,20 @@ class Author():
     def fillIn(self):
         pagesize=100
         soup=getSoupfromScholar(self.profileURL+'&pagesize='+str(pagesize))
-        self.name=soup.find('span',{'id':'cit-name-display'}).text
+        userinfo=soup.find('div',{'class':'cit-user-info'})
+        self.name=userinfo.find('span',{'id':'cit-name-display'}).text
+        self.pictureURL=userinfo.find('img')['src']
+        self.affiliation=userinfo.find('span',{'id':'cit-affiliation-display'}).text
+        self.interests=[ i.strip() for i in BeautifulSoup(userinfo.find('span',{'id':'cit-int-read'}).text,convertEntities=BeautifulSoup.HTML_ENTITIES).text.split('-')]
         table=soup.find('table',{'class':'cit-table'})
         self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),table.findAll('tr'))]
         self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
-        self.affiliation=soup.find('span',{'id':'cit-affiliation-display'}).text
-        self.interests=BeautifulSoup(soup.find('span',{'id':'cit-int-read'}).text,convertEntities=BeautifulSoup.HTML_ENTITIES)
         self.filledIN=True
         return soup
 
     def __str__(self):
         ret='--\n'
-        print_this=['name','profileURL','affiliation','interests']
+        print_this=['name','profileURL','affiliation','interests','pictureURL']
         for k,v in self.__dict__.items(): ret+= k+' : '+str(v)+'\n' if k in print_this else ''
         return ret
 
