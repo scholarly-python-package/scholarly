@@ -26,14 +26,15 @@ class Publication():
 
 class Author():
     def __init__(self, authorTR):
-        self.authorTR=authorTR
-        self.pictureURL=authorTR('img')[0]['src']
-        self.profileURL=authorTR('a')[-1]['href']
-        self.name=''.join(authorTR('a')[-1].findAll(text=True))
-        self.info=authorTR.findAll(text=True)
+        if isinstance(authorTR, (str, unicode)): self.profileURL='/citations?user=%s&hl=en' % urllib2.quote(authorTR)
+        else:
+                self.profileURL=authorTR('a')[-1]['href']
+                self.pictureURL=authorTR('img')[0]['src']
+                self.name=''.join(authorTR('a')[-1].findAll(text=True))
+                self.info=authorTR.findAll(text=True)
         self.filledIN=False
 
-    def fillInAuthor(self):
+    def fillIn(self):
         pagesize=100
         soup=getSoupfromScholar(self.profileURL+'&pagesize='+str(pagesize))
         table=soup.find('table',{'class':'cit-table'})
@@ -46,11 +47,8 @@ class Author():
         return soup
 
     def __str__(self):
-        ret= "Name:       %s\n" % self.name
-        ret+="profileURL: %s\n" % self.profileURL
-        ret+="pictureURL: %s\n" % self.pictureURL
-        ret+="info:\n%s\n" % self.info
-        return ret
+        self.fillIn()
+        return str(vars(self))
 
 def searchAuthor(author):
     conn = httplib.HTTPConnection(SCHOLARHOST)
