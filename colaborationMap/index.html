@@ -63,8 +63,11 @@ d3.json("coauthorship.json", function(json) {
       .attr("r", function(d) {return d.cited*5;})
       .style("fill", function(d) { return color(1); });
 
-  var me = node.filter(function(d) { return d.name == 'Bello'; })
-  me.append("image")
+   pubs.append("title")
+      .text(function(d) { return 'Citations: '+d.cited; });
+
+   var me = node.filter(function(d) { return d.name == 'Bello'; })
+   me.append("image")
       .attr("xlink:href", "lucianobello.png")
       .attr("x", -15)
       .attr("y", -15)
