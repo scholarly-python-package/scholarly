@@ -56,6 +56,7 @@ class Author():
     def fillIn(self):
         pagesize=100
         soup=getSoupfromScholar(self.profileURL+'&pagesize='+str(pagesize))
+        self.name=soup.find('span',{'id':'cit-name-display'}).text
         table=soup.find('table',{'class':'cit-table'})
         self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),table.findAll('tr'))]
         self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
@@ -66,7 +67,8 @@ class Author():
 
     def __str__(self):
         ret='--\n'
-        for k,v in self.__dict__.items(): ret+=k+' : '+str(v)+'\n'
+        print_this=['name','profileURL','affiliation','interests']
+        for k,v in self.__dict__.items(): ret+= k+' : '+str(v)+'\n' if k in print_this else ''
         return ret
 
 def searchAuthor(author):
