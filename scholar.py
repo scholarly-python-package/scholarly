@@ -5,12 +5,12 @@ from BeautifulSoup import BeautifulSoup
 import httplib
 import urllib2
 
-HEADERS = {'User-Agent': 'Mozilla/2.0 (compatible; MSIE 5.5; Windows NT)'}
-SCHOLARHOST='scholar.google.com'
+_HEADERS = {'User-Agent': 'Mozilla/2.0 (compatible; MSIE 5.5; Windows NT)'}
+_SCHOLARHOST='scholar.google.com'
 
 def getSoupfromScholar(request):
-    conn = httplib.HTTPConnection(SCHOLARHOST)
-    conn.request("GET", request, '', HEADERS)
+    conn = httplib.HTTPConnection(_SCHOLARHOST)
+    conn.request("GET", request, '', _HEADERS)
     resp = conn.getresponse()
     if resp.status == 200:
         html = resp.read()
@@ -36,7 +36,7 @@ class Publication():
             self.authors[-1]=self.authors[-1].strip('. ')
             self.authors.append(unicode('...'))
         self.venue= moreinfo[1].text if len(moreinfo) > 1 else ''
-        self.filledIN=False
+        self._filledIN=False
 
     def __str__(self):
         ret='===\n'
@@ -61,7 +61,7 @@ class Author():
                 self.pictureURL=authorTR('img')[0]['src']
                 self.name=''.join(authorTR('a')[-1].findAll(text=True))
                 self.info=authorTR.findAll(text=True)
-        self.filledIN=False
+        self._filledIN=False
 
     def fillIn(self):
         pagesize=100
@@ -76,7 +76,7 @@ class Author():
         pubs=soup.find('table',{'class':'cit-table'})
         self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),pubs.findAll('tr'))]
         self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
-        self.filledIN=True
+        self._filledIN=True
         return soup
 
     def __str__(self):
@@ -86,12 +86,12 @@ class Author():
         return ret
 
 def searchAuthor(author):
-    conn = httplib.HTTPConnection(SCHOLARHOST)
-    nextLink='/citations?view_op=search_authors&hl=en&mauthors=%s' % urllib2.quote(author)
-    ret=[]
-    while nextLink:
-        soup=getSoupfromScholar(nextLink)
-        for trs in soup('tr'):
-                if bool(len(trs('a',{'class':'cit-dark-large-link'}))): yield Author(trs)
-                elif 'Next &gt;' in trs.text: nextLink=trs('a')[-1]['href']
-                else: nextLink=False
+    soup=getSoupfromScholar('/citations?view_op=search_authors&hl=en&mauthors=%s' % urllib2.quote(author))
+    next=True
+    while next:
+        for trs in soup.findAll('div','g-unit'):
+                yield Author(trs)
+        citdgb=soup.find('div','cit-dgb').findAll('a')
+        if citdgb and 'Next &gt;' in citdgb[-1]:
+            soup=getSoupfromScholar(citdgb[-1]['href'])
+        else: break
