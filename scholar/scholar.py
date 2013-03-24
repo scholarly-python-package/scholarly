@@ -86,6 +86,16 @@ class Author():
         return ret
 
 def searchAuthor(author):
+    """Search authors in Google Scholar.
+
+    It returns the result of the query as a generator. Each element
+    is an Author object with the following attributes and methods:
+        - name: Name of the author.
+        - info: Additional information (e.g. Affiliation) as a list.
+        - pictureURL: The link to the profile.
+        - profileURL: The link to the author's picture.
+        - fillIn(): A method to fetch all the author information.
+    """
     soup=getSoupfromScholar('/citations?view_op=search_authors&hl=en&mauthors=%s' % urllib2.quote(author))
     next=True
     while next:
