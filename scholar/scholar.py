@@ -77,7 +77,6 @@ class Author():
         self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),pubs.findAll('tr'))]
         self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
         self._filledIN=True
-        return soup
 
     def __str__(self):
         ret='--\n'
