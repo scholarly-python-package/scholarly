@@ -7,7 +7,6 @@ def get_module_meta(modfile):
     version = [(tokenize.NAME, '__version__'), (tokenize.OP, '=')]
     f = open(modfile,'r')
     for toknum, tokval, _, _, _ in tokenize.generate_tokens(lambda: f.readline()):
-        # this will fail in interesting ways if tehre is no docstring nor __version__
         if not docstring:
             if toknum == tokenize.STRING:
                 docstring = tokval

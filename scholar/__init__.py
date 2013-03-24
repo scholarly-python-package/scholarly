@@ -1,8 +1,9 @@
 from scholar import searchAuthor,Author
 
-"""Fetch information from Google Scholar
+"""Fetch information from Google Scholar (citations)
 
-At the moment, the module is mainly focus in authors information fetch.
+At the moment, the module is mainly focus in authors information (aka
+citations).
 
 Search for authors (e.g. called "Bello" working for "Chalmers University"):
  >>> import scholar
