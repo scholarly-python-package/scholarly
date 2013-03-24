@@ -74,7 +74,7 @@ class Author():
         self.pictureURL=userinfo.find('img')['src']
         self.citationIndex=CitationIndex(soup.find('div',{'class':'cit-lbb'}))
         pubs=soup.find('table',{'class':'cit-table'})
-        self.publications=[ Publication(i) for i in filter(lambda x: bool(x('input',{'type':'checkbox'})),pubs.findAll('tr'))]
+        self.publications=[ Publication(i) for i in pubs.findAll('tr',{'class':'cit-table item'})]
         self.publicationsIncomplete='Next' in soup.find('div',{'class':'g-section cit-dgb'}).text
         self._filledIN=True
 
