@@ -32,7 +32,7 @@ version, description, long_description = get_module_meta("./scholar/__init__.py"
 
 setup(
         name='GoogleScholar',
-        version='0.1',
+        version='0.2',
         description='Fetch information from Google Scholar',
         author='Luciano Bello',
         author_email='luciano (a) debian (.) org',

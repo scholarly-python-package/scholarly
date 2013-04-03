@@ -60,7 +60,7 @@ d3.json("coauthorship.json", function(json) {
 
    var pubs=node.filter(function(d) { return d.type == "pub"; })
    pubs.append("circle") // publications
-      .attr("r", function(d) {return d.cited*5;})
+      .attr("r", function(d) { return d.cited > 10 ? (Math.log(d.cited)+9)*5 : d.cited*5})
       .style("fill", function(d) { return color(1); });
 
    pubs.append("title")
