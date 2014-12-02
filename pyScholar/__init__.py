@@ -1,6 +1,11 @@
 from scholar import searchAuthor,Author
 
-"""Fetch information from Google Scholar (citations)
+"""
+pyScholar
+Fetch author information from Google scholar
+
+Originally forked from:
+https://github.com/lbello/chalmers-web/commit/73bd99aef6ba0310d393c66e4fc3bce9e40e6bf5
 
 At the moment, the module is mainly focus in authors information (aka
 citations).
@@ -11,7 +16,7 @@ Search for authors (e.g. called "Bello" working for "Chalmers University"):
  >>> l.name
  <<< u'Luciano Bello'
 
-Fetch all the infmation of an author:
+Fetch all the information of an author:
  >>> l.fillIn()
  >>> l.affiliation
  <<< u'PhD Student of Computer Science, Chalmers University of Technology'
