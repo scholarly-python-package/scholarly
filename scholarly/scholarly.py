@@ -3,8 +3,6 @@
 
 """scholarly.py"""
 
-from __future__ import (division, print_function, unicode_literals)
-
 import bibtexparser
 from bs4 import BeautifulSoup
 import dateutil
@@ -87,17 +85,18 @@ class Publication(object):
             self.url_citations = _CITATIONPUB.format(self.id_citations)
         elif self.source == 'scholar':
             self.bib['title'] = __data.find('h3', class_='gs_rt').find('a').text
-            self.bib['abstract'] = __data.find('div', class_='gs_rs').text
-            self.bib['url'] = __data.find('h3', class_='gs_rt').find('a')['href']
-            if __data.find('div', class_='gs_ggs gs_fl'):
-                self.bib['eprint'] = __data.find('div', class_='gs_ggs gs_fl').find('a')['href']
-            if self.bib['abstract'][0:8].lower() == 'abstract':
-                self.bib['abstract'] = self.bib['abstract'][9:].strip()
             citebuttons = __data.findAll('a', class_='gs_nta gs_nph')
             for row in citebuttons:
                 if row.text == 'Import into BibTeX':
                     self.url_scholarbib = row['href']
                     break
+            # Additional information from the entry
+            self.bib['url'] = __data.find('h3', class_='gs_rt').find('a')['href']
+            if __data.find('div', class_='gs_ggs gs_fl'):
+                self.bib['eprint'] = __data.find('div', class_='gs_ggs gs_fl').find('a')['href']
+            self.bib['abstract'] = __data.find('div', class_='gs_rs').text
+            if self.bib['abstract'][0:8].lower() == 'abstract':
+                self.bib['abstract'] = self.bib['abstract'][9:].strip()
         self._filled = False
 
     def fill(self):
@@ -207,5 +206,5 @@ def search_keyword(keyword):
 if __name__ == "__main__":
     author = search_author('Steven A Cholewiak').next()
     
-    print(author.fill())
+    print author.fill()
     
