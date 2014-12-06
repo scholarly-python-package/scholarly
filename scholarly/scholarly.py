@@ -18,7 +18,8 @@ import urllib2
 _GOOGLEID = hashlib.md5(str(random.random())).hexdigest()[:16]
 _COOKIE = 'GSP=ID={0}:CF=4'.format(_GOOGLEID)
 _HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36', 
+    'User-Agent': '''Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 '''
+                  '''(KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36''', 
     'Cookie': _COOKIE
     }
 _SCHOLARHOST = 'scholar.google.com'
@@ -34,48 +35,47 @@ _SCHOLARPUBRE = 'cites=([\w-]*)'
 _SCHOLARCITERE = 'gs_ocit\(event,\'([\w-]*)\''
 _PAGESIZE = 100
 
-def get_soup(request):
-    """Return the BeautifulSoup for a page on scholar.google.com/citations"""
+def get_page(pagerequest):
+    """Return the data for a page on scholar.google.com"""
+    # Note that we include a sleep to avoid overloading the scholar server
     time.sleep(5+random.uniform(0, 5))
     conn = httplib.HTTPConnection(_SCHOLARHOST)
-    conn.request("GET", request, '', _HEADERS)
+    conn.request("GET", pagerequest, '', _HEADERS)
     resp = conn.getresponse()
     if resp.status == 200:
-        html = resp.read()
-        html = html.decode('utf-8')
-        return BeautifulSoup(html)
+        return resp.read()
     else:
         raise Exception('Error: {0} {1}'.format(resp.status, resp.reason))
+        
+def get_soup(pagerequest):
+    """Return the BeautifulSoup for a page on scholar.google.com"""
+    html = get_page(pagerequest)
+    html = html.decode('utf-8')
+    return BeautifulSoup(html)
 
 def search_scholar_soup(soup):
-    """Return the BeautifulSoup for a page on scholar.google.com/scholar"""
+    """Generator that returns Publication objects from the search page"""
     while True:
         for tablerow in soup.findAll('div', 'gs_r'):
             yield Publication(tablerow, 'scholar')
         if soup.find(class_='gs_ico gs_ico_nav_next'):
             soup = get_soup(soup.find(class_='gs_ico gs_ico_nav_next').parent['href'])
-        else: break
+        else:
+            break
 
 def search_citation_soup(soup):
-    """Search Google Scholar citations for authors
-
-    It returns the result of the query as a generator. Each element
-    is an Author object with the following attributes and methods:
-        - name: Name of the author.
-        - url_picture: The link to the profile.
-        - url_profile: The link to the author's picture.
-        - fill(): A method to fetch all the author information.
-    """
+    """Generator that returns Author objects from the author search page"""
     while True:
         for tablerow in soup.findAll('div', 'gsc_1usr'):
             yield Author(tablerow)
         nextbutton = soup.find(id='gsc_authors_bottom_pag')
         if nextbutton and 'disabled' not in nextbutton[-1].attrs:
             soup = get_soup(nextbutton[-1]['onclick'][17:-1])
-        else: break
+        else:
+            break
 
 class Publication(object):
-    """Returns a single publication"""
+    """Returns an object for a single publication"""
     def __init__(self, __data, pubtype=None):
         self.bib = dict()
         self.source = pubtype
@@ -97,11 +97,13 @@ class Publication(object):
             self.bib['abstract'] = __data.find('div', class_='gs_rs').text
             if self.bib['abstract'][0:8].lower() == 'abstract':
                 self.bib['abstract'] = self.bib['abstract'][9:].strip()
+            for link in __data.find('div', class_='gs_fl').findAll('a'):
+                for match in re.findall(_SCHOLARPUBRE,link):
+                    self.id_scholarcitedby = match
         self._filled = False
 
     def fill(self):
         """Populate the Publication with information from its profile"""
-        
         if self.source == 'citations':
             soup = get_soup(self.url_citations)
             self.bib['title'] = soup.find('div', id='gsc_title').text
@@ -127,28 +129,28 @@ class Publication(object):
                 self.bib['eprint'] = soup.find('div', class_='gsc_title_ggi').a['href']
             self._filled = True
         elif self.source == 'scholar':
-            conn = httplib.HTTPConnection(_SCHOLARHOST)
-            conn.request("GET", self.url_scholarbib, '', _HEADERS)
-            resp = conn.getresponse()
-            if resp.status == 200:
-                self.bib = bibtexparser.loads(resp.read()).entries[0]
-                self._filled = True
-            else:
-                raise Exception('Error: {0} {1}'.format(resp.status, resp.reason))
+            bibtex = get_page(self.url_scholarbib)
+            self.bib.update(bibtexparser.loads(bibtex).entries[0])
+            self._filled = True
         return self
         
     def citedby(self):
-        """Search by Google Scholar's relationship id"""
-        if not self.id_scholarcitedby:
+        """Searches GScholar for other articles that cite this Publication and
+        returns a Publication generator.
+        """
+        if not hasattr(self, 'id_scholarcitedby'):
             self.fill()
-        soup = get_soup(_SCHOLARPUB.format(urllib2.quote(self.id_scholarcitedby)))
-        return search_scholar_soup(soup)
+        if hasattr(self, 'id_scholarcitedby'):
+            soup = get_soup(_SCHOLARPUB.format(urllib2.quote(self.id_scholarcitedby)))
+            return search_scholar_soup(soup)
+        else:
+            return []
     
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
 class Author(object):
-    """Returns a single author"""
+    """Returns an object for a single author"""
     def __init__(self, __data):
         if isinstance(__data, (str, unicode)):
             self.id = __data
@@ -166,8 +168,6 @@ class Author(object):
 
     def fill(self):
         """Populate the Author with information from their profile"""
-        time.sleep(3)
-        
         soup = get_soup('{0}&pagesize={1}'.format(self.url_citations, _PAGESIZE))
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
@@ -189,17 +189,17 @@ class Author(object):
         return pprint.pformat(self.__dict__)
 
 def search_pubs_query(query):
-    """Search by author name, returns a generator of Author objects"""
+    """Search by scholar query and return a generator of Publication objects"""
     soup = get_soup(_PUBSEARCH.format(urllib2.quote(query)))
     return search_scholar_soup(soup)
 
 def search_author(name):
-    """Search by author name, returns a generator of Author objects"""
+    """Search by author name and return a generator of Author objects"""
     soup = get_soup(_AUTHSEARCH.format(urllib2.quote(name)))
     return search_citation_soup(soup)
 
 def search_keyword(keyword):
-    """Search by keyword, returns a generator of Author objects"""
+    """Search by keyword and return a generator of Author objects"""
     soup = get_soup(_KEYWORDSEARCH.format(urllib2.quote(keyword)))
     return search_citation_soup(soup)
 
