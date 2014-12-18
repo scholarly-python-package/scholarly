@@ -1,5 +1,5 @@
 import os
-from distutils.core import setup
+from setuptools import setup
 
 def read(*paths):
     """Build a file path from *paths* and return the contents."""
@@ -12,7 +12,8 @@ setup(
 	version = '0.1',
 	description = 'Simple access to Google Scholar authors and citations',
 	long_description=(read('README.rst')),
-    license='Unlicense',
+	license='Unlicense',
+
 	author = 'Steven A. Cholewiak',
 	author_email = 'steven@cholewiak.com',
 	url = 'https://github.com/OrganicIrradiation/scholarly',
