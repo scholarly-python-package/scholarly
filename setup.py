@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
 	name = 'scholarly',
-	packages = ['scholarly'],
+	py_modules = ['scholarly'],
 	version = '0.1',
 	description = 'Simplified access to Google Scholar authors and citations',
 	author = 'Steven A. Cholewiak',
