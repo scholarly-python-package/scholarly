@@ -94,7 +94,7 @@ Example
 -----
 Let's say I want to find out which papers cite an author's most cited paper.  First, we will retrieve an author's information and fill in the missing details:
 
-<pre><code>
+```
     >>> search_query = scholarly.search_author('Steven A Cholewiak')
     >>> author = search_query.next().fill()
     >>> print author
@@ -139,11 +139,11 @@ Let's say I want to find out which papers cite an author's most cited paper.  Fi
                       <__main__.Publication object at 0x10f0a3c50>],
      'url_citations': '/citations?user=4bahYMkAAAAJ&hl=en',
      'url_picture': '/citations?view_op=view_photo&user=4bahYMkAAAAJ&citpid=1'}
-</code></pre>
+```
 
 Here are the titles of the author's publications:
 
-<pre><code>
+```
     >>> print [pub.bib['title'] for pub in author.publications]
     [u'A frequency-domain analysis of haptic gratings',
      u'Haptic identification of stiffness and force magnitude',
@@ -173,11 +173,11 @@ Here are the titles of the author's publications:
      u'Cutaneous perception',
      u'Perceptual estimation of variance in orientation and its dependence on sample size',
      u'Haptic stiffness identification and information transfer']
-</code></pre>
+```
 
 Here is the first publication:
 
-<pre><code>
+```
     >>> pub = author.publications[0].fill()
     >>> print pub
     {'_filled': True,
@@ -195,11 +195,11 @@ Here is the first publication:
      'id_scholarcitedby': '13781805114531538289',
      'source': 'citations',
      'url_citations': '/citations?view_op=view_citation&citation_for_view=4bahYMkAAAAJ:u5HHmVD_uO8C'}
-</code></pre>
+```
 
 Want to see the papers that cited that first publication?
 
-<pre><code>
+```
     >>> print [citation.bib['title'] for citation in pub.citedby()]
     [u'Tactile and haptic illusions',
      u'Generating haptic texture models from unconstrained tool-surface interactions',
@@ -230,7 +230,7 @@ Want to see the papers that cited that first publication?
      u'Lossy Data Compression of Vibrotactile Material-Like Textures',
      u'Haptics as an Interaction Modality',
      u'\u57fa\u4e8e\u9891\u8c31\u5206\u6790\u7684\u7ec7\u7269\u7c97\u7cd9\u611f']
-</code></pre>
+```
 
 
 License
