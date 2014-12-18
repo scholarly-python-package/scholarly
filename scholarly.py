@@ -218,6 +218,3 @@ def search_keyword(keyword):
 if __name__ == "__main__":
     author = search_author('Steven A, Cholewiak').next().fill()
     print author
-    
-    search_query = search_pubs_query('A frequency domain analysis')
-    print search_query.next()
