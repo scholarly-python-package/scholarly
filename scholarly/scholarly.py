@@ -160,8 +160,12 @@ class Author(object):
             self.url_citations = _CITATIONAUTH.format(self.id)
             self.url_picture = __data('img')[0]['src']
             self.name = __data.find('h3', class_='gsc_1usr_name').text
-            self.affiliation = __data.find('div', class_='gsc_1usr_aff').text
-            self.email = __data.find('div', class_='gsc_1usr_emlb').text
+            affiliation = __data.find('div', class_='gsc_1usr_aff')
+            if affiliation:
+                self.affiliation = affiliation.text
+            email = __data.find('div', class_='gsc_1usr_emlb')
+            if email:
+                self.email = email.text
             self.interests = [i.text.strip() for i in __data.findAll('a', class_='gsc_co_int')]
             self.citedby = int(__data.find('div', class_='gsc_1usr_cby').text[9:])
         self._filled = False
@@ -204,7 +208,6 @@ def search_keyword(keyword):
     return search_citation_soup(soup)
 
 if __name__ == "__main__":
-    author = search_author('Steven A Cholewiak').next()
-    
-    print author.fill()
+    author = search_author('Steven A, Cholewiak').next()
+    print author
     
