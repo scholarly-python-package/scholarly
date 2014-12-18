@@ -42,7 +42,7 @@ print scholarly.search_author('Steven A. Cholewiak').next()
 ### Methods
 * `search_author` -- Search for an author by name and return a generator of Author objects.
 
-<pre><code>
+```
     >>> search_query = scholarly.search_author('Manish Singh')
     >>> print search_query.next()
     {'_filled': False,
@@ -56,11 +56,11 @@ print scholarly.search_author('Steven A. Cholewiak').next()
      'name': u'Manish Singh',
      'url_citations': '/citations?user=9XRvM88AAAAJ&hl=en',
      'url_picture': '/citations/images/avatar_scholar_150.jpg'}
-</code></pre>
+```
 
 * `search_keyword` -- Search by keyword and return a generator of Author objects.
 
-<pre><code>
+```
     >>> search_query = scholarly.search_keyword('Haptics')
     >>> print search_query.next()
     {'_filled': False,
@@ -72,11 +72,11 @@ print scholarly.search_author('Steven A. Cholewiak').next()
      'name': u'Oussama Khatib',
      'url_citations': '/citations?user=4arkOLcAAAAJ&hl=en',
      'url_picture': '/citations/images/avatar_scholar_150.jpg'}
-</code></pre>
+```
 
 * `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
 
-<pre><code>
+```
     >>> search_query = scholarly.search_pubs_query('The perception of physical stability of 3d objects The role of parts')
     >>> print search_query.next()
     {'_filled': False,
@@ -87,7 +87,7 @@ print scholarly.search_author('Steven A. Cholewiak').next()
      'id_scholarcitedby': '8373403526432059892',
      'source': 'scholar',
      'url_scholarbib': '/scholar.bib?q=info:9HH8oSRONHQJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
-</code></pre>
+```
 
 
 Example

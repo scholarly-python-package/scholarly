@@ -7,10 +7,7 @@ setup(
 	author = 'Steven A. Cholewiak',
 	author_email = 'steven@cholewiak.com',
 	url = 'https://github.com/OrganicIrradiation/scholarly',
+	download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/0.1',
 	keywords = ['Google Scholar', 'academics', 'citations'],
 	classifiers = [],
-	install_requires=[
-	    "bibtexparser",
-	    "beautifulsoup4",
-	],
 )
