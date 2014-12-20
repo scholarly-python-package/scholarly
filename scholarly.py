@@ -5,7 +5,7 @@
 
 import bibtexparser
 from bs4 import BeautifulSoup
-import dateutil
+import dateutil.parser
 import hashlib
 import httplib
 import pprint
@@ -26,12 +26,12 @@ _PUBSEARCH = '/scholar?q={0}'
 _AUTHSEARCH = '/citations?view_op=search_authors&hl=en&mauthors={0}'
 _KEYWORDSEARCH = '/citations?view_op=search_authors&hl=en&mauthors=label:{0}'
 _CITATIONAUTH = '/citations?user={0}&hl=en'
-_CITATIONAUTHRE = 'user=([\w-]*)'
+_CITATIONAUTHRE = r'user=([\w-]*)'
 _CITATIONPUB = '/citations?view_op=view_citation&citation_for_view={0}'
-_CITATIONPUBRE = 'citation_for_view=([\w-]*:[\w-]*)'
+_CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
 _SCHOLARPUB = '/scholar?oi=bibs&hl=en&cites={0}'
-_SCHOLARPUBRE = 'cites=([\w-]*)'
-_SCHOLARCITERE = 'gs_ocit\(event,\'([\w-]*)\''
+_SCHOLARPUBRE = r'cites=([\w-]*)'
+_SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 _PAGESIZE = 100
 
 def _get_page(pagerequest):
@@ -45,7 +45,7 @@ def _get_page(pagerequest):
         return resp.read()
     else:
         raise Exception('Error: {0} {1}'.format(resp.status, resp.reason))
-        
+
 def _get_soup(pagerequest):
     """Return the BeautifulSoup for a page on scholar.google.com"""
     html = _get_page(pagerequest)
@@ -94,10 +94,10 @@ class Publication(object):
                 title.span.extract()
             self.bib['title'] = title.text.strip()
             if title.find('a'):
-               self.bib['url'] = title.find('a')['href']
+                self.bib['url'] = title.find('a')['href']
             self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
             if databox.find('div', class_='gs_rs'):
-                self.bib['abstract'] = databox.find('div', class_='gs_rs').text           
+                self.bib['abstract'] = databox.find('div', class_='gs_rs').text
                 if self.bib['abstract'][0:8].lower() == 'abstract':
                     self.bib['abstract'] = self.bib['abstract'][9:].strip()
             lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
@@ -122,11 +122,16 @@ class Publication(object):
                 val = item.find(class_='gsc_value')
                 if key == 'Authors':
                     self.bib['author'] = ' and '.join([i.strip() for i in val.text.split(',')])
-                elif key == 'Volume': self.bib['volume'] = val.text
-                elif key == 'Issue': self.bib['number'] = val.text
-                elif key == 'Pages': self.bib['pages'] = val.text
-                elif key == 'Publisher': self.bib['publisher'] = val.text
-                elif key == 'Publication date': self.bib['year'] = dateutil.parser.parse(val.text).year
+                elif key == 'Volume':
+                    self.bib['volume'] = val.text
+                elif key == 'Issue':
+                    self.bib['number'] = val.text
+                elif key == 'Pages':
+                    self.bib['pages'] = val.text
+                elif key == 'Publisher':
+                    self.bib['publisher'] = val.text
+                elif key == 'Publication date':
+                    self.bib['year'] = dateutil.parser.parse(val.text).year
                 elif key == 'Description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
@@ -141,7 +146,7 @@ class Publication(object):
             self.bib.update(bibtexparser.loads(bibtex).entries[0])
             self._filled = True
         return self
-        
+
     def citedby(self):
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
@@ -153,7 +158,7 @@ class Publication(object):
             return _search_scholar_soup(soup)
         else:
             return []
-    
+
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
