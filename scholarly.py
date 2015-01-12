@@ -67,9 +67,9 @@ def _search_citation_soup(soup):
     while True:
         for tablerow in soup.findAll('div', 'gsc_1usr'):
             yield Author(tablerow)
-        nextbutton = soup.find(id='gsc_authors_bottom_pag')
-        if nextbutton and 'disabled' not in nextbutton[-1].attrs:
-            soup = _get_soup(nextbutton[-1]['onclick'][17:-1])
+        nextbutton = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_srt')
+        if nextbutton and 'disabled' not in nextbutton.attrs:
+            soup = _get_soup(nextbutton['onclick'][17:-1].decode("unicode_escape"))
         else:
             break
 
@@ -180,7 +180,9 @@ class Author(object):
             if email:
                 self.email = email.text
             self.interests = [i.text.strip() for i in __data.findAll('a', class_='gsc_co_int')]
-            self.citedby = int(__data.find('div', class_='gsc_1usr_cby').text[9:])
+            citedby = __data.find('div', class_='gsc_1usr_cby')
+            if citedby:
+                self.citedby = int(citedby.text[9:])
         self._filled = False
 
     def fill(self):

@@ -43,11 +43,8 @@ print scholarly.search_author('Steven A. Cholewiak').next()
 * `search_author` -- Search for an author by name and return a generator of Author objects.
 
 ```python
-    search_query = scholarly.search_author('Manish Singh')
-    print search_query.next()
-```
-
-```python
+    >>> search_query = scholarly.search_author('Manish Singh')
+    >>> print search_query.next()
     {'_filled': False,
      'affiliation': u'Rutgers University, New Brunswick, NJ',
      'citedby': 2179,
@@ -64,11 +61,8 @@ print scholarly.search_author('Steven A. Cholewiak').next()
 * `search_keyword` -- Search by keyword and return a generator of Author objects.
 
 ```python
-    search_query = scholarly.search_keyword('Haptics')
-    print search_query.next()
-```
-
-```python
+    >>> search_query = scholarly.search_keyword('Haptics')
+    >>> print search_query.next()
     {'_filled': False,
      'affiliation': u'Stanford University',
      'citedby': 17867,
@@ -83,11 +77,8 @@ print scholarly.search_author('Steven A. Cholewiak').next()
 * `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
 
 ```python
-    search_query = scholarly.search_pubs_query('The perception of physical stability of 3d objects The role of parts')
-    print search_query.next()
-```
-
-```python
+    >>> search_query = scholarly.search_pubs_query('The perception of physical stability of 3d objects The role of parts')
+    >>> print search_query.next()
     {'_filled': False,
      'bib': {'abstract': u'Research on 3D shape has focused largely on the perception of local geometric properties, such as surface depth, orientation, or curvature. Relatively little is known about how the visual system organizes local measurements into global shape representations.  ...',
              'author': u'SA Cholewiak and M Singh and R Fleming\u2026',
@@ -100,23 +91,23 @@ print scholarly.search_author('Steven A. Cholewiak').next()
 
 
 ### Example
-Here's a quick example deomonstrating how to retrieve an author's profile then retreive the titles of the papers that cite his most popular (cited) paper.
+Here's a quick example demonstrating how to retrieve an author's profile then retrieve the titles of the papers that cite his most popular (cited) paper.
 
 ```python
-    # Retrieve the author's data, fill-in, and print
-    search_query = scholarly.search_author('Steven A Cholewiak')
-    author = search_query.next().fill()
-    print author
+    >>> # Retrieve the author's data, fill-in, and print
+    >>> search_query = scholarly.search_author('Steven A Cholewiak')
+    >>> author = search_query.next().fill()
+    >>> print author
 
-    # Print the titles of the author's publications
-    print [pub.bib['title'] for pub in author.publications]
+    >>> # Print the titles of the author's publications
+    >>> print [pub.bib['title'] for pub in author.publications]
 
-    # Take a closer look at the first publication
-    pub = author.publications[0].fill()
-    print pub
+    >>> # Take a closer look at the first publication
+    >>> pub = author.publications[0].fill()
+    >>> print pub
 
-    # Which papers cited that publication?
-    print [citation.bib['title'] for citation in pub.citedby()]
+    >>> # Which papers cited that publication?
+    >>> print [citation.bib['title'] for citation in pub.citedby()]
 ```
 
 
