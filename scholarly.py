@@ -38,7 +38,7 @@ def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
     # Note that we include a sleep to avoid overloading the scholar server
     time.sleep(5+random.uniform(0, 5))
-    conn = httplib.HTTPConnection(_SCHOLARHOST)
+    conn = httplib.HTTPSConnection(_SCHOLARHOST)
     conn.request("GET", pagerequest, '', _HEADERS)
     resp = conn.getresponse()
     if resp.status == 200:
@@ -223,5 +223,5 @@ def search_keyword(keyword):
     return _search_citation_soup(soup)
 
 if __name__ == "__main__":
-    author = search_author('Steven A, Cholewiak').next().fill()
+    author = search_author('Steven A. Cholewiak').next().fill()
     print author

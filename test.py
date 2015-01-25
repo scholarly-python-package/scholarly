@@ -13,9 +13,9 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
 
     def test_multiple_authors(self):
-    	''' As of January 12, there are 21 'Zucker's, 3 pages worth '''
+    	''' As of January 25, there are 22 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 21)
+        self.assertEqual(len(authors), 22)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_empty_keyword(self):

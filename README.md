@@ -8,6 +8,14 @@ Changes
 
 Note that because of the nature of web scraping, this project will be in **perpetual alpha**.
 
+### v0.1.2
+
+* Now request HTTPS connection rather than HTTP and update test.py to account for a new "Zucker".  Also added information for the v0.1.1 revision.
+
+### v0.1.1
+
+* Fixed an issue with multi-page Author results, author entries with no citations (which are rare, but do occur), and added some tests using unittest.
+
 ### v0.1
 
 * Initial release.
