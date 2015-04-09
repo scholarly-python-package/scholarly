@@ -3,39 +3,6 @@ scholarly.py
 
 scholarly.py is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
-Changes
--------
-
-Note that because of the nature of web scraping, this project will be in **perpetual alpha**.
-
-### v0.1.2
-
-* Now request HTTPS connection rather than HTTP and update test.py to account for a new "Zucker".  Also added information for the v0.1.1 revision.
-
-### v0.1.1
-
-* Fixed an issue with multi-page Author results, author entries with no citations (which are rare, but do occur), and added some tests using unittest.
-
-### v0.1
-
-* Initial release.
-
-Requirements
-------------
-
-Requires [bibtexparser](https://pypi.python.org/pypi/bibtexparser/) and [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/).
-
-
-Installation
-------------
-Use `pip`:
-
-    pip install scholarly
-
-Or clone the package:
-
-    git clone https://github.com/OrganicIrradiation/scholarly.git
-
 
 Usage
 -----
@@ -55,7 +22,7 @@ print scholarly.search_author('Steven A. Cholewiak').next()
     >>> print search_query.next()
     {'_filled': False,
      'affiliation': u'Rutgers University, New Brunswick, NJ',
-     'citedby': 2179,
+     'citedby': 2283,
      'email': u'@ruccs.rutgers.edu',
      'id': '9XRvM88AAAAJ',
      'interests': [u'Human perception',
@@ -73,7 +40,7 @@ print scholarly.search_author('Steven A. Cholewiak').next()
     >>> print search_query.next()
     {'_filled': False,
      'affiliation': u'Stanford University',
-     'citedby': 17867,
+     'citedby': 18625,
      'email': u'@cs.stanford.edu',
      'id': '4arkOLcAAAAJ',
      'interests': [u'Robotics', u'Haptics', u'Human Motion'],
@@ -85,16 +52,16 @@ print scholarly.search_author('Steven A. Cholewiak').next()
 * `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
 
 ```python
-    >>> search_query = scholarly.search_pubs_query('The perception of physical stability of 3d objects The role of parts')
+    >>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
     >>> print search_query.next()
     {'_filled': False,
-     'bib': {'abstract': u'Research on 3D shape has focused largely on the perception of local geometric properties, such as surface depth, orientation, or curvature. Relatively little is known about how the visual system organizes local measurements into global shape representations.  ...',
-             'author': u'SA Cholewiak and M Singh and R Fleming\u2026',
-             'title': u'The perception of physical stability of 3d objects: The role of parts',
-             'url': 'http://www.journalofvision.org/content/10/7/77.short'},
-     'id_scholarcitedby': '8373403526432059892',
+     'bib': {'abstract': u'Humans can judge from vision alone whether an object is physically stable or not. Such judgments allow observers to predict the physical behavior of objects, and hence to guide their motor actions. We investigated the visual estimation of physical stability of 3-D  ...',
+         'author': u'SA Cholewiak and RW Fleming and M Singh',
+         'eprint': u'http://www.journalofvision.org/content/15/2/13.full',
+         'title': u'Perception of physical stability and center of mass of 3-D objects',
+         'url': u'http://www.journalofvision.org/content/15/2/13.short'},
      'source': 'scholar',
-     'url_scholarbib': '/scholar.bib?q=info:9HH8oSRONHQJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
+     'url_scholarbib': u'/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
 ```
 
 
@@ -117,6 +84,45 @@ Here's a quick example demonstrating how to retrieve an author's profile then re
     >>> # Which papers cited that publication?
     >>> print [citation.bib['title'] for citation in pub.citedby()]
 ```
+
+
+Installation
+------------
+Use `pip`:
+
+    pip install scholarly
+
+Or clone the package:
+
+    git clone https://github.com/OrganicIrradiation/scholarly.git
+
+
+Requirements
+------------
+
+Requires [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), and [python-dateutil](https://pypi.python.org/pypi/python-dateutil/).
+
+
+Changes
+-------
+
+Note that because of the nature of web scraping, this project will be in **perpetual alpha**.
+
+### v0.1.3
+
+* Raise an exception when we receive a Bot Check. Reorganized test.py alphabetically and updated its test cases. Reorganized README. Added python-dateutil as installation requirement, for some reason it was accidentally omitted.
+
+### v0.1.2
+
+* Now request HTTPS connection rather than HTTP and update test.py to account for a new "Zucker".  Also added information for the v0.1.1 revision.
+
+### v0.1.1
+
+* Fixed an issue with multi-page Author results, author entries with no citations (which are rare, but do occur), and added some tests using unittest.
+
+### v0.1
+
+* Initial release.
 
 
 License

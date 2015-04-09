@@ -43,6 +43,9 @@ def _get_page(pagerequest):
     resp = conn.getresponse()
     if resp.status == 200:
         return resp.read()
+    if resp.status == 302:
+        redirect_info = BeautifulSoup(resp.read())
+        raise Exception('Error: {0} {1}\nBot check: {2}'.format(resp.status, resp.reason, redirect_info.a['href']))
     else:
         raise Exception('Error: {0} {1}'.format(resp.status, resp.reason))
 
@@ -157,7 +160,7 @@ class Publication(object):
             soup = _get_soup(_SCHOLARPUB.format(urllib2.quote(self.id_scholarcitedby)))
             return _search_scholar_soup(soup)
         else:
-            return []
+            return None
 
     def __str__(self):
         return pprint.pformat(self.__dict__)
@@ -200,7 +203,8 @@ class Author(object):
             if 'disabled' not in soup.find('button', id='gsc_bpf_next').attrs:
                 pubstart += _PAGESIZE
                 soup = _get_soup('{0}&cstart={1}&pagesize={2}'.format(self.url_citations, pubstart, _PAGESIZE))
-            else: break
+            else:
+                break
         self._filled = True
         return self
 
