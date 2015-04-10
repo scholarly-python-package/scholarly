@@ -21,7 +21,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-*.rst
 setup.cfg
 
 # PyInstaller
