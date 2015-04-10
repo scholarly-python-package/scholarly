@@ -7,21 +7,20 @@ import bibtexparser
 from bs4 import BeautifulSoup
 import dateutil.parser
 import hashlib
-import httplib
 import pprint
 import random
 import re
+import requests
 import time
-import urllib2
 
 _GOOGLEID = hashlib.md5(str(random.random())).hexdigest()[:16]
-_COOKIE = 'GSP=ID={0}:CF=4'.format(_GOOGLEID)
+_COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
 _HEADERS = {
-    'User-Agent': '''Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 '''
-                  '''(KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36''', 
-    'Cookie': _COOKIE
+    'accept-language': 'en-US,en',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36',
+    'accept': 'text/html,application/xhtml+xml,application/xml'
     }
-_SCHOLARHOST = 'scholar.google.com'
+_SCHOLARHOST = 'https://scholar.google.com'
 _PUBSEARCH = '/scholar?q={0}'
 _AUTHSEARCH = '/citations?view_op=search_authors&hl=en&mauthors={0}'
 _KEYWORDSEARCH = '/citations?view_op=search_authors&hl=en&mauthors=label:{0}'
@@ -32,22 +31,36 @@ _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
 _SCHOLARPUB = '/scholar?oi=bibs&hl=en&cites={0}'
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
+_SESSION = requests.Session()
 _PAGESIZE = 100
 
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
     # Note that we include a sleep to avoid overloading the scholar server
     time.sleep(5+random.uniform(0, 5))
-    conn = httplib.HTTPSConnection(_SCHOLARHOST)
-    conn.request("GET", pagerequest, '', _HEADERS)
-    resp = conn.getresponse()
-    if resp.status == 200:
-        return resp.read()
-    if resp.status == 302:
-        redirect_info = BeautifulSoup(resp.read())
-        raise Exception('Error: {0} {1}\nBot check: {2}'.format(resp.status, resp.reason, redirect_info.a['href']))
+    resp_url = _SESSION.get(_SCHOLARHOST+pagerequest, headers=_HEADERS, cookies=_COOKIES)
+    if resp_url.status_code == 200:
+        return resp_url.content
+    if resp_url.status_code == 503:
+        # Inelegant way of dealing with the G captcha
+        dest_url = requests.utils.quote(_SCHOLARHOST+pagerequest)
+        g_id = BeautifulSoup(resp_url.content).findAll('input')[1].get('value')
+        # Get the captcha image
+        captcha_url = _SCHOLARHOST+'/sorry/image?id={0}'.format(g_id)
+        captcha = _SESSION.get(captcha_url, headers=_HEADERS)
+        # Upload to remote host and display to user for human verification
+        img_upload = requests.post('http://postimage.org/',
+            files={'upload[]': ('scholarly_captcha.jpg', captcha.content)})
+        img_url = BeautifulSoup(img_upload.text).findAll(alt='scholarly_captcha')[0].get('src')
+        print 'CAPTCHA image URL: {0}'.format(img_url)
+        g_response = raw_input('Enter CAPTCHA: ')
+        # Once we get a response, follow through and load the new page.
+        url_response = _SCHOLARHOST+'/sorry/CaptchaRedirect?continue={0}&id={1}&captcha={2}&submit=Submit'.format(dest_url, g_id, g_response)
+        resp_captcha = _SESSION.get(url_response, headers=_HEADERS)
+        print 'Forwarded to {0}'.format(resp_captcha.url)
+        return _get_page(re.findall(r'https:\/\/(?:.*?)(\/.*)', resp_captcha.url)[0])
     else:
-        raise Exception('Error: {0} {1}'.format(resp.status, resp.reason))
+        raise Exception('Error: {0} {1}'.format(resp_url.status_code, resp_url.reason))
 
 def _get_soup(pagerequest):
     """Return the BeautifulSoup for a page on scholar.google.com"""
@@ -157,10 +170,10 @@ class Publication(object):
         if not hasattr(self, 'id_scholarcitedby'):
             self.fill()
         if hasattr(self, 'id_scholarcitedby'):
-            soup = _get_soup(_SCHOLARPUB.format(urllib2.quote(self.id_scholarcitedby)))
+            soup = _get_soup(_SCHOLARPUB.format(requests.utils.quote(self.id_scholarcitedby)))
             return _search_scholar_soup(soup)
         else:
-            return None
+            return []
 
     def __str__(self):
         return pprint.pformat(self.__dict__)
@@ -213,17 +226,17 @@ class Author(object):
 
 def search_pubs_query(query):
     """Search by scholar query and return a generator of Publication objects"""
-    soup = _get_soup(_PUBSEARCH.format(urllib2.quote(query)))
+    soup = _get_soup(_PUBSEARCH.format(requests.utils.quote(query)))
     return _search_scholar_soup(soup)
 
 def search_author(name):
     """Search by author name and return a generator of Author objects"""
-    soup = _get_soup(_AUTHSEARCH.format(urllib2.quote(name)))
+    soup = _get_soup(_AUTHSEARCH.format(requests.utils.quote(name)))
     return _search_citation_soup(soup)
 
 def search_keyword(keyword):
     """Search by keyword and return a generator of Author objects"""
-    soup = _get_soup(_KEYWORDSEARCH.format(urllib2.quote(keyword)))
+    soup = _get_soup(_KEYWORDSEARCH.format(requests.utils.quote(keyword)))
     return _search_citation_soup(soup)
 
 if __name__ == "__main__":
