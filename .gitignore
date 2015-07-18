@@ -21,6 +21,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+README.md
 setup.cfg
 
 # PyInstaller

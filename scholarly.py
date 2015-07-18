@@ -34,6 +34,7 @@ _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 _SESSION = requests.Session()
 _PAGESIZE = 100
 
+
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
     # Note that we include a sleep to avoid overloading the scholar server
@@ -44,14 +45,16 @@ def _get_page(pagerequest):
     if resp_url.status_code == 503:
         # Inelegant way of dealing with the G captcha
         dest_url = requests.utils.quote(_SCHOLARHOST+pagerequest)
-        g_id = BeautifulSoup(resp_url.content).findAll('input')[1].get('value')
+        g_id_soup = BeautifulSoup(resp_url.content, 'html.parser')
+        g_id = g_id_soup.findAll('input')[1].get('value')
         # Get the captcha image
         captcha_url = _SCHOLARHOST+'/sorry/image?id={0}'.format(g_id)
         captcha = _SESSION.get(captcha_url, headers=_HEADERS)
         # Upload to remote host and display to user for human verification
         img_upload = requests.post('http://postimage.org/',
             files={'upload[]': ('scholarly_captcha.jpg', captcha.content)})
-        img_url = BeautifulSoup(img_upload.text).findAll(alt='scholarly_captcha')[0].get('src')
+        img_url_soup = BeautifulSoup(img_upload.text, 'html.parser')
+        img_url = img_url_soup.findAll(alt='scholarly_captcha')[0].get('src')
         print 'CAPTCHA image URL: {0}'.format(img_url)
         g_response = raw_input('Enter CAPTCHA: ')
         # Once we get a response, follow through and load the new page.
@@ -62,11 +65,13 @@ def _get_page(pagerequest):
     else:
         raise Exception('Error: {0} {1}'.format(resp_url.status_code, resp_url.reason))
 
+
 def _get_soup(pagerequest):
     """Return the BeautifulSoup for a page on scholar.google.com"""
     html = _get_page(pagerequest)
     html = html.decode('utf-8')
-    return BeautifulSoup(html)
+    return BeautifulSoup(html, 'html.parser')
+
 
 def _search_scholar_soup(soup):
     """Generator that returns Publication objects from the search page"""
@@ -78,6 +83,7 @@ def _search_scholar_soup(soup):
         else:
             break
 
+
 def _search_citation_soup(soup):
     """Generator that returns Author objects from the author search page"""
     while True:
@@ -88,6 +94,7 @@ def _search_citation_soup(soup):
             soup = _get_soup(nextbutton['onclick'][17:-1].decode("unicode_escape"))
         else:
             break
+
 
 class Publication(object):
     """Returns an object for a single publication"""
@@ -178,6 +185,7 @@ class Publication(object):
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
+
 class Author(object):
     """Returns an object for a single author"""
     def __init__(self, __data):
@@ -224,20 +232,24 @@ class Author(object):
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
+
 def search_pubs_query(query):
     """Search by scholar query and return a generator of Publication objects"""
     soup = _get_soup(_PUBSEARCH.format(requests.utils.quote(query)))
     return _search_scholar_soup(soup)
+
 
 def search_author(name):
     """Search by author name and return a generator of Author objects"""
     soup = _get_soup(_AUTHSEARCH.format(requests.utils.quote(name)))
     return _search_citation_soup(soup)
 
+
 def search_keyword(keyword):
     """Search by keyword and return a generator of Author objects"""
     soup = _get_soup(_KEYWORDSEARCH.format(requests.utils.quote(keyword)))
     return _search_citation_soup(soup)
+
 
 if __name__ == "__main__":
     author = search_author('Steven A. Cholewiak').next().fill()

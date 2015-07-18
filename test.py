@@ -4,7 +4,7 @@ import scholarly
 class TestScholarly(unittest.TestCase):
 
     def test_cited_by(self):
-        ''' As of April 9, 2015, there are 26 citations'''
+        ''' As of July 18, 2015, there are 26 citations'''
         pub = scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak').next().fill()
         cites = [c for c in pub.citedby()]
         self.assertEqual(len(cites), 26)
@@ -28,13 +28,13 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of March 11, 2015, there are 23 'Zucker's, 3 pages worth '''
+        ''' As of July 18, 2015, there are 24 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 23)
+        self.assertEqual(len(authors), 24)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of February 1, there are 28 pubs, 3 pages worth'''
+        ''' As of July 18, 2015 there are 28 pubs, 3 pages worth'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')]
         self.assertEqual(len(pubs), 28)
         self.assertIn(u'A frequency-domain analysis of haptic gratings', pubs)
@@ -42,7 +42,6 @@ class TestScholarly(unittest.TestCase):
     def test_publication_contents(self):
         pub = scholarly.search_pubs_query('A frequency-domain analysis of haptic gratings').next().fill()
         self.assertDictContainsSubset({
-            'author': u'Cholewiak, Steven A and Kim, Kwangtaek and Tan, Hong Z and Adelstein, Bernard D',
             'journal': u'Haptics, IEEE Transactions on',
             'number': u'1',
             'pages': u'3--14',

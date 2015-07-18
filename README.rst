@@ -25,19 +25,19 @@ Methods
 
 .. code:: python
 
-        >>> search_query = scholarly.search_author('Manish Singh')
+        >>> search_query = scholarly.search_author('Manish Singh, Rutgers')
         >>> print search_query.next()
         {'_filled': False,
          'affiliation': u'Rutgers University, New Brunswick, NJ',
-         'citedby': 2283,
+         'citedby': 2379,
          'email': u'@ruccs.rutgers.edu',
-         'id': '9XRvM88AAAAJ',
+         'id': u'9XRvM88AAAAJ',
          'interests': [u'Human perception',
                        u'Computational Vision',
                        u'Cognitive Science'],
          'name': u'Manish Singh',
          'url_citations': '/citations?user=9XRvM88AAAAJ&hl=en',
-         'url_picture': '/citations/images/avatar_scholar_150.jpg'}
+         'url_picture': u'/citations/images/avatar_scholar_150.jpg'}
 
 -  ``search_keyword`` -- Search by keyword and return a generator of
    Author objects.
@@ -47,14 +47,18 @@ Methods
         >>> search_query = scholarly.search_keyword('Haptics')
         >>> print search_query.next()
         {'_filled': False,
-         'affiliation': u'Stanford University',
-         'citedby': 18625,
-         'email': u'@cs.stanford.edu',
-         'id': '4arkOLcAAAAJ',
-         'interests': [u'Robotics', u'Haptics', u'Human Motion'],
-         'name': u'Oussama Khatib',
-         'url_citations': '/citations?user=4arkOLcAAAAJ&hl=en',
-         'url_picture': '/citations/images/avatar_scholar_150.jpg'}
+         'affiliation': u'Lamar University',
+         'citedby': 20267,
+         'email': u'@lamar.edu',
+         'id': u'N2ab6CAAAAAJ',
+         'interests': [u'CAD/CAM',
+                       u'Haptics',
+                       u'Medical Simulation',
+                       u'GPU computing',
+                       u'evolutionary computing'],
+         'name': u'Weihang Zhu',
+         'url_citations': '/citations?user=N2ab6CAAAAAJ&hl=en',
+         'url_picture': u'/citations/images/avatar_scholar_150.jpg'}
 
 -  ``search_pubs_query`` -- Search for articles/publications and return
    generator of Publication objects.
@@ -65,10 +69,10 @@ Methods
         >>> print search_query.next()
         {'_filled': False,
          'bib': {'abstract': u'Humans can judge from vision alone whether an object is physically stable or not. Such judgments allow observers to predict the physical behavior of objects, and hence to guide their motor actions. We investigated the visual estimation of physical stability of 3-D  ...',
-             'author': u'SA Cholewiak and RW Fleming and M Singh',
-             'eprint': u'http://www.journalofvision.org/content/15/2/13.full',
-             'title': u'Perception of physical stability and center of mass of 3-D objects',
-             'url': u'http://www.journalofvision.org/content/15/2/13.short'},
+                 'author': u'SA Cholewiak and RW Fleming and M Singh',
+                 'eprint': u'http://www.journalofvision.org/content/15/2/13.full',
+                 'title': u'Perception of physical stability and center of mass of 3-D objects',
+                 'url': u'http://www.journalofvision.org/content/15/2/13.short'},
          'source': 'scholar',
          'url_scholarbib': u'/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
 
@@ -99,13 +103,19 @@ then retrieve the titles of the papers that cite his most popular
 Installation
 ------------
 
-Use ``pip``:
+Use ``pip`` to install from pypi:
 
 ::
 
     pip install scholarly
 
-Or clone the package:
+or ``pip`` to install from github:
+
+::
+
+    pip install git+https://github.com/OrganicIrradiation/scholarly.git
+
+or clone the package using git:
 
 ::
 
@@ -115,14 +125,26 @@ Requirements
 ------------
 
 Requires `bibtexparser <https://pypi.python.org/pypi/bibtexparser/>`__,
-`Beautiful Soup <https://pypi.python.org/pypi/beautifulsoup4/>`__, and
-`python-dateutil <https://pypi.python.org/pypi/python-dateutil/>`__.
+`Beautiful Soup <https://pypi.python.org/pypi/beautifulsoup4/>`__,
+`python-dateutil <https://pypi.python.org/pypi/python-dateutil/>`__, and
+`requests[security] <https://pypi.python.org/pypi/requests/>`__.
 
 Changes
 -------
 
 Note that because of the nature of web scraping, this project will be in
 **perpetual alpha**.
+
+v0.1.4
+~~~~~~
+
+-  Moved over to requests. When Google requests a CAPTCHA, print a URL
+   to the image (rehosted on `postimage.org <http://postimage.org>`__),
+   and have the user confirm that this is being run interactively. Also
+   explicitly request the 'html.parser' for BeautifulSoup. Includes a
+   few small updates to test.py tests to account for updated citation
+   contents and updates to the README. And finally, the pypi install
+   should also now include requests[security].
 
 v0.1.3
 ~~~~~~
