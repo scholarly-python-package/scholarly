@@ -5,7 +5,7 @@ class TestScholarly(unittest.TestCase):
 
     def test_cited_by(self):
         ''' As of July 18, 2015, there are 26 citations'''
-        pub = scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak').next().fill()
+        pub = next(scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')).fill()
         cites = [c for c in pub.citedby()]
         self.assertEqual(len(cites), 26)
 
@@ -28,9 +28,9 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of July 18, 2015, there are 24 'Zucker's, 3 pages worth '''
+        ''' As of July 24, 2015, there are 25 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 24)
+        self.assertEqual(len(authors), 25)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
@@ -40,20 +40,21 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'A frequency-domain analysis of haptic gratings', pubs)
 
     def test_publication_contents(self):
-        pub = scholarly.search_pubs_query('A frequency-domain analysis of haptic gratings').next().fill()
-        self.assertDictContainsSubset({
-            'journal': u'Haptics, IEEE Transactions on',
-            'number': u'1',
-            'pages': u'3--14',
-            'publisher': u'IEEE',
-            'title': u'A frequency-domain analysis of haptic gratings',
-            'type': u'article',
-            'volume': u'3',
-            u'year': u'2010',
-        }, pub.bib)
+        pub = next(scholarly.search_pubs_query('A frequency-domain analysis of haptic gratings')).fill()
+        superset = pub.bib
+        subset = {u'author': u'Cholewiak, Steven and Kim, Kwangtaek and Tan, Hong Z and Adelstein, Bernard D and others',
+                  u'journal': u'Haptics, IEEE Transactions on',
+                  u'number': u'1',
+                  u'pages': u'3--14',
+                  u'publisher': u'IEEE',
+                  u'title': u'A frequency-domain analysis of haptic gratings',
+                  u'url': u'http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5210096',
+                  u'volume': u'3',
+                  u'year': u'2010'}
+        self.assertTrue(all(item in superset.items() for item in subset.items()))
 
     def test_single_author(self):
-        author = scholarly.search_author('Steven A. Cholewiak').next().fill()
+        author = next(scholarly.search_author('Steven A. Cholewiak')).fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
 

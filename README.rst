@@ -1,9 +1,9 @@
-scholarly.py
-============
+scholarly
+=========
 
-scholarly.py is a module that allows you to retrieve author and
-publication information from `Google
-Scholar <https://scholar.google.com>`__ in a friendly, Pythonic way.
+scholarly is a module that allows you to retrieve author and publication
+information from `Google Scholar <https://scholar.google.com>`__ in a
+friendly, Pythonic way.
 
 Usage
 -----
@@ -15,7 +15,7 @@ Simply:
 
     import scholarly
 
-    print scholarly.search_author('Steven A. Cholewiak').next()
+    print(next(scholarly.search_author('Steven A. Cholewiak')))
 
 Methods
 ~~~~~~~
@@ -26,7 +26,7 @@ Methods
 .. code:: python
 
         >>> search_query = scholarly.search_author('Manish Singh, Rutgers')
-        >>> print search_query.next()
+        >>> print(next(search_query))
         {'_filled': False,
          'affiliation': u'Rutgers University, New Brunswick, NJ',
          'citedby': 2379,
@@ -45,7 +45,7 @@ Methods
 .. code:: python
 
         >>> search_query = scholarly.search_keyword('Haptics')
-        >>> print search_query.next()
+        >>> print(next(search_query))
         {'_filled': False,
          'affiliation': u'Lamar University',
          'citedby': 20267,
@@ -66,7 +66,7 @@ Methods
 .. code:: python
 
         >>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
-        >>> print search_query.next()
+        >>> print(next(search_query))
         {'_filled': False,
          'bib': {'abstract': u'Humans can judge from vision alone whether an object is physically stable or not. Such judgments allow observers to predict the physical behavior of objects, and hence to guide their motor actions. We investigated the visual estimation of physical stability of 3-D  ...',
                  'author': u'SA Cholewiak and RW Fleming and M Singh',
@@ -87,7 +87,7 @@ then retrieve the titles of the papers that cite his most popular
 
         >>> # Retrieve the author's data, fill-in, and print
         >>> search_query = scholarly.search_author('Steven A Cholewiak')
-        >>> author = search_query.next().fill()
+        >>> author = next(search_query).fill()
         >>> print author
 
         >>> # Print the titles of the author's publications
@@ -124,9 +124,9 @@ or clone the package using git:
 Requirements
 ------------
 
-Requires `bibtexparser <https://pypi.python.org/pypi/bibtexparser/>`__,
-`Beautiful Soup <https://pypi.python.org/pypi/beautifulsoup4/>`__,
-`python-dateutil <https://pypi.python.org/pypi/python-dateutil/>`__, and
+Requires `arrow <http://crsmithdev.com/arrow/>`__, `Beautiful
+Soup <https://pypi.python.org/pypi/beautifulsoup4/>`__,
+`bibtexparser <https://pypi.python.org/pypi/bibtexparser/>`__, and
 `requests[security] <https://pypi.python.org/pypi/requests/>`__.
 
 Changes
@@ -134,6 +134,18 @@ Changes
 
 Note that because of the nature of web scraping, this project will be in
 **perpetual alpha**.
+
+v0.2
+~~~~
+
+-  Python 2/3 compatibility. No longer using datetime-util and moved the
+   datetime operations to arrow. Now using wheel format.
+
+v0.1.5
+~~~~~~
+
+-  Exactly the same as v0.1.5, but had to bump the version because of a
+   version mistakenly pushed to pypi that had a bad tarball url.
 
 v0.1.4
 ~~~~~~

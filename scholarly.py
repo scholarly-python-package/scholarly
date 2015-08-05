@@ -3,17 +3,22 @@
 
 """scholarly.py"""
 
-import bibtexparser
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from bs4 import BeautifulSoup
-import dateutil.parser
+
+import arrow
+import bibtexparser
+import codecs
 import hashlib
 import pprint
 import random
 import re
 import requests
+import sys
 import time
 
-_GOOGLEID = hashlib.md5(str(random.random())).hexdigest()[:16]
+_GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
 _HEADERS = {
     'accept-language': 'en-US,en',
@@ -41,26 +46,30 @@ def _get_page(pagerequest):
     time.sleep(5+random.uniform(0, 5))
     resp_url = _SESSION.get(_SCHOLARHOST+pagerequest, headers=_HEADERS, cookies=_COOKIES)
     if resp_url.status_code == 200:
-        return resp_url.content
+        return resp_url.text
     if resp_url.status_code == 503:
         # Inelegant way of dealing with the G captcha
         dest_url = requests.utils.quote(_SCHOLARHOST+pagerequest)
-        g_id_soup = BeautifulSoup(resp_url.content, 'html.parser')
+        g_id_soup = BeautifulSoup(resp_url.text, 'html.parser')
         g_id = g_id_soup.findAll('input')[1].get('value')
         # Get the captcha image
         captcha_url = _SCHOLARHOST+'/sorry/image?id={0}'.format(g_id)
         captcha = _SESSION.get(captcha_url, headers=_HEADERS)
         # Upload to remote host and display to user for human verification
         img_upload = requests.post('http://postimage.org/',
-            files={'upload[]': ('scholarly_captcha.jpg', captcha.content)})
+            files={'upload[]': ('scholarly_captcha.jpg', captcha.text)})
         img_url_soup = BeautifulSoup(img_upload.text, 'html.parser')
         img_url = img_url_soup.findAll(alt='scholarly_captcha')[0].get('src')
-        print 'CAPTCHA image URL: {0}'.format(img_url)
-        g_response = raw_input('Enter CAPTCHA: ')
+        print('CAPTCHA image URL: {0}'.format(img_url))
+        # Need to check Python version for input
+        if sys.version[0]=="3":
+            g_response = input('Enter CAPTCHA: ')
+        else:
+            g_response = raw_input('Enter CAPTCHA: ')
         # Once we get a response, follow through and load the new page.
         url_response = _SCHOLARHOST+'/sorry/CaptchaRedirect?continue={0}&id={1}&captcha={2}&submit=Submit'.format(dest_url, g_id, g_response)
         resp_captcha = _SESSION.get(url_response, headers=_HEADERS)
-        print 'Forwarded to {0}'.format(resp_captcha.url)
+        print('Forwarded to {0}'.format(resp_captcha.url))
         return _get_page(re.findall(r'https:\/\/(?:.*?)(\/.*)', resp_captcha.url)[0])
     else:
         raise Exception('Error: {0} {1}'.format(resp_url.status_code, resp_url.reason))
@@ -69,7 +78,6 @@ def _get_page(pagerequest):
 def _get_soup(pagerequest):
     """Return the BeautifulSoup for a page on scholar.google.com"""
     html = _get_page(pagerequest)
-    html = html.decode('utf-8')
     return BeautifulSoup(html, 'html.parser')
 
 
@@ -91,7 +99,9 @@ def _search_citation_soup(soup):
             yield Author(tablerow)
         nextbutton = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_srt')
         if nextbutton and 'disabled' not in nextbutton.attrs:
-            soup = _get_soup(nextbutton['onclick'][17:-1].decode("unicode_escape"))
+            next_url = nextbutton['onclick'][17:-1]
+            next_url = codecs.getdecoder("unicode_escape")(next_url)[0]
+            soup = _get_soup(next_url)
         else:
             break
 
@@ -154,7 +164,7 @@ class Publication(object):
                 elif key == 'Publisher':
                     self.bib['publisher'] = val.text
                 elif key == 'Publication date':
-                    self.bib['year'] = dateutil.parser.parse(val.text).year
+                    self.bib['year'] = arrow.get(val.text).year
                 elif key == 'Description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
@@ -189,7 +199,7 @@ class Publication(object):
 class Author(object):
     """Returns an object for a single author"""
     def __init__(self, __data):
-        if isinstance(__data, (str, unicode)):
+        if isinstance(__data, str):
             self.id = __data
             self.url_citations = _CITATIONAUTH.format(self.id)
         else:
@@ -252,5 +262,5 @@ def search_keyword(keyword):
 
 
 if __name__ == "__main__":
-    author = search_author('Steven A. Cholewiak').next().fill()
-    print author
+    author = next(search_author('Steven A. Cholewiak')).fill()
+    print(author)

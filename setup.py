@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-def read(*paths):
+def readfile(*paths):
     """Build a file path from *paths* and return the contents."""
     with open(os.path.join(*paths), 'r') as f:
         return f.read()
@@ -9,22 +9,24 @@ def read(*paths):
 setup(
     name = 'scholarly',
     py_modules = ['scholarly'],
-    version = '0.1.5',
+    version = '0.2',
     description = 'Simple access to Google Scholar authors and citations',
-    long_description=(read('README.rst')),
+    long_description=(readfile('README.rst')),
     license='Unlicense',
 
     author = 'Steven A. Cholewiak',
     author_email = 'steven@cholewiak.com',
     url = 'https://github.com/OrganicIrradiation/scholarly',
-    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.1.5',
+    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2',
     keywords = ['Google Scholar', 'academics', 'citations'],
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules'],
-    install_requires=['bibtexparser', 'beautifulsoup4', 'python-dateutil', 'requests[security]'],
+    install_requires=['arrow', 'beautifulsoup4', 'bibtexparser', 'requests[security]'],
+    test_suite="test.py"
 )
