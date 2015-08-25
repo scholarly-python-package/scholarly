@@ -4,10 +4,10 @@ import scholarly
 class TestScholarly(unittest.TestCase):
 
     def test_cited_by(self):
-        ''' As of July 18, 2015, there are 26 citations'''
+        ''' As of August 25, 2015, there are 29 citations'''
         pub = next(scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')).fill()
         cites = [c for c in pub.citedby()]
-        self.assertEqual(len(cites), 26)
+        self.assertEqual(len(cites), 29)
 
     def test_empty_author(self):
         authors = [a for a in scholarly.search_author('')]
@@ -34,9 +34,9 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of July 18, 2015 there are 28 pubs, 3 pages worth'''
+        ''' As of August 25, 2015 there are 31 pubs'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')]
-        self.assertEqual(len(pubs), 28)
+        self.assertEqual(len(pubs), 31)
         self.assertIn(u'A frequency-domain analysis of haptic gratings', pubs)
 
     def test_publication_contents(self):

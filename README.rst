@@ -1,6 +1,8 @@
 scholarly
 =========
 
+|Build Status| |Code Health| |License|
+
 scholarly is a module that allows you to retrieve author and publication
 information from `Google Scholar <https://scholar.google.com>`__ in a
 friendly, Pythonic way.
@@ -193,3 +195,10 @@ The original code that this project was forked from was released by
 `WTFPL <http://www.wtfpl.net/>`__ license. In keeping with this
 mentality, all code is released under the
 `Unlicense <http://unlicense.org/>`__.
+
+.. |Build Status| image:: https://travis-ci.org/OrganicIrradiation/scholarly.png?branch=master
+   :target: https://travis-ci.org/OrganicIrradiation/scholarly
+.. |Code Health| image:: https://landscape.io/github/OrganicIrradiation/scholarly/master/landscape.png
+   :target: https://landscape.io/github/NYUCCL/psiTurk/master
+.. |License| image:: https://img.shields.io/badge/license-Unlicense-blue.svg
+   :target: http://unlicense.org/
