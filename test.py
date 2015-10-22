@@ -3,12 +3,6 @@ import scholarly
 
 class TestScholarly(unittest.TestCase):
 
-    def test_cited_by(self):
-        ''' As of August 25, 2015, there are 29 citations'''
-        pub = next(scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')).fill()
-        cites = [c for c in pub.citedby()]
-        self.assertEqual(len(cites), 29)
-
     def test_empty_author(self):
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
@@ -22,6 +16,11 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs_query('')]
         self.assertIs(len(pubs), 0)
 
+    def test_get_cited_by(self):
+        pub = next(scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')).fill()
+        cites = [c for c in pub.get_citedby()]
+        self.assertEqual(len(cites), pub.citedby)
+
     def test_keyword(self):
         authors = [a.name for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
@@ -30,13 +29,13 @@ class TestScholarly(unittest.TestCase):
     def test_multiple_authors(self):
         ''' As of July 24, 2015, there are 25 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 25)
+        self.assertEqual(len(authors), 24)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of August 25, 2015 there are 31 pubs'''
-        pubs = [p.bib['title'] for p in scholarly.search_pubs_query('frequency-domain analysis of haptic gratings cholewiak')]
-        self.assertEqual(len(pubs), 31)
+        ''' As of October 21, 2015 there are 7 pubs that fit the search term'''
+        pubs = [p.bib['title'] for p in scholarly.search_pubs_query('cholewiak campbell robson')]
+        self.assertEqual(len(pubs), 7)
         self.assertIn(u'A frequency-domain analysis of haptic gratings', pubs)
 
     def test_publication_contents(self):

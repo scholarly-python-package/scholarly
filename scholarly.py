@@ -84,8 +84,8 @@ def _get_soup(pagerequest):
 def _search_scholar_soup(soup):
     """Generator that returns Publication objects from the search page"""
     while True:
-        for tablerow in soup.findAll('div', 'gs_r'):
-            yield Publication(tablerow, 'scholar')
+        for row in soup.findAll('div', 'gs_r'):
+            yield Publication(row, 'scholar')
         if soup.find(class_='gs_ico gs_ico_nav_next'):
             soup = _get_soup(soup.find(class_='gs_ico gs_ico_nav_next').parent['href'])
         else:
@@ -95,8 +95,8 @@ def _search_scholar_soup(soup):
 def _search_citation_soup(soup):
     """Generator that returns Author objects from the author search page"""
     while True:
-        for tablerow in soup.findAll('div', 'gsc_1usr'):
-            yield Author(tablerow)
+        for row in soup.findAll('div', 'gsc_1usr'):
+            yield Author(row)
         nextbutton = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_srt')
         if nextbutton and 'disabled' not in nextbutton.attrs:
             next_url = nextbutton['onclick'][17:-1]
@@ -114,20 +114,23 @@ class Publication(object):
         if self.source == 'citations':
             self.bib['title'] = __data.find('a', class_='gsc_a_at').text
             self.id_citations = re.findall(_CITATIONPUBRE, __data.find('a', class_='gsc_a_at')['href'])[0]
-            self.url_citations = _CITATIONPUB.format(self.id_citations)
+            citedby = __data.find(class_='gsc_a_ac')
+            if citedby and not citedby.text.isspace():
+                self.citedby = int(citedby.text)
+            year = __data.find(class_='gsc_a_h')
+            if year and not year.text.isspace():
+                self.bib['year'] = int(year.text)
         elif self.source == 'scholar':
             databox = __data.find('div', class_='gs_ri')
             title = databox.find('h3', class_='gs_rt')
-            authorinfo = databox.find('div', class_='gs_a')
-            if title.find('span', class_='gs_ctu'):
-                # A citation
+            if title.find('span', class_='gs_ctu'): # A citation
                 title.span.extract()
-            elif title.find('span', class_='gs_ctc'):
-                # A book or PDF
+            elif title.find('span', class_='gs_ctc'): # A book or PDF
                 title.span.extract()
             self.bib['title'] = title.text.strip()
             if title.find('a'):
                 self.bib['url'] = title.find('a')['href']
+            authorinfo = databox.find('div', class_='gs_a')
             self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
@@ -138,6 +141,7 @@ class Publication(object):
                 if 'Import into BibTeX' in link.text:
                     self.url_scholarbib = link['href']
                 if 'Cited by' in link.text:
+                    self.citedby = int(re.findall(r'\d+', link.text)[0])
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, link['href'])[0]
             if __data.find('div', class_='gs_ggs gs_fl'):
                 self.bib['eprint'] = __data.find('div', class_='gs_ggs gs_fl').find('a')['href']
@@ -146,7 +150,8 @@ class Publication(object):
     def fill(self):
         """Populate the Publication with information from its profile"""
         if self.source == 'citations':
-            soup = _get_soup(self.url_citations)
+            url_citations = _CITATIONPUB.format(self.id_citations)
+            soup = _get_soup(url_citations)
             self.bib['title'] = soup.find('div', id='gsc_title').text
             if soup.find('a', class_='gsc_title_link'):
                 self.bib['url'] = soup.find('a', class_='gsc_title_link')['href']
@@ -180,7 +185,7 @@ class Publication(object):
             self._filled = True
         return self
 
-    def citedby(self):
+    def get_citedby(self):
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
         """
@@ -201,10 +206,8 @@ class Author(object):
     def __init__(self, __data):
         if isinstance(__data, str):
             self.id = __data
-            self.url_citations = _CITATIONAUTH.format(self.id)
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
-            self.url_citations = _CITATIONAUTH.format(self.id)
             self.url_picture = __data('img')[0]['src']
             self.name = __data.find('h3', class_='gsc_1usr_name').text
             affiliation = __data.find('div', class_='gsc_1usr_aff')
@@ -221,7 +224,8 @@ class Author(object):
 
     def fill(self):
         """Populate the Author with information from their profile"""
-        soup = _get_soup('{0}&pagesize={1}'.format(self.url_citations, _PAGESIZE))
+        url_citations = _CITATIONAUTH.format(self.id)
+        soup = _get_soup('{0}&pagesize={1}'.format(url_citations, _PAGESIZE))
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in soup.findAll('a', class_='gsc_prf_ila')]
@@ -230,10 +234,12 @@ class Author(object):
         self.publications = list()
         pubstart = 0
         while True:
-            self.publications.extend([Publication(i, 'citations') for i in soup.findAll('tr', class_='gsc_a_tr')])
+            for row in soup.findAll('tr', class_='gsc_a_tr'):
+                new_pub = Publication(row, 'citations')
+                self.publications.append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_next').attrs:
                 pubstart += _PAGESIZE
-                soup = _get_soup('{0}&cstart={1}&pagesize={2}'.format(self.url_citations, pubstart, _PAGESIZE))
+                soup = _get_soup('{0}&cstart={1}&pagesize={2}'.format(url_citations, pubstart, _PAGESIZE))
             else:
                 break
         self._filled = True

@@ -28,16 +28,15 @@ Methods
         >>> search_query = scholarly.search_author('Manish Singh, Rutgers')
         >>> print(next(search_query))
         {'_filled': False,
-         'affiliation': u'Rutgers University, New Brunswick, NJ',
-         'citedby': 2379,
-         'email': u'@ruccs.rutgers.edu',
-         'id': u'9XRvM88AAAAJ',
-         'interests': [u'Human perception',
-                       u'Computational Vision',
-                       u'Cognitive Science'],
-         'name': u'Manish Singh',
-         'url_citations': '/citations?user=9XRvM88AAAAJ&hl=en',
-         'url_picture': u'/citations/images/avatar_scholar_150.jpg'}
+         'affiliation': 'Rutgers University, New Brunswick, NJ',
+         'citedby': 2463,
+         'email': '@ruccs.rutgers.edu',
+         'id': '9XRvM88AAAAJ',
+         'interests': ['Human perception',
+                       'Computational Vision',
+                       'Cognitive Science'],
+         'name': 'Manish Singh',
+         'url_picture': '/citations/images/avatar_scholar_150.jpg'}
 
 -  ``search_keyword`` -- Search by keyword and return a generator of
    Author objects.
@@ -47,18 +46,17 @@ Methods
         >>> search_query = scholarly.search_keyword('Haptics')
         >>> print(next(search_query))
         {'_filled': False,
-         'affiliation': u'Lamar University',
-         'citedby': 20267,
-         'email': u'@lamar.edu',
-         'id': u'N2ab6CAAAAAJ',
-         'interests': [u'CAD/CAM',
-                       u'Haptics',
-                       u'Medical Simulation',
-                       u'GPU computing',
-                       u'evolutionary computing'],
-         'name': u'Weihang Zhu',
-         'url_citations': '/citations?user=N2ab6CAAAAAJ&hl=en',
-         'url_picture': u'/citations/images/avatar_scholar_150.jpg'}
+         'affiliation': 'Lamar University',
+         'citedby': 21275,
+         'email': '@lamar.edu',
+         'id': 'N2ab6CAAAAAJ',
+         'interests': ['CAD/CAM',
+                       'Haptics',
+                       'Medical Simulation',
+                       'GPU computing',
+                       'evolutionary computing'],
+         'name': 'Weihang Zhu',
+         'url_picture': '/citations/images/avatar_scholar_150.jpg'}
 
 -  ``search_pubs_query`` -- Search for articles/publications and return
    generator of Publication objects.
@@ -68,13 +66,19 @@ Methods
         >>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
         >>> print(next(search_query))
         {'_filled': False,
-         'bib': {'abstract': u'Humans can judge from vision alone whether an object is physically stable or not. Such judgments allow observers to predict the physical behavior of objects, and hence to guide their motor actions. We investigated the visual estimation of physical stability of 3-D  ...',
-                 'author': u'SA Cholewiak and RW Fleming and M Singh',
-                 'eprint': u'http://www.journalofvision.org/content/15/2/13.full',
-                 'title': u'Perception of physical stability and center of mass of 3-D objects',
-                 'url': u'http://www.journalofvision.org/content/15/2/13.short'},
+         'bib': {'abstract': 'Humans can judge from vision alone whether an object '
+                             'is physically stable or not. Such judgments allow '
+                             'observers to predict the physical behavior of '
+                             'objects, and hence to guide their motor actions. We '
+                             'investigated the visual estimation of physical '
+                             'stability of 3-D  ...',
+                 'author': 'SA Cholewiak and RW Fleming and M Singh',
+                 'eprint': 'http://www.journalofvision.org/content/15/2/13.full',
+                 'title': 'Perception of physical stability and center of mass of '
+                          '3-D objects',
+                 'url': 'http://www.journalofvision.org/content/15/2/13.short'},
          'source': 'scholar',
-         'url_scholarbib': u'/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
+         'url_scholarbib': '/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
 
 Example
 ~~~~~~~
@@ -88,17 +92,17 @@ then retrieve the titles of the papers that cite his most popular
         >>> # Retrieve the author's data, fill-in, and print
         >>> search_query = scholarly.search_author('Steven A Cholewiak')
         >>> author = next(search_query).fill()
-        >>> print author
+        >>> print(author)
 
         >>> # Print the titles of the author's publications
-        >>> print [pub.bib['title'] for pub in author.publications]
+        >>> print([pub.bib['title'] for pub in author.publications])
 
         >>> # Take a closer look at the first publication
         >>> pub = author.publications[0].fill()
-        >>> print pub
+        >>> print(pub)
 
         >>> # Which papers cited that publication?
-        >>> print [citation.bib['title'] for citation in pub.citedby()]
+        >>> print([citation.bib['title'] for citation in pub.get_citedby()])
 
 Installation
 ------------
@@ -134,6 +138,13 @@ Changes
 
 Note that because of the nature of web scraping, this project will be in
 **perpetual alpha**.
+
+v0.2.1
+~~~~~~
+
+-  Renamed Publication function citedby() to get\_citedby(). New
+   Publication attribute citedby, which just gives the number of
+   citations an article has. Also updated test.py.
 
 v0.2
 ~~~~
