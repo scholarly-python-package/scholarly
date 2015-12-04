@@ -29,7 +29,7 @@ class TestScholarly(unittest.TestCase):
     def test_multiple_authors(self):
         ''' As of July 24, 2015, there are 25 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 24)
+        self.assertEqual(len(authors), 25)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
