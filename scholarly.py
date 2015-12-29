@@ -231,6 +231,11 @@ class Author(object):
         self.interests = [i.text.strip() for i in soup.findAll('a', class_='gsc_prf_ila')]
         self.url_picture = soup.find('img')['src']
 
+	#h-index and -10 index
+        index = soup.findAll('td', class_='gsc_rsb_std')
+        self.hindex = int(index[2].text)
+        self.i10index = int(index[4].text)
+        
         self.publications = list()
         pubstart = 0
         while True:
