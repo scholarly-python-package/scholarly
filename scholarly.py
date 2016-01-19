@@ -272,6 +272,20 @@ def search_keyword(keyword):
     return _search_citation_soup(soup)
 
 
+def search_pubs_custom_url(url):
+    """Search by custom URL and return a generator of Publication objects
+    URL should be of the form '/scholar?q=...'"""
+    soup = _get_soup(url)
+    return _search_scholar_soup(soup)
+
+
+def search_author_custom_url(url):
+    """Search by custom URL and return a generator of Publication objects
+    URL should be of the form '/citation?q=...'"""
+    soup = _get_soup(url)
+    return _search_citation_soup(soup)
+
+
 if __name__ == "__main__":
     author = next(search_author('Steven A. Cholewiak')).fill()
     print(author)
