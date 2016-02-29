@@ -1,6 +1,5 @@
 # Byte-compiled / optimized / DLL files
 *.py[cod]
-*.ipynb
 
 # Distribution / packaging
 .Python
@@ -13,3 +12,5 @@ setup.cfg
 
 # Setup notes
 setup_notes.md
+.ipynb_checkpoints
+*.ipynb

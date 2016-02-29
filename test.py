@@ -27,30 +27,28 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of July 24, 2015, there are 25 'Zucker's, 3 pages worth '''
+        ''' As of February 12, 2016, there are 26 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 25)
+        self.assertEqual(len(authors), 26)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of October 21, 2015 there are 7 pubs that fit the search term'''
+        ''' As of February 12, 2016 there are 8 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('cholewiak campbell robson')]
-        self.assertEqual(len(pubs), 7)
+        self.assertEqual(len(pubs), 8)
         self.assertIn(u'A frequency-domain analysis of haptic gratings', pubs)
 
     def test_publication_contents(self):
         pub = next(scholarly.search_pubs_query('A frequency-domain analysis of haptic gratings')).fill()
-        superset = pub.bib
-        subset = {u'author': u'Cholewiak, Steven and Kim, Kwangtaek and Tan, Hong Z and Adelstein, Bernard D and others',
-                  u'journal': u'Haptics, IEEE Transactions on',
-                  u'number': u'1',
-                  u'pages': u'3--14',
-                  u'publisher': u'IEEE',
-                  u'title': u'A frequency-domain analysis of haptic gratings',
-                  u'url': u'http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5210096',
-                  u'volume': u'3',
-                  u'year': u'2010'}
-        self.assertTrue(all(item in superset.items() for item in subset.items()))
+        self.assertTrue(pub.bib['author'] == u'Cholewiak, Steven A and Kim, Kwangtaek and Tan, Hong Z and Adelstein, Bernard D')
+        self.assertTrue(pub.bib['journal'] == u'Haptics, IEEE Transactions on')
+        self.assertTrue(pub.bib['number'] == u'1')
+        self.assertTrue(pub.bib['pages'] == u'3--14')
+        self.assertTrue(pub.bib['publisher'] == u'IEEE')
+        self.assertTrue(pub.bib['title'] == u'A frequency-domain analysis of haptic gratings')
+        self.assertTrue(pub.bib['url'] == u'http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5210096')
+        self.assertTrue(pub.bib['volume'] == u'3')
+        self.assertTrue(pub.bib['year'] == u'2010')
 
     def test_single_author(self):
         author = next(scholarly.search_author('Steven A. Cholewiak')).fill()
