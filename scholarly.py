@@ -231,6 +231,13 @@ class Author(object):
         self.interests = [i.text.strip() for i in soup.findAll('a', class_='gsc_prf_ila')]
         self.url_picture = soup.find('img')['src']
 
+	#h-index, i10-index and h-index, i10-index in the last 5 years
+        index = soup.findAll('td', class_='gsc_rsb_std')
+        self.hindex = int(index[2].text)
+        self.hindex5y = int(index[3].text)
+        self.i10index = int(index[4].text)
+        self.i10index5y = int(index[5].text)
+        
         self.publications = list()
         pubstart = 0
         while True:
@@ -264,6 +271,20 @@ def search_author(name):
 def search_keyword(keyword):
     """Search by keyword and return a generator of Author objects"""
     soup = _get_soup(_KEYWORDSEARCH.format(requests.utils.quote(keyword)))
+    return _search_citation_soup(soup)
+
+
+def search_pubs_custom_url(url):
+    """Search by custom URL and return a generator of Publication objects
+    URL should be of the form '/scholar?q=...'"""
+    soup = _get_soup(url)
+    return _search_scholar_soup(soup)
+
+
+def search_author_custom_url(url):
+    """Search by custom URL and return a generator of Publication objects
+    URL should be of the form '/citation?q=...'"""
+    soup = _get_soup(url)
     return _search_citation_soup(soup)
 
 
