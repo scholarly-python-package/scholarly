@@ -118,7 +118,7 @@ class Publication(object):
             if citedby and not citedby.text.isspace():
                 self.citedby = int(citedby.text)
             year = __data.find(class_='gsc_a_h')
-            if year and year.text and not year.text.isspace():
+            if year and year.text and not year.text.isspace() and len(year.text)>0:
                 self.bib['year'] = int(year.text)
         elif self.source == 'scholar':
             databox = __data.find('div', class_='gs_ri')
@@ -160,6 +160,8 @@ class Publication(object):
                 val = item.find(class_='gsc_value')
                 if key == 'Authors':
                     self.bib['author'] = ' and '.join([i.strip() for i in val.text.split(',')])
+                elif key == 'Journal':
+                    self.bib['journal'] = val.text
                 elif key == 'Volume':
                     self.bib['volume'] = val.text
                 elif key == 'Issue':
