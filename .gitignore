@@ -5,7 +5,6 @@
 .Python
 build/
 dist/
-*.py[cod]
 *.egg-info/
 README.md
 setup.cfg
@@ -14,3 +13,4 @@ setup.cfg
 setup_notes.md
 .ipynb_checkpoints
 *.ipynb
+.idea

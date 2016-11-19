@@ -10,7 +10,7 @@ class TestScholarly(unittest.TestCase):
     def test_empty_keyword(self):
         ''' Returns 5 individuals with the name 'label' '''
         authors = [a for a in scholarly.search_keyword('')]
-        self.assertEqual(len(authors), 5)
+        self.assertEqual(len(authors), 4)
 
     def test_empty_publication(self):
         pubs = [p for p in scholarly.search_pubs_query('')]
@@ -27,21 +27,21 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of February 12, 2016, there are 26 'Zucker's, 3 pages worth '''
+        ''' As of November 18, 2016, there are 29 'Zucker's, 3 pages worth '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 26)
+        self.assertEqual(len(authors), 29)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of February 12, 2016 there are 8 pubs that fit the search term'''
+        ''' As of November 18, 2016 there are 12 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('cholewiak campbell robson')]
-        self.assertEqual(len(pubs), 8)
+        self.assertEqual(len(pubs), 12)
         self.assertIn(u'A frequency-domain analysis of haptic gratings', pubs)
 
     def test_publication_contents(self):
         pub = next(scholarly.search_pubs_query('A frequency-domain analysis of haptic gratings')).fill()
         self.assertTrue(pub.bib['author'] == u'Cholewiak, Steven A and Kim, Kwangtaek and Tan, Hong Z and Adelstein, Bernard D')
-        self.assertTrue(pub.bib['journal'] == u'Haptics, IEEE Transactions on')
+        self.assertTrue(pub.bib['journal'] == u'IEEE Transactions on Haptics')
         self.assertTrue(pub.bib['number'] == u'1')
         self.assertTrue(pub.bib['pages'] == u'3--14')
         self.assertTrue(pub.bib['publisher'] == u'IEEE')

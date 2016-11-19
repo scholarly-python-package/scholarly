@@ -29,12 +29,10 @@ Methods
         >>> print(next(search_query))
         {'_filled': False,
          'affiliation': 'Rutgers University, New Brunswick, NJ',
-         'citedby': 2463,
+         'citedby': 2906,
          'email': '@ruccs.rutgers.edu',
          'id': '9XRvM88AAAAJ',
-         'interests': ['Human perception',
-                       'Computational Vision',
-                       'Cognitive Science'],
+         'interests': ['Human perception', 'Computational Vision', 'Cognitive Science'],
          'name': 'Manish Singh',
          'url_picture': '/citations/images/avatar_scholar_150.jpg'}
 
@@ -46,16 +44,12 @@ Methods
         >>> search_query = scholarly.search_keyword('Haptics')
         >>> print(next(search_query))
         {'_filled': False,
-         'affiliation': 'Lamar University',
-         'citedby': 21275,
-         'email': '@lamar.edu',
-         'id': 'N2ab6CAAAAAJ',
-         'interests': ['CAD/CAM',
-                       'Haptics',
-                       'Medical Simulation',
-                       'GPU computing',
-                       'evolutionary computing'],
-         'name': 'Weihang Zhu',
+         'affiliation': 'Stanford University',
+         'citedby': 22427,
+         'email': '@cs.stanford.edu',
+         'id': '4arkOLcAAAAJ',
+         'interests': ['Robotics', 'Haptics', 'Human Motion'],
+         'name': 'Oussama Khatib',
          'url_picture': '/citations/images/avatar_scholar_150.jpg'}
 
 -  ``search_pubs_query`` -- Search for articles/publications and return
@@ -66,19 +60,20 @@ Methods
         >>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
         >>> print(next(search_query))
         {'_filled': False,
-         'bib': {'abstract': 'Humans can judge from vision alone whether an object '
-                             'is physically stable or not. Such judgments allow '
-                             'observers to predict the physical behavior of '
-                             'objects, and hence to guide their motor actions. We '
-                             'investigated the visual estimation of physical '
-                             'stability of 3-D  ...',
+         'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
+                             'physically stable or not. Such judgments allow observers '
+                             'to predict the physical behavior of objects, and hence '
+                             'to guide their motor actions. We investigated the visual '
+                             'estimation of physical stability of 3-D  ...',
                  'author': 'SA Cholewiak and RW Fleming and M Singh',
-                 'eprint': 'http://www.journalofvision.org/content/15/2/13.full',
-                 'title': 'Perception of physical stability and center of mass of '
-                          '3-D objects',
-                 'url': 'http://www.journalofvision.org/content/15/2/13.short'},
+                 'eprint': 'https://scholar.google.comhttp://jov.arvojournals.org/article.aspx?articleid=2213254',
+                 'title': 'Perception of physical stability and center of mass of 3-D '
+                          'objects',
+                 'url': 'http://jov.arvojournals.org/article.aspx?articleid=2213254'},
+         'citedby': 7,
+         'id_scholarcitedby': '15736880631888070187',
          'source': 'scholar',
-         'url_scholarbib': '/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&hl=en&ct=citation&cd=0'}
+         'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisig=AAGBfm0AAAAAWC-SoOcBZW3iN5qdBiCjkGlFJXqEZVgS&scisf=4&ct=citation&cd=0&hl=en'}
 
 Example
 ~~~~~~~
@@ -138,6 +133,12 @@ Changes
 
 Note that because of the nature of web scraping, this project will be in
 **perpetual alpha**.
+
+v0.2.2
+~~~~~~
+
+-  Minor fixes to get core running again. Needs more tests. Captcha
+   handling not currently operational.
 
 v0.2.1
 ~~~~~~
