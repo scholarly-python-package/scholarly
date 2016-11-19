@@ -9,7 +9,7 @@ def readfile(*paths):
 setup(
     name = 'scholarly',
     py_modules = ['scholarly'],
-    version = '0.2.1',
+    version = '0.2.2',
     description = 'Simple access to Google Scholar authors and citations',
     long_description=(readfile('README.rst')),
     license='Unlicense',
@@ -17,7 +17,7 @@ setup(
     author = 'Steven A. Cholewiak',
     author_email = 'steven@cholewiak.com',
     url = 'https://github.com/OrganicIrradiation/scholarly',
-    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2',
+    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.2',
     keywords = ['Google Scholar', 'academics', 'citations'],
     classifiers = [
         'Development Status :: 3 - Alpha',
