@@ -254,7 +254,12 @@ class Author(object):
         self.hindex5y = int(index[3].text)
         self.i10index = int(index[4].text)
         self.i10index5y = int(index[5].text)
-        
+
+        # number of citations per year
+        years = [int(y.text) for y in soup.find_all('span', class_='gsc_g_t')]
+        cites = [int(c.text) for c in soup.find_all('span', class_='gsc_g_al')]
+        self.cites_per_year = dict(zip(years, cites))
+
         self.publications = list()
         pubstart = 0
         while True:
