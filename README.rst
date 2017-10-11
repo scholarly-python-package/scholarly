@@ -29,12 +29,12 @@ Methods
         >>> print(next(search_query))
         {'_filled': False,
          'affiliation': 'Rutgers University, New Brunswick, NJ',
-         'citedby': 2906,
+         'citedby': 3349,
          'email': '@ruccs.rutgers.edu',
          'id': '9XRvM88AAAAJ',
          'interests': ['Human perception', 'Computational Vision', 'Cognitive Science'],
          'name': 'Manish Singh',
-         'url_picture': '/citations/images/avatar_scholar_150.jpg'}
+         'url_picture': '/citations/images/avatar_scholar_56.jpg'}
 
 -  ``search_keyword`` -- Search by keyword and return a generator of
    Author objects.
@@ -45,12 +45,12 @@ Methods
         >>> print(next(search_query))
         {'_filled': False,
          'affiliation': 'Stanford University',
-         'citedby': 22427,
+         'citedby': 27493,
          'email': '@cs.stanford.edu',
          'id': '4arkOLcAAAAJ',
          'interests': ['Robotics', 'Haptics', 'Human Motion'],
          'name': 'Oussama Khatib',
-         'url_picture': '/citations/images/avatar_scholar_150.jpg'}
+         'url_picture': '/citations/images/avatar_scholar_56.jpg'}
 
 -  ``search_pubs_query`` -- Search for articles/publications and return
    generator of Publication objects.
@@ -64,16 +64,20 @@ Methods
                              'physically stable or not. Such judgments allow observers '
                              'to predict the physical behavior of objects, and hence '
                              'to guide their motor actions. We investigated the visual '
-                             'estimation of physical stability of 3-D  ...',
+                             'estimation of physical stability of 3-D objects (shown '
+                             'in stereoscopically viewed rendered scenes) and how it '
+                             'relates to visual estimates of their center of mass '
+                             '(COM). In Experiment 1, observers viewed an object near  '
+                             '...',
                  'author': 'SA Cholewiak and RW Fleming and M Singh',
                  'eprint': 'https://scholar.google.comhttp://jov.arvojournals.org/article.aspx?articleid=2213254',
                  'title': 'Perception of physical stability and center of mass of 3-D '
                           'objects',
                  'url': 'http://jov.arvojournals.org/article.aspx?articleid=2213254'},
-         'citedby': 7,
+         'citedby': 11,
          'id_scholarcitedby': '15736880631888070187',
          'source': 'scholar',
-         'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisig=AAGBfm0AAAAAWC-SoOcBZW3iN5qdBiCjkGlFJXqEZVgS&scisf=4&ct=citation&cd=0&hl=en'}
+         'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisig=AAGBfm0AAAAAWd6hKRFtJYWRGnEISlb66w7vWCe_mTBq&scisf=4&ct=citation&cd=0&hl=en'}
 
 Example
 ~~~~~~~
@@ -127,75 +131,6 @@ Requires `arrow <http://crsmithdev.com/arrow/>`__, `Beautiful
 Soup <https://pypi.python.org/pypi/beautifulsoup4/>`__,
 `bibtexparser <https://pypi.python.org/pypi/bibtexparser/>`__, and
 `requests[security] <https://pypi.python.org/pypi/requests/>`__.
-
-Changes
--------
-
-Note that because of the nature of web scraping, this project will be in
-**perpetual alpha**.
-
-v0.2.2
-~~~~~~
-
--  Minor fixes to get core running again. Needs more tests. Captcha
-   handling not currently operational.
-
-v0.2.1
-~~~~~~
-
--  Renamed Publication function citedby() to get\_citedby(). New
-   Publication attribute citedby, which just gives the number of
-   citations an article has. Also updated test.py.
-
-v0.2
-~~~~
-
--  Python 2/3 compatibility. No longer using datetime-util and moved the
-   datetime operations to arrow. Now using wheel format.
-
-v0.1.5
-~~~~~~
-
--  Exactly the same as v0.1.5, but had to bump the version because of a
-   version mistakenly pushed to pypi that had a bad tarball url.
-
-v0.1.4
-~~~~~~
-
--  Moved over to requests. When Google requests a CAPTCHA, print a URL
-   to the image (rehosted on `postimage.org <http://postimage.org>`__),
-   and have the user confirm that this is being run interactively. Also
-   explicitly request the 'html.parser' for BeautifulSoup. Includes a
-   few small updates to test.py tests to account for updated citation
-   contents and updates to the README. And finally, the pypi install
-   should also now include requests[security].
-
-v0.1.3
-~~~~~~
-
--  Raise an exception when we receive a Bot Check. Reorganized test.py
-   alphabetically and updated its test cases. Reorganized README. Added
-   python-dateutil as installation requirement, for some reason it was
-   accidentally omitted.
-
-v0.1.2
-~~~~~~
-
--  Now request HTTPS connection rather than HTTP and update test.py to
-   account for a new "Zucker". Also added information for the v0.1.1
-   revision.
-
-v0.1.1
-~~~~~~
-
--  Fixed an issue with multi-page Author results, author entries with no
-   citations (which are rare, but do occur), and added some tests using
-   unittest.
-
-v0.1
-~~~~
-
--  Initial release.
 
 License
 -------
