@@ -37,6 +37,7 @@ _CITATIONAUTHRE = r'user=([\w-]*)'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
 _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 _SCHOLARPUBRE = r'cites=([\w-]*)'
+_EMAILAUTHORRE = r'Verified email at '
 
 _SESSION = requests.Session()
 _PAGESIZE = 100
@@ -125,9 +126,9 @@ class Publication(object):
         self.source = pubtype
         if self.source == 'citations':
             self.bib['title'] = __data.find('a', class_='gsc_a_at').text
-            self.id_citations = re.findall(_CITATIONPUBRE, __data.find('a', class_='gsc_a_at')['href'])[0]
+            self.id_citations = re.findall(_CITATIONPUBRE, __data.find('a', class_='gsc_a_at')['data-href'])[0]
             citedby = __data.find(class_='gsc_a_ac')
-            if citedby and not citedby.text.isspace():
+            if citedby and not (citedby.text.isspace() or citedby.text == ''):
                 self.citedby = int(citedby.text)
             year = __data.find(class_='gsc_a_h')
             if year and year.text and not year.text.isspace() and len(year.text)>0:
@@ -164,12 +165,12 @@ class Publication(object):
         if self.source == 'citations':
             url = _CITATIONPUB.format(self.id_citations)
             soup = _get_soup(_HOST+url)
-            self.bib['title'] = soup.find('div', id='gsc_title').text
-            if soup.find('a', class_='gsc_title_link'):
-                self.bib['url'] = soup.find('a', class_='gsc_title_link')['href']
+            self.bib['title'] = soup.find('div', id='gsc_vcd_title').text
+            if soup.find('a', class_='gsc_vcd_title_link'):
+                self.bib['url'] = soup.find('a', class_='gsc_vcd_title_link')['href']
             for item in soup.find_all('div', class_='gs_scl'):
-                key = item.find(class_='gsc_field').text
-                val = item.find(class_='gsc_value')
+                key = item.find(class_='gsc_vcd_field').text
+                val = item.find(class_='gsc_vcd_value')
                 if key == 'Authors':
                     self.bib['author'] = ' and '.join([i.strip() for i in val.text.split(',')])
                 elif key == 'Journal':
@@ -190,8 +191,8 @@ class Publication(object):
                     self.bib['abstract'] = val
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, val.a['href'])[0]
-            if soup.find('div', class_='gsc_title_ggi'):
-                self.bib['eprint'] = _HOST + soup.find('div', class_='gsc_title_ggi').a['href']
+            if soup.find('div', class_='gsc_vcd_title_ggi'):
+                self.bib['eprint'] = _HOST + soup.find('div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
         elif self.source == 'scholar':
             bibtex = _get_page(self.url_scholarbib)
@@ -224,17 +225,17 @@ class Author(object):
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
             self.url_picture = __data('img')[0]['src']
-            self.name = __data.find('h3', class_='gsc_1usr_name').text
-            affiliation = __data.find('div', class_='gsc_1usr_aff')
+            self.name = __data.find('h3', class_='gsc_oai_name').text
+            affiliation = __data.find('div', class_='gsc_oai_aff')
             if affiliation:
                 self.affiliation = affiliation.text
-            email = __data.find('div', class_='gsc_1usr_emlb')
+            email = __data.find('div', class_='gsc_oai_eml')
             if email:
-                self.email = email.text
+                self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
             self.interests = [i.text.strip() for i in
-                              __data.find_all('a', class_='gsc_co_int')]
-            citedby = __data.find('div', class_='gsc_1usr_cby')
-            if citedby:
+                              __data.find_all('a', class_='gsc_oai_one_int')]
+            citedby = __data.find('div', class_='gsc_oai_cby')
+            if citedby and citedby.text != '':
                 self.citedby = int(citedby.text[9:])
         self._filled = False
 
@@ -245,15 +246,18 @@ class Author(object):
         soup = _get_soup(_HOST+url)
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
-        self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_ila')]
+        self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
         self.url_picture = soup.find('img')['src']
 
         # h-index, i10-index and h-index, i10-index in the last 5 years
         index = soup.find_all('td', class_='gsc_rsb_std')
-        self.hindex = int(index[2].text)
-        self.hindex5y = int(index[3].text)
-        self.i10index = int(index[4].text)
-        self.i10index5y = int(index[5].text)
+        if index:
+            self.hindex = int(index[2].text)
+            self.hindex5y = int(index[3].text)
+            self.i10index = int(index[4].text)
+            self.i10index5y = int(index[5].text)
+        else:
+            self.hindex = self.hindex5y = self.i10index = self.i10index5y = 0
 
         # number of citations per year
         years = [int(y.text) for y in soup.find_all('span', class_='gsc_g_t')]
@@ -266,7 +270,7 @@ class Author(object):
             for row in soup.find_all('tr', class_='gsc_a_tr'):
                 new_pub = Publication(row, 'citations')
                 self.publications.append(new_pub)
-            if 'disabled' not in soup.find('button', id='gsc_bpf_next').attrs:
+            if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
                 url = '{0}&cstart={1}&pagesize={2}'.format(url_citations, pubstart, _PAGESIZE)
                 soup = _get_soup(_HOST+url)
