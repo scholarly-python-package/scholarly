@@ -157,7 +157,7 @@ class Publication(object):
                     self.citedby = int(re.findall(r'\d+', link.text)[0])
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, link['href'])[0]
             if __data.find('div', class_='gs_ggs gs_fl'):
-                self.bib['eprint'] = _HOST + __data.find('div', class_='gs_ggs gs_fl').a['href']
+                self.bib['eprint'] = __data.find('div', class_='gs_ggs gs_fl').a['href']
         self._filled = False
 
     def fill(self):
@@ -192,7 +192,7 @@ class Publication(object):
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, val.a['href'])[0]
             if soup.find('div', class_='gsc_vcd_title_ggi'):
-                self.bib['eprint'] = _HOST + soup.find('div', class_='gsc_vcd_title_ggi').a['href']
+                self.bib['eprint'] = soup.find('div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
         elif self.source == 'scholar':
             bibtex = _get_page(self.url_scholarbib)
