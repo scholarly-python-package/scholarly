@@ -16,7 +16,6 @@ import random
 import re
 import requests
 import sys
-import time
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -69,8 +68,6 @@ def _handle_captcha(url):
 
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
-    # Note that we include a sleep to avoid overloading the scholar server
-    time.sleep(5+random.uniform(0, 5))
     resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES)
     if resp.status_code == 200:
         return resp.text
