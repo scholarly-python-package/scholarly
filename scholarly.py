@@ -157,6 +157,13 @@ class Publication(object):
                 self.bib['eprint'] = __data.find('div', class_='gs_ggs gs_fl').a['href']
         self._filled = False
 
+    def _fix_eprint_url(self):
+        """Fixes eprint URL when receiving URL that has this format https://scholar.google.comhttp://url.com."""
+        if self.bib['eprint'].count('://') > 1:
+            assert 'https://scholar.google.com' in self.bib['eprint'], 'Received invalid URL'
+
+            self.bib['eprint'] = self.bib['eprint'].replace('https://scholar.google.com', '')
+
     def fill(self):
         """Populate the Publication with information from its profile"""
         if self.source == 'citations':
