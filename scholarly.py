@@ -239,7 +239,7 @@ class Author(object):
                 self.citedby = int(citedby.text[9:])
         self._filled = False
 
-    def fill(self):
+    def fill(self, get_publications=True):
         """Populate the Author with information from their profile"""
         url_citations = _CITATIONAUTH.format(self.id)
         url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
@@ -264,18 +264,19 @@ class Author(object):
         cites = [int(c.text) for c in soup.find_all('span', class_='gsc_g_al')]
         self.cites_per_year = dict(zip(years, cites))
 
-        self.publications = list()
-        pubstart = 0
-        while True:
-            for row in soup.find_all('tr', class_='gsc_a_tr'):
-                new_pub = Publication(row, 'citations')
-                self.publications.append(new_pub)
-            if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
-                pubstart += _PAGESIZE
-                url = '{0}&cstart={1}&pagesize={2}'.format(url_citations, pubstart, _PAGESIZE)
-                soup = _get_soup(_HOST+url)
-            else:
-                break
+        if get_publications:
+            self.publications = list()
+            pubstart = 0
+            while True:
+                for row in soup.find_all('tr', class_='gsc_a_tr'):
+                    new_pub = Publication(row, 'citations')
+                    self.publications.append(new_pub)
+                if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
+                    pubstart += _PAGESIZE
+                    url = '{0}&cstart={1}&pagesize={2}'.format(url_citations, pubstart, _PAGESIZE)
+                    soup = _get_soup(_HOST+url)
+                else:
+                    break
         self._filled = True
         return self
 
