@@ -191,6 +191,12 @@ class Publication(object):
                     self.bib['abstract'] = val
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, val.a['href'])[0]
+
+            # number of citation per year
+            years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
+            cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
+            self.cites_per_year = dict(zip(years, cites))
+
             if soup.find('div', class_='gsc_vcd_title_ggi'):
                 self.bib['eprint'] = soup.find('div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
