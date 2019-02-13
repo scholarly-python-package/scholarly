@@ -264,8 +264,13 @@ class Author(object):
         self.cites_per_year = dict(zip(years, cites))
 
         # co-authors
-        self.coauthors = [Author(re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0])
-                          for row in soup.find_all('span', class_='gsc_rsb_a_desc')]
+        self.coauthors = []
+        for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
+            new_coauthor = Author(re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0])
+            new_coauthor.name = row.find(tabindex="-1").text
+            new_coauthor.affiliation = row.find(class_="gsc_rsb_a_ext").text
+            self.coauthors.append(new_coauthor)
+
 
         self.publications = list()
         pubstart = 0
