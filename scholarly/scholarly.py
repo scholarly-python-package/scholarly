@@ -263,6 +263,10 @@ class Author(object):
         cites = [int(c.text) for c in soup.find_all('span', class_='gsc_g_al')]
         self.cites_per_year = dict(zip(years, cites))
 
+        # co-authors
+        self.coauthors = [Author(re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0])
+                          for row in soup.find_all('span', class_='gsc_rsb_a_desc')]
+
         self.publications = list()
         pubstart = 0
         while True:
@@ -275,6 +279,7 @@ class Author(object):
                 soup = _get_soup(_HOST+url)
             else:
                 break
+
         self._filled = True
         return self
 
