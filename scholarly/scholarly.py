@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """scholarly.py"""
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -90,13 +87,14 @@ def _get_page(pagerequest):
 def _get_soup(pagerequest):
     """Return the BeautifulSoup for a page on scholar.google.com"""
     html = _get_page(pagerequest)
+    html = html.replace(u'\xa0', u' ')
     return BeautifulSoup(html, 'html.parser')
 
 
 def _search_scholar_soup(soup):
     """Generator that returns Publication objects from the search page"""
     while True:
-        for row in soup.find_all('div', 'gs_r'):
+        for row in soup.find_all('div', 'gs_or'):
             yield Publication(row, 'scholar')
         if soup.find(class_='gs_ico gs_ico_nav_next'):
             url = soup.find(class_='gs_ico gs_ico_nav_next').parent['href']
@@ -224,7 +222,7 @@ class Author(object):
             self.id = __data
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
-            self.url_picture = __data('img')[0]['src']
+            self.url_picture = _HOST+'/citations?view_op=medium_photo&user={}'.format(self.id)
             self.name = __data.find('h3', class_='gsc_oai_name').text
             affiliation = __data.find('div', class_='gsc_oai_aff')
             if affiliation:
@@ -247,11 +245,12 @@ class Author(object):
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
-        self.url_picture = soup.find('img')['src']
-
+        
         # h-index, i10-index and h-index, i10-index in the last 5 years
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
+            self.citedby = int(index[0].text)
+            self.citedby5y = int(index[1].text)
             self.hindex = int(index[2].text)
             self.hindex5y = int(index[3].text)
             self.i10index = int(index[4].text)
@@ -317,7 +316,3 @@ def search_author_custom_url(url):
     soup = _get_soup(_HOST+url)
     return _search_citation_soup(soup)
 
-
-if __name__ == "__main__":
-    author = next(search_author('Steven A. Cholewiak')).fill()
-    print(author)

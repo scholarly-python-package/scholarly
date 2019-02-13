@@ -8,7 +8,7 @@ class TestScholarly(unittest.TestCase):
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        ''' Returns 5 individuals with the name 'label' '''
+        ''' Returns 4 individuals with the name 'label' '''
         authors = [a for a in scholarly.search_keyword('')]
         self.assertEqual(len(authors), 4)
 
@@ -27,28 +27,28 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of October 11, 2017, there are 34 'Zucker's '''
+        ''' As of February 13, 2019 there are 34 'Zucker's '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 34)
+        self.assertEqual(len(authors), 54)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of October 11, 2017 there are 23 pubs that fit the search term'''
+        ''' As of February 13, 2019 there are 27 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('"naive physics" stability "3d shape"')]
-        self.assertEqual(len(pubs), 23)
+        self.assertEqual(len(pubs), 27)
         self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
-        pub = next(scholarly.search_pubs_query('A frequency-domain analysis of haptic gratings')).fill()
-        self.assertTrue(pub.bib['author'] == u'Cholewiak, Steven A and Kim, Kwangtaek and Tan, Hong Z and Adelstein, Bernard D')
-        self.assertTrue(pub.bib['journal'] == u'IEEE Transactions on Haptics')
-        self.assertTrue(pub.bib['number'] == u'1')
-        self.assertTrue(pub.bib['pages'] == u'3--14')
-        self.assertTrue(pub.bib['publisher'] == u'IEEE')
-        self.assertTrue(pub.bib['title'] == u'A frequency-domain analysis of haptic gratings')
-        self.assertTrue(pub.bib['url'] == u'http://ieeexplore.ieee.org/abstract/document/5210096/')
-        self.assertTrue(pub.bib['volume'] == u'3')
-        self.assertTrue(pub.bib['year'] == u'2010')
+        pub = next(scholarly.search_pubs_query('Creating correct blur and its effect on accommodation')).fill()
+        self.assertTrue(pub.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(pub.bib['journal'] == u'Journal of vision')
+        self.assertTrue(pub.bib['number'] == u'9')
+        self.assertTrue(pub.bib['pages'] == u'1--1')
+        self.assertTrue(pub.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
+        self.assertTrue(pub.bib['title'] == u'Creating correct blur and its effect on accommodation')
+        self.assertTrue(pub.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(pub.bib['volume'] == u'18')
+        self.assertTrue(pub.bib['year'] == u'2018')
 
     def test_single_author(self):
         author = next(scholarly.search_author('Steven A. Cholewiak')).fill()

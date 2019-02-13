@@ -1,23 +1,23 @@
 import os
-from setuptools import setup
+import setuptools
 
-def readfile(*paths):
-    """Build a file path from *paths* and return the contents."""
-    with open(os.path.join(*paths), 'r') as f:
-        return f.read()
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-setup(
+setuptools.setup(
     name = 'scholarly',
-    py_modules = ['scholarly'],
-    version = '0.2.3',
-    description = 'Simple access to Google Scholar authors and citations',
-    long_description=(readfile('README.rst')),
-    license='Unlicense',
-
+    version = '0.2.4',
     author = 'Steven A. Cholewiak',
     author_email = 'steven@cholewiak.com',
+
+    description = 'Simple access to Google Scholar authors and citations',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    license='Unlicense',
+
     url = 'https://github.com/OrganicIrradiation/scholarly',
-    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.2',
+    packages=setuptools.find_packages(),
+    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.4',
     keywords = ['Google Scholar', 'academics', 'citations'],
     classifiers = [
         'Development Status :: 3 - Alpha',
