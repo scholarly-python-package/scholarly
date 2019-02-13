@@ -1,8 +1,8 @@
-#scholarly
+# scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
 
-##Usage
+## Usage
 Because `scholarly` does not use an official API, no key is required. Simply:
 
 ```python
@@ -93,7 +93,7 @@ Here's a quick example demonstrating how to retrieve an author's profile then re
 ```
 
 
-##Installation
+## Installation
 Use `pip` to install from pypi:
 
     pip install scholarly
@@ -107,9 +107,9 @@ or clone the package using git:
     git clone https://github.com/OrganicIrradiation/scholarly.git
 
 
-##Requirements
+## Requirements
 Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), and [requests[security]](https://pypi.python.org/pypi/requests/).
 
 
-##License
+## License
 The original code that this project was forked from was released by [Bello Chalmers](https://github.com/lbello/chalmers-web) under a [WTFPL](http://www.wtfpl.net/) license. In keeping with this mentality, all code is released under the [Unlicense](http://unlicense.org/).
