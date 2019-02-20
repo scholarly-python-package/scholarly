@@ -92,6 +92,19 @@ Here's a quick example demonstrating how to retrieve an author's profile then re
     >>> print([citation.bib['title'] for citation in pub.get_citedby()])
 ```
 
+### Using a proxy
+Just run `scholarly.use_proxy()`. Parameters are an http and an https proxy.
+*Note: this is a completely optional - opt-in feature'
+
+```python
+    >>> # default values are shown below
+    >>> proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
+    >>> scholarly.use_proxy(**proxies)
+    >>> # If proxy is correctly set up, the following runs through it
+    >>> scholarly.search_author('Steven A Cholewiak')
+    >>>
+
+```
 
 ## Installation
 Use `pip` to install from pypi:
@@ -109,6 +122,7 @@ or clone the package using git:
 
 ## Requirements
 Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), and [requests[security]](https://pypi.python.org/pypi/requests/).
+Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
 
 
 ## License
