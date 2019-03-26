@@ -1,6 +1,8 @@
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
+THIS FORK ATTEMPTS TO FIX CURRENT ISSUES WITH THE PRIMARY FORK. DO NOT EXPECT IT TO WORK.
+
 
 ## Usage
 Because `scholarly` does not use an official API, no key is required. Simply:
@@ -94,17 +96,15 @@ Here's a quick example demonstrating how to retrieve an author's profile then re
 
 
 ## Installation
-Use `pip` to install from pypi:
 
-    pip install scholarly
 
-or `pip` to install from github:
+Use `pip` to install from github:
 
-    pip install git+https://github.com/OrganicIrradiation/scholarly.git
+    pip install git+https://github.com/OleAd/scholarly.git
 
 or clone the package using git:
 
-    git clone https://github.com/OrganicIrradiation/scholarly.git
+    git clone https://github.com/OleAd/scholarly.git
 
 
 ## Requirements
