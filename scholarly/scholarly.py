@@ -223,7 +223,7 @@ class Author(object):
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
             self.url_picture = _HOST+'/citations?view_op=medium_photo&user={}'.format(self.id)
-            self.name = __data.find('h3', class_='gsc_oai_name').text
+            self.name = __data.find('h3', class_='gs_ai_name').text
             affiliation = __data.find('div', class_='gsc_oai_aff')
             if affiliation:
                 self.affiliation = affiliation.text
@@ -245,7 +245,7 @@ class Author(object):
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
-        
+
         # h-index, i10-index and h-index, i10-index in the last 5 years
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:

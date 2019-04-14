@@ -27,15 +27,15 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of February 13, 2019 there are 34 'Zucker's '''
+        ''' As of March 14, 2019 there are 34 'Zucker's '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 54)
+        self.assertEqual(len(authors), 58)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of February 13, 2019 there are 27 pubs that fit the search term'''
+        ''' As of March 14, 2019 there are 28 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('"naive physics" stability "3d shape"')]
-        self.assertEqual(len(pubs), 27)
+        self.assertEqual(len(pubs), 28)
         self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
@@ -57,4 +57,4 @@ class TestScholarly(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
+
