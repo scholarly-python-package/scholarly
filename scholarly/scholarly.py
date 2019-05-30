@@ -116,6 +116,12 @@ def _search_citation_soup(soup):
         else:
             break
 
+def _find_tag_class_name(__data, tag, text):
+    elements = __data.find_all(tag)
+    for element in elements:
+        if 'class' in element.attrs and text in element.attrs['class'][0]:
+            return element.attrs['class'][0]
+
 
 class Publication(object):
     """Returns an object for a single publication"""
@@ -223,16 +229,16 @@ class Author(object):
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
             self.url_picture = _HOST+'/citations?view_op=medium_photo&user={}'.format(self.id)
-            self.name = __data.find('h3', class_='gsc_oai_name').text
-            affiliation = __data.find('div', class_='gsc_oai_aff')
+            self.name = __data.find('h3', class_=_find_tag_class_name(__data, 'h3', 'name')).text
+            affiliation = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'aff'))
             if affiliation:
                 self.affiliation = affiliation.text
-            email = __data.find('div', class_='gsc_oai_eml')
+            email = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'eml'))
             if email:
                 self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
             self.interests = [i.text.strip() for i in
-                              __data.find_all('a', class_='gsc_oai_one_int')]
-            citedby = __data.find('div', class_='gsc_oai_cby')
+                           __data.find_all('a', class_=_find_tag_class_name(__data, 'a', 'one_int'))]
+            citedby = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'cby'))
             if citedby and citedby.text != '':
                 self.citedby = int(citedby.text[9:])
         self._filled = False
