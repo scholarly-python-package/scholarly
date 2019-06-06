@@ -40,6 +40,16 @@ _SESSION = requests.Session()
 _PAGESIZE = 100
 
 
+def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
+    """ Routes scholarly through a proxy (e.g. tor).
+        Requires pysocks
+        Proxy must be running."""
+    _SESSION.proxies ={
+            'http': http,
+            'https': https
+    }
+
+
 def _handle_captcha(url):
     # TODO: PROBLEMS HERE! NEEDS ATTENTION
     # Get the captcha image
@@ -195,6 +205,12 @@ class Publication(object):
                     self.bib['abstract'] = val
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, val.a['href'])[0]
+
+            # number of citation per year
+            years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
+            cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
+            self.cites_per_year = dict(zip(years, cites))
+
             if soup.find('div', class_='gsc_vcd_title_ggi'):
                 self.bib['eprint'] = soup.find('div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
