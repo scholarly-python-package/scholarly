@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = 'scholarly',
-    version = '0.2.4',
+    version = '0.2.5',
     author = 'Steven A. Cholewiak',
     author_email = 'steven@cholewiak.com',
 
@@ -17,7 +17,7 @@ setuptools.setup(
 
     url = 'https://github.com/OrganicIrradiation/scholarly',
     packages=setuptools.find_packages(),
-    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.4',
+    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.5',
     keywords = ['Google Scholar', 'academics', 'citations'],
     classifiers = [
         'Development Status :: 3 - Alpha',
