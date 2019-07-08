@@ -29,6 +29,7 @@ _CITATIONPUB = '/citations?view_op=view_citation&citation_for_view={0}'
 _KEYWORDSEARCH = '/citations?view_op=search_authors&hl=en&mauthors=label:{0}'
 _PUBSEARCH = '/scholar?q={0}'
 _SCHOLARPUB = '/scholar?oi=bibs&hl=en&cites={0}'
+_PUBLIST = '/scholar?oi=bibs&hl=en&cluster={0}'
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
@@ -228,6 +229,17 @@ class Publication(object):
             self.fill()
         if hasattr(self, 'id_scholarcitedby'):
             url = _SCHOLARPUB.format(requests.utils.quote(self.id_scholarcitedby))
+            soup = _get_soup(_HOST+url)
+            return _search_scholar_soup(soup)
+        else:
+            return []
+
+    def get_versions(self):
+        """Searches GScholar for other versions of this Publication and
+        returns a Publication generator.
+        """
+        if hasattr(self, 'id_scholarcitedby'):
+            url = _PUBLIST.format(requests.utils.quote(self.id_scholarcitedby))
             soup = _get_soup(_HOST+url)
             return _search_scholar_soup(soup)
         else:
