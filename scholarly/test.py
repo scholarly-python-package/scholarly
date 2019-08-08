@@ -8,9 +8,9 @@ class TestScholarly(unittest.TestCase):
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        ''' Returns 4 individuals with the name 'label' '''
+        ''' Returns 5 (s of 8/8/2019) individuals with the name 'label' '''
         authors = [a for a in scholarly.search_keyword('')]
-        self.assertEqual(len(authors), 4)
+        self.assertEqual(len(authors), 5)
 
     def test_empty_publication(self):
         pubs = [p for p in scholarly.search_pubs_query('')]
@@ -27,15 +27,15 @@ class TestScholarly(unittest.TestCase):
         self.assertIn(u'Steven A. Cholewiak', authors)
 
     def test_multiple_authors(self):
-        ''' As of March 14, 2019 there are 34 'Zucker's '''
+        ''' As of August 8, 2019 there are 62 'Zucker's '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 58)
+        self.assertEqual(len(authors), 62)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of March 14, 2019 there are 28 pubs that fit the search term'''
+        ''' As of August 8, 2019 there are 28 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('"naive physics" stability "3d shape"')]
-        self.assertEqual(len(pubs), 28)
+        self.assertEqual(len(pubs), 29)
         self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
