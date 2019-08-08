@@ -239,9 +239,24 @@ class Publication(object):
 
 class Author(object):
     """Returns an object for a single author"""
-    def __init__(self, __data):
+    def __init__(self, __data, searchtype=None, id=None):
         if isinstance(__data, str):
             self.id = __data
+        elif searchtype == 'id':
+            self.id = id
+            self.url_picture = _HOST+'/citations?view_op=medium_photo&user={}'.format(self.id)
+            url_citations = _CITATIONAUTH.format(self.id)
+            url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
+            self.name = __data.find('div', id='gsc_prf_in').text
+            affiliation = __data.find('div', class_='gsc_prf_il')
+            if affiliation:
+                self.affiliation = affiliation.text
+            email = __data.find('div', id='gsc_prf_ivh')
+            if email:
+                self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
+            self.interests = [i.text.strip() for i in
+                           __data.find_all('a', class_='gsc_prf_inta')]
+            self._filled = False
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
             self.url_picture = _HOST+'/citations?view_op=medium_photo&user={}'.format(self.id)
@@ -267,7 +282,7 @@ class Author(object):
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
-        
+
         # h-index, i10-index and h-index, i10-index in the last 5 years
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
@@ -327,6 +342,14 @@ def search_author(name):
     soup = _get_soup(_HOST+url)
     return _search_citation_soup(soup)
 
+def search_author_id(id):
+    """Search by author ID and return a Author object"""
+    url = _CITATIONAUTH.format(requests.utils.quote(id))
+    soup = _get_soup(_HOST+url)
+    if isinstance(soup.find('div', id='gsc_prf_in'), type(None)):
+        raise Exception('Error: ID {0} is unknown'.format(id))
+    return Author(soup, 'id', id)
+
 
 def search_keyword(keyword):
     """Search by keyword and return a generator of Author objects"""
@@ -347,4 +370,3 @@ def search_author_custom_url(url):
     URL should be of the form '/citation?q=...'"""
     soup = _get_soup(_HOST+url)
     return _search_citation_soup(soup)
-
