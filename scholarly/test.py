@@ -55,6 +55,12 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author.name, u'Steven A. Cholewiak')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
 
+    def test_author_id(self):
+        author = scholarly.search_author_id('qc6CJjYAAAAJ')
+        self.assertEqual(author.name, u'Albert Einstein')
+
+    def test_bad_author_id(self):
+        self.assertRaises(Exception, scholarly.search_author_id, 'IHOPETHISISNEVERANID')
+
 if __name__ == '__main__':
     unittest.main()
-
