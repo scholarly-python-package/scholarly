@@ -158,7 +158,12 @@ class Publication(object):
             if title.find('a'):
                 self.bib['url'] = title.find('a')['href']
             authorinfo = databox.find('div', class_='gs_a')
-            self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
+            ai_fields = authorinfo.text.split(' - ')
+            self.bib['author'] = ' and '.join([i.strip() for i in ai_fields[0].split(',')])
+            self.bib['year'] = ai_fields[1].split(',')[1].strip()
+            self.bib['journal'] = ai_fields[1].split(',')[0].strip()
+            self.bib['publisher'] = ai_fields[2].strip()
+
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
                 if self.bib['abstract'][0:8].lower() == 'abstract':
