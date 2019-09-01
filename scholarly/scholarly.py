@@ -314,9 +314,26 @@ class Author(object):
         return pprint.pformat(self.__dict__)
 
 
-def search_pubs_query(query):
-    """Search by scholar query and return a generator of Publication objects"""
+def search_pubs_query(query, lang='en', patents=True, year_low=None, year_high=None):
+    """
+    Searches by scholar query and returns a generator of Publication objects.
+    
+    search_pubs_query(query, lang='en', patents=True, year_low=None, year_high=None)
+    Args:
+        query: string with search terms
+        lang: string, for language (default 'en')
+        patents: bool, whether to include patents in search results (default True)
+        year_low: int, if given, earliest year from which to include results (default None)
+        year_high: int, if given, latest year from which to include results (default None)
+    Returns:
+        generator object with search results
+    Example:
+        s = scholarly.search_pubs_query('cancer', year_low=2015)
+    """
     url = _PUBSEARCH.format(requests.utils.quote(query))
+    yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
+    yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
+    url = url + '&hl={0}&as_sdt={1},5{2}{3}'.format(lang, 1- int(patents), yr_lo, yr_hi)
     soup = _get_soup(_HOST+url)
     return _search_scholar_soup(soup)
 
