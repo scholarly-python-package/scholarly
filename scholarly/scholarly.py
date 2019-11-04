@@ -108,21 +108,47 @@ def _get_soup(pagerequest):
     return BeautifulSoup(html, 'html.parser')
 
 
-def _search_scholar_soup(soup):
-    """Generator that returns Publication objects from the search page"""
-    logger.info("Reading search page")
-    while True:
-        rows = soup.find_all('div', 'gs_or')
-        logger.info("Found %d publications", len(rows))
-        for row in rows:
-            yield Publication(row, 'scholar')
-        if soup.find(class_='gs_ico gs_ico_nav_next'):
+class _SearchScholarIterator(object):
+    """Iterator that returns Publication objects from the search page"""
+    def __init__(self, url):
+        logger.info("Reading search page")
+
+        self._load_url(url)
+
+    def _load_url(self, url):
+        self._soup = _get_soup(_HOST + url)
+        self.url = url
+        self._pos = 0
+        self._rows = self._soup.find_all('div', 'gs_or')
+        logger.info("Found %d publications", len(self._rows))
+
+    # Iterator protocol
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._pos < len(self._rows):
+            row = self._rows[self._pos]
+            self._pos += 1
+            return Publication(row, 'scholar')
+        elif self._soup.find(class_='gs_ico gs_ico_nav_next'):
             logger.info("Loading next search page")
-            url = soup.find(class_='gs_ico gs_ico_nav_next').parent['href']
-            soup = _get_soup(_HOST+url)
+            url = self._soup.find(class_='gs_ico gs_ico_nav_next').parent['href']
+            self._load_url(url)
+            return self.__next__()
         else:
             logger.info("No more search pages")
-            break
+            raise StopIteration
+
+    # Pickle protocol
+
+    def __getstate__(self):
+        return {'url': self.url, 'pos': self._pos}
+
+    def __setstate__(self, state):
+        self._load_url(state['url'])
+        self._pos = state['pos']
 
 
 def _search_citation_soup(soup):
@@ -249,8 +275,7 @@ class Publication(object):
             self.fill()
         if hasattr(self, 'id_scholarcitedby'):
             url = _SCHOLARPUB.format(requests.utils.quote(self.id_scholarcitedby))
-            soup = _get_soup(_HOST+url)
-            return _search_scholar_soup(soup)
+            return _SearchScholarIterator(url)
         else:
             return []
 
@@ -338,8 +363,7 @@ class Author(object):
 def search_pubs_query(query):
     """Search by scholar query and return a generator of Publication objects"""
     url = _PUBSEARCH.format(requests.utils.quote(query))
-    soup = _get_soup(_HOST+url)
-    return _search_scholar_soup(soup)
+    return _SearchScholarIterator(url)
 
 
 def search_author(name):
@@ -359,8 +383,7 @@ def search_keyword(keyword):
 def search_pubs_custom_url(url):
     """Search by custom URL and return a generator of Publication objects
     URL should be of the form '/scholar?q=...'"""
-    soup = _get_soup(_HOST+url)
-    return _search_scholar_soup(soup)
+    return _SearchScholarIterator(url)
 
 
 def search_author_custom_url(url):
