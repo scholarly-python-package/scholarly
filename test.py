@@ -8,9 +8,9 @@ class TestScholarly(unittest.TestCase):
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        ''' Returns 4 individuals with the name 'label' '''
+        ''' Returns 6 individuals with 'label' in their name or affiliation '''
         authors = [a for a in scholarly.search_keyword('')]
-        self.assertEqual(len(authors), 4)
+        self.assertEqual(len(authors), 6)
 
     def test_empty_publication(self):
         pubs = [p for p in scholarly.search_pubs_query('')]
