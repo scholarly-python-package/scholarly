@@ -14,6 +14,7 @@ import re
 import requests
 import sys
 import time
+import urllib
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -38,16 +39,6 @@ _EMAILAUTHORRE = r'Verified email at '
 
 _SESSION = requests.Session()
 _PAGESIZE = 100
-
-
-def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
-    """ Routes scholarly through a proxy (e.g. tor).
-        Requires pysocks
-        Proxy must be running."""
-    _SESSION.proxies ={
-            'http': http,
-            'https': https
-    }
 
 
 def _handle_captcha(url):
@@ -136,6 +127,7 @@ def _find_tag_class_name(__data, tag, text):
 class Publication(object):
     """Returns an object for a single publication"""
     def __init__(self, __data, pubtype=None):
+      
         self.bib = dict()
         self.source = pubtype
         if self.source == 'citations':
@@ -147,6 +139,17 @@ class Publication(object):
             year = __data.find(class_='gsc_a_h')
             if year and year.text and not year.text.isspace() and len(year.text)>0:
                 self.bib['year'] = int(year.text)
+
+            
+            href = __data.find('a',"gsc_a_ac")
+            url = (((str(href).split(" "))[3]).split(">"))[0]
+            
+            citeslist = url.split("cites=")
+            cites = []
+            if len(citeslist) > 1: 
+                cites = (citeslist[1][:-1]).split(",")
+            
+            self.id_scholarcitedby = cites
         elif self.source == 'scholar':
             databox = __data.find('div', class_='gs_ri')
             title = databox.find('h3', class_='gs_rt')
@@ -164,6 +167,7 @@ class Publication(object):
                 if self.bib['abstract'][0:8].lower() == 'abstract':
                     self.bib['abstract'] = self.bib['abstract'][9:].strip()
             lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
+           
             for link in lowerlinks:
                 if 'Import into BibTeX' in link.text:
                     self.url_scholarbib = link['href']
@@ -205,12 +209,6 @@ class Publication(object):
                     self.bib['abstract'] = val
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(_SCHOLARPUBRE, val.a['href'])[0]
-
-            # number of citation per year
-            years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
-            cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
-            self.cites_per_year = dict(zip(years, cites))
-
             if soup.find('div', class_='gsc_vcd_title_ggi'):
                 self.bib['eprint'] = soup.find('div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
@@ -227,7 +225,12 @@ class Publication(object):
         if not hasattr(self, 'id_scholarcitedby'):
             self.fill()
         if hasattr(self, 'id_scholarcitedby'):
-            url = _SCHOLARPUB.format(requests.utils.quote(self.id_scholarcitedby))
+            
+            stringcites = ""
+            for cite in self.id_scholarcitedby:
+                stringcites += urllib.parse.quote(bytes(cite, encoding='utf8')) + ","
+            
+            url = _SCHOLARPUB.format(requests.utils.quote(stringcites))
             soup = _get_soup(_HOST+url)
             return _search_scholar_soup(soup)
         else:
