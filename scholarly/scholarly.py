@@ -14,6 +14,12 @@ import re
 import requests
 import sys
 import time
+from stem import Signal
+from stem.control import Controller
+from selenium import webdriver
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -36,7 +42,14 @@ _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _EMAILAUTHORRE = r'Verified email at '
 
-_SESSION = requests.Session()
+_SESSION = webdriver.Firefox(proxy = Proxy({
+        "proxyType": ProxyType.MANUAL,
+        "httpProxy": "socks5://127.0.0.1:9050",
+        "sslProxy": "socks5://127.0.0.1:9050",
+        "ftpProxy": "socks5://127.0.0.1:9050",
+        "noProxy": ""
+        }))
+
 _PAGESIZE = 100
 
 
@@ -44,52 +57,52 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
     """ Routes scholarly through a proxy (e.g. tor).
         Requires pysocks
         Proxy must be running."""
-    _SESSION.proxies ={
+    """_SESSION.proxies ={
             'http': http,
             'https': https
-    }
+    }"""
 
 
 def _handle_captcha(url):
     # TODO: PROBLEMS HERE! NEEDS ATTENTION
     # Get the captcha image
-    captcha_url = _HOST + '/sorry/image?id={0}'.format(g_id)
-    captcha = _SESSION.get(captcha_url, headers=_HEADERS)
-    # Upload to remote host and display to user for human verification
-    img_upload = requests.post('http://postimage.org/',
-        files={'upload[]': ('scholarly_captcha.jpg', captcha.text)})
-    print(img_upload.text)
-    img_url_soup = BeautifulSoup(img_upload.text, 'html.parser')
-    img_url = img_url_soup.find_all(alt='scholarly_captcha')[0].get('src')
-    print('CAPTCHA image URL: {0}'.format(img_url))
-    # Need to check Python version for input
-    if sys.version[0]=="3":
-        g_response = input('Enter CAPTCHA: ')
-    else:
-        g_response = raw_input('Enter CAPTCHA: ')
-    # Once we get a response, follow through and load the new page.
-    url_response = _HOST+'/sorry/CaptchaRedirect?continue={0}&id={1}&captcha={2}&submit=Submit'.format(dest_url, g_id, g_response)
-    resp_captcha = _SESSION.get(url_response, headers=_HEADERS, cookies=_COOKIES)
-    print('Forwarded to {0}'.format(resp_captcha.url))
-    return resp_captcha.url
+    print("Opening captcha '{0}' in browser".format(url))
+    _SESSION.get(url)
+
+    print(_COOKIES)
+    wait = WebDriverWait(driver, 216000)
+    print(_SESSION.current_url)
+    wait.until(lambda driver: "/sorry/index?" not in driver.current_url)
+    for cookie in _SESSION.get_cookies():
+        _COOKIES[cookie["name"]] = cookie["value"]
+    print(_COOKIES)
+    wait.until(lambda driver: "google_abuse" not in driver.current_url)
+    print(_COOKIES)
+    print(_SESSION.get_cookies())
+
+    return url
+
+def _handle_too_many_requests():
+    print("Too many requests changing proxy")
+    with Controller.from_port(port = 9051) as controller:
+        controller.authenticate(password = "")
+        controller.signal(Signal.NEWNYM)
+        time.sleep(5)
 
 
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
     # Note that we include a sleep to avoid overloading the scholar server
     time.sleep(5+random.uniform(0, 5))
-    resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES)
-    if resp.status_code == 200:
+    resp = _SESSION.get(pagerequest)
+    if resp.status_code == 503 or (resp.status_code == 200 and "gs_captcha" in resp.text):
+        resp = _handle_captcha(pagerequest)
+        return _get_page(pagerequest)
+    elif resp.status_code == 200:
         return resp.text
-    if resp.status_code == 503:
-        # Inelegant way of dealing with the G captcha
-        raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
-        # TODO: Need to fix captcha handling
-        # dest_url = requests.utils.quote(_SCHOLARHOST+pagerequest)
-        # soup = BeautifulSoup(resp.text, 'html.parser')
-        # captcha_url = soup.find('img').get('src')
-        # resp = _handle_captcha(captcha_url)
-        # return _get_page(re.findall(r'https:\/\/(?:.*?)(\/.*)', resp)[0])
+    elif resp.status_code == 429 and _SESSION.proxies:
+        _handle_too_many_requests()
+        return _get_page(pagerequest)
     else:
         raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
 
