@@ -108,7 +108,7 @@ Just run `get_scholarly_instance(use_proxy = True)`. You will obtain a scholarly
 
 ```
 
-### Using a selenium
+### Using selenium
 Just run `get_scholarly_instance(use_selenium = True)`. You will obtain a scholarly instance that uses selenium instead of `requests` for web requests. This can be used to manually input captchas if asked for by Google Scholar.
 *Note: this is a completely optional - opt-in feature'
 
