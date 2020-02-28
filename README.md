@@ -97,12 +97,24 @@ print([citation.bib['title'] for citation in pub.get_citedby()])
 ```
 
 ### Using a proxy
-Just run `scholarly.use_proxy()`. Parameters are an http and an https proxy.
+Just run `get_scholarly_instance(use_proxy = True)`. You will obtain a scholarly instance that uses a proxy.
 *Note: this is a completely optional - opt-in feature'
 
 ```python
     >>> scholarly = get_scholarly_instance(use_proxy = True)
     >>> # If proxy is correctly set up, the following runs through it
+    >>> scholarly.search_author('Steven A Cholewiak')
+    >>>
+
+```
+
+### Using a selenium
+Just run `get_scholarly_instance(use_selenium = True)`. You will obtain a scholarly instance that uses selenium instead of `requests` for web requests. This can be used to manually input captchas if asked for by Google Scholar.
+*Note: this is a completely optional - opt-in feature'
+
+```python
+    >>> scholarly = get_scholarly_instance(use_selenium = True)
+    >>> # You will see a remote controled firefox window
     >>> scholarly.search_author('Steven A Cholewiak')
     >>>
 
