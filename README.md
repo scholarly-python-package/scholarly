@@ -6,8 +6,9 @@ scholarly is a module that allows you to retrieve author and publication informa
 Because `scholarly` does not use an official API, no key is required. Simply:
 
 ```python
-import scholarly
+from scholarly import get_scholarly_instance
 
+scholarly = get_scholarly_instance()
 print(next(scholarly.search_author('Steven A. Cholewiak')))
 ```
 
@@ -15,6 +16,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 * `search_author` -- Search for an author by name and return a generator of Author objects.
 
 ```python
+>>> scholarly = get_scholarly_instance()
 >>> search_query = scholarly.search_author('Marty Banks, Berkeley')
 >>> print(next(search_query))
 {'_filled': False,
@@ -30,6 +32,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 * `search_keyword` -- Search by keyword and return a generator of Author objects.
 
 ```python
+>>> scholarly = get_scholarly_instance()
 >>> search_query = scholarly.search_keyword('Haptics')
 >>> print(next(search_query))
 {'_filled': False,
@@ -45,6 +48,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 * `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
 
 ```python
+>>> scholarly = get_scholarly_instance()
 >>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
 >>> print(next(search_query))
 {'_filled': False,
@@ -76,6 +80,7 @@ Here's a quick example demonstrating how to retrieve an author's profile then re
 
 ```python
 # Retrieve the author's data, fill-in, and print
+scholarly = get_scholarly_instance()
 search_query = scholarly.search_author('Steven A Cholewiak')
 author = next(search_query).fill()
 print(author)
@@ -96,9 +101,7 @@ Just run `scholarly.use_proxy()`. Parameters are an http and an https proxy.
 *Note: this is a completely optional - opt-in feature'
 
 ```python
-    >>> # default values are shown below
-    >>> proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
-    >>> scholarly.use_proxy(**proxies)
+    >>> scholarly = get_scholarly_instance(use_proxy = True)
     >>> # If proxy is correctly set up, the following runs through it
     >>> scholarly.search_author('Steven A Cholewiak')
     >>>
@@ -126,7 +129,7 @@ git clone https://github.com/OrganicIrradiation/scholarly.git
 
 
 ## Requirements
-Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), and [requests[security]](https://pypi.python.org/pypi/requests/).
+Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), [Selenium](https://pypi.org/project/selenium/), and [requests[security]](https://pypi.python.org/pypi/requests/).
 Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
 
 

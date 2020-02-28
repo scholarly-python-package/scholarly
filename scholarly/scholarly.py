@@ -397,7 +397,7 @@ class ScholarlySelenium(Scholarly):
         wait.until_not(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
         return self._session.find_element_by_xpath("//body").get_attribute('outerHTML')
 
-def get_scholarly_instance(use_proxy, use_selenium):
+def get_scholarly_instance(use_proxy = False, use_selenium = False):
     if use_selenium:
         return ScholarlySelenium(use_proxy)
     else:
