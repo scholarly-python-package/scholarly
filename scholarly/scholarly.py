@@ -14,12 +14,15 @@ import re
 import requests
 import sys
 import time
+from abc import ABCMeta, abstractmethod
 from stem import Signal
 from stem.control import Controller
 from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -28,128 +31,30 @@ _HEADERS = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml'
     }
-_HOST = 'https://scholar.google.com'
-_AUTHSEARCH = '/citations?view_op=search_authors&hl=en&mauthors={0}'
-_CITATIONAUTH = '/citations?user={0}&hl=en'
-_CITATIONPUB = '/citations?view_op=view_citation&citation_for_view={0}'
-_KEYWORDSEARCH = '/citations?view_op=search_authors&hl=en&mauthors=label:{0}'
-_PUBSEARCH = '/scholar?q={0}'
-_SCHOLARPUB = '/scholar?oi=bibs&hl=en&cites={0}'
+_HOST = "https://scholar.google.com"
+_AUTHSEARCH = "/citations?view_op=search_authors&hl=en&mauthors={0}"
+_CITATIONAUTH = "/citations?user={0}&hl=en"
+_CITATIONPUB = "/citations?view_op=view_citation&citation_for_view={0}"
+_KEYWORDSEARCH = "/citations?view_op=search_authors&hl=en&mauthors=label:{0}"
+_PUBSEARCH = "/scholar?hl=en&q={0}"
+_SCHOLARPUB = "/scholar?oi=bibs&hl=en&cites={0}"
 
-_CITATIONAUTHRE = r'user=([\w-]*)'
-_CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
-_SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
-_SCHOLARPUBRE = r'cites=([\w-]*)'
-_EMAILAUTHORRE = r'Verified email at '
+_CAPTCHA = "iframe[name^='a-'][src^='https://www.google.com/recaptcha/api2/anchor?']"
 
-_SESSION = webdriver.Firefox(proxy = Proxy({
-        "proxyType": ProxyType.MANUAL,
-        "httpProxy": "socks5://127.0.0.1:9050",
-        "sslProxy": "socks5://127.0.0.1:9050",
-        "ftpProxy": "socks5://127.0.0.1:9050",
-        "noProxy": ""
-        }))
+_CITATIONAUTHRE = r"user=([\w-]*)"
+_CITATIONPUBRE = r"citation_for_view=([\w-]*:[\w-]*)"
+_SCHOLARCITERE = r"gs_ocit\(event,\'([\w-]*)\'"
+_SCHOLARPUBRE = r"cites=([\w-]*)"
+_EMAILAUTHORRE = r"Verified email at "
 
 _PAGESIZE = 100
-
-
-def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
-    """ Routes scholarly through a proxy (e.g. tor).
-        Requires pysocks
-        Proxy must be running."""
-    """_SESSION.proxies ={
-            'http': http,
-            'https': https
-    }"""
-
-
-def _handle_captcha(url):
-    # TODO: PROBLEMS HERE! NEEDS ATTENTION
-    # Get the captcha image
-    print("Opening captcha '{0}' in browser".format(url))
-    _SESSION.get(url)
-
-    print(_COOKIES)
-    wait = WebDriverWait(driver, 216000)
-    print(_SESSION.current_url)
-    wait.until(lambda driver: "/sorry/index?" not in driver.current_url)
-    for cookie in _SESSION.get_cookies():
-        _COOKIES[cookie["name"]] = cookie["value"]
-    print(_COOKIES)
-    wait.until(lambda driver: "google_abuse" not in driver.current_url)
-    print(_COOKIES)
-    print(_SESSION.get_cookies())
-
-    return url
-
-def _handle_too_many_requests():
-    print("Too many requests changing proxy")
-    with Controller.from_port(port = 9051) as controller:
-        controller.authenticate(password = "")
-        controller.signal(Signal.NEWNYM)
-        time.sleep(5)
-
-
-def _get_page(pagerequest):
-    """Return the data for a page on scholar.google.com"""
-    # Note that we include a sleep to avoid overloading the scholar server
-    time.sleep(5+random.uniform(0, 5))
-    resp = _SESSION.get(pagerequest)
-    if resp.status_code == 503 or (resp.status_code == 200 and "gs_captcha" in resp.text):
-        resp = _handle_captcha(pagerequest)
-        return _get_page(pagerequest)
-    elif resp.status_code == 200:
-        return resp.text
-    elif resp.status_code == 429 and _SESSION.proxies:
-        _handle_too_many_requests()
-        return _get_page(pagerequest)
-    else:
-        raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
-
-
-def _get_soup(pagerequest):
-    """Return the BeautifulSoup for a page on scholar.google.com"""
-    html = _get_page(pagerequest)
-    html = html.replace(u'\xa0', u' ')
-    return BeautifulSoup(html, 'html.parser')
-
-
-def _search_scholar_soup(soup):
-    """Generator that returns Publication objects from the search page"""
-    while True:
-        for row in soup.find_all('div', 'gs_or'):
-            yield Publication(row, 'scholar')
-        if soup.find(class_='gs_ico gs_ico_nav_next'):
-            url = soup.find(class_='gs_ico gs_ico_nav_next').parent['href']
-            soup = _get_soup(_HOST+url)
-        else:
-            break
-
-
-def _search_citation_soup(soup):
-    """Generator that returns Author objects from the author search page"""
-    while True:
-        for row in soup.find_all('div', 'gsc_1usr'):
-            yield Author(row)
-        next_button = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_lsb gs_btn_srt gsc_pgn_pnx')
-        if next_button and 'disabled' not in next_button.attrs:
-            url = next_button['onclick'][17:-1]
-            url = codecs.getdecoder("unicode_escape")(url)[0]
-            soup = _get_soup(_HOST+url)
-        else:
-            break
-
-def _find_tag_class_name(__data, tag, text):
-    elements = __data.find_all(tag)
-    for element in elements:
-        if 'class' in element.attrs and text in element.attrs['class'][0]:
-            return element.attrs['class'][0]
-
+_PROXY = "127.0.0.1:9050"
 
 class Publication(object):
     """Returns an object for a single publication"""
-    def __init__(self, __data, pubtype=None):
+    def __init__(self, __data, scholarly, pubtype=None):
         self.bib = dict()
+        self._scholarly = scholarly
         self.source = pubtype
         if self.source == 'citations':
             self.bib['title'] = __data.find('a', class_='gsc_a_at').text
@@ -191,7 +96,7 @@ class Publication(object):
         """Populate the Publication with information from its profile"""
         if self.source == 'citations':
             url = _CITATIONPUB.format(self.id_citations)
-            soup = _get_soup(_HOST+url)
+            soup = self._scholarly._get_soup(_HOST+url)
             self.bib['title'] = soup.find('div', id='gsc_vcd_title').text
             if soup.find('a', class_='gsc_vcd_title_link'):
                 self.bib['url'] = soup.find('a', class_='gsc_vcd_title_link')['href']
@@ -228,7 +133,7 @@ class Publication(object):
                 self.bib['eprint'] = soup.find('div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
         elif self.source == 'scholar':
-            bibtex = _get_page(self.url_scholarbib)
+            bibtex = self._scholarly._get_page(self.url_scholarbib)
             self.bib.update(bibtexparser.loads(bibtex).entries[0])
             self._filled = True
         return self
@@ -241,18 +146,18 @@ class Publication(object):
             self.fill()
         if hasattr(self, 'id_scholarcitedby'):
             url = _SCHOLARPUB.format(requests.utils.quote(self.id_scholarcitedby))
-            soup = _get_soup(_HOST+url)
-            return _search_scholar_soup(soup)
+            soup = self._scholarly._get_soup(_HOST+url)
+            return self._scholarly._search_scholar_soup(soup)
         else:
             return []
 
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
-
 class Author(object):
     """Returns an object for a single author"""
-    def __init__(self, __data):
+    def __init__(self, __data, scholarly):
+        self._scholarly = scholarly
         if isinstance(__data, str):
             self.id = __data
         else:
@@ -276,7 +181,7 @@ class Author(object):
         """Populate the Author with information from their profile"""
         url_citations = _CITATIONAUTH.format(self.id)
         url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
-        soup = _get_soup(_HOST+url)
+        soup = self._get_soup(_HOST+url)
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
@@ -301,7 +206,8 @@ class Author(object):
         # co-authors
         self.coauthors = []
         for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
-            new_coauthor = Author(re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0])
+            new_coauthor = Author(
+                    re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0], self._scholarly)
             new_coauthor.name = row.find(tabindex="-1").text
             new_coauthor.affiliation = row.find(class_="gsc_rsb_a_ext").text
             self.coauthors.append(new_coauthor)
@@ -311,7 +217,7 @@ class Author(object):
         pubstart = 0
         while True:
             for row in soup.find_all('tr', class_='gsc_a_tr'):
-                new_pub = Publication(row, 'citations')
+                new_pub = Publication(row, self._scholarly, 'citations')
                 self.publications.append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
@@ -326,38 +232,173 @@ class Author(object):
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
+class Scholarly:
+    __metaclass__ = ABCMeta
 
-def search_pubs_query(query):
-    """Search by scholar query and return a generator of Publication objects"""
-    url = _PUBSEARCH.format(requests.utils.quote(query))
-    soup = _get_soup(_HOST+url)
-    return _search_scholar_soup(soup)
+    def __init__(self, use_proxy):
+        self._use_proxy = use_proxy
+        self._session = None
+
+    def _handle_too_many_requests():
+        """ Google Scholar responded with status too many arguments. If we are
+        using TOR, renew your identity. If we are not using tor sleep until we
+        are allowed to request again."""
+
+        if self._use_proxy:
+            with Controller.from_port(port = 9051) as controller:
+                controller.authenticate(password = "")
+                controller.signal(Signal.NEWNYM)
+                time.sleep(5)
+        else:
+            print("""Too many requests from scholarly. Consider using proxy
+                  and/or scholarly with selenium. Waiting till the end of the
+                  day to continue.""")
+            # TODO: Use better sleep time, e.g., sleep till end of day
+            time.sleep(216000 * 8)
+
+    @abstractmethod
+    def _get_page(self, pagerequest):
+        pass
+
+    def _get_soup(self, pagerequest):
+        """Return the BeautifulSoup for a page on scholar.google.com"""
+        html = self._get_page(pagerequest)
+        html = html.replace(u'\xa0', u' ')
+        return BeautifulSoup(html, 'html.parser')
 
 
-def search_author(name):
-    """Search by author name and return a generator of Author objects"""
-    url = _AUTHSEARCH.format(requests.utils.quote(name))
-    soup = _get_soup(_HOST+url)
-    return _search_citation_soup(soup)
+    def _search_scholar_soup(self, soup):
+        """Generator that returns Publication objects from the search page"""
+        while True:
+            for row in soup.find_all('div', 'gs_or'):
+                yield Publication(row, self, 'scholar')
+            if soup.find(class_='gs_ico gs_ico_nav_next'):
+                url = soup.find(class_='gs_ico gs_ico_nav_next').parent['href']
+                soup = self._get_soup(_HOST+url)
+            else:
+                break
 
 
-def search_keyword(keyword):
-    """Search by keyword and return a generator of Author objects"""
-    url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
-    soup = _get_soup(_HOST+url)
-    return _search_citation_soup(soup)
+    def _search_citation_soup(self, soup):
+        """Generator that returns Author objects from the author search page"""
+        while True:
+            for row in soup.find_all('div', 'gsc_1usr'):
+                yield Author(row, self)
+            next_button = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_lsb gs_btn_srt gsc_pgn_pnx')
+            if next_button and 'disabled' not in next_button.attrs:
+                url = next_button['onclick'][17:-1]
+                url = codecs.getdecoder("unicode_escape")(url)[0]
+                soup = self._get_soup(_HOST+url)
+            else:
+                break
+
+    def _find_tag_class_name(self, __data, tag, text):
+        elements = __data.find_all(tag)
+        for element in elements:
+            if 'class' in element.attrs and text in element.attrs['class'][0]:
+                return element.attrs['class'][0]
 
 
-def search_pubs_custom_url(url):
-    """Search by custom URL and return a generator of Publication objects
-    URL should be of the form '/scholar?q=...'"""
-    soup = _get_soup(_HOST+url)
-    return _search_scholar_soup(soup)
+    def search_pubs_query(self, query):
+        """Search by scholar query and return a generator of Publication objects"""
+        url = _PUBSEARCH.format(requests.utils.quote(query))
+        soup = self._get_soup(_HOST+url)
+        return self._search_scholar_soup(soup)
 
 
-def search_author_custom_url(url):
-    """Search by custom URL and return a generator of Publication objects
-    URL should be of the form '/citation?q=...'"""
-    soup = _get_soup(_HOST+url)
-    return _search_citation_soup(soup)
+    def search_author(self, name):
+        """Search by author name and return a generator of Author objects"""
+        url = _AUTHSEARCH.format(requests.utils.quote(name))
+        soup = self._get_soup(_HOST+url)
+        return self._search_citation_soup(soup)
 
+
+    def search_keyword(self, keyword):
+        """Search by keyword and return a generator of Author objects"""
+        url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
+        soup = self._get_soup(_HOST+url)
+        return self._search_citation_soup(soup)
+
+
+    def search_pubs_custom_url(self, url):
+        """Search by custom URL and return a generator of Publication objects
+        URL should be of the form '/scholar?q=...'"""
+        soup = self._get_soup(_HOST+url)
+        return self._search_scholar_soup(soup)
+
+
+    def search_author_custom_url(self, url):
+        """Search by custom URL and return a generator of Publication objects
+        URL should be of the form '/citation?q=...'"""
+        soup = self._get_soup(_HOST+url)
+        return self._search_citation_soup(soup)
+
+class ScholarlyDefault(Scholarly):
+
+    def __init__(self, use_proxy):
+        Scholarly.__init__(self, use_proxy)
+
+        self._session = requests.Session()
+        if use_proxy:
+            print("using proxy")
+            self._session.proxies = {
+                "http": "socks5://{0}".format(_PROXY),
+                "https": "socks5://{0}".format(_PROXY)
+            }
+    
+    def _get_page(self, pagerequest):
+        """Return the data for a page on scholar.google.com"""
+        # Note that we include a sleep to avoid being kicked out by google
+        time.sleep(5 + random.uniform(0, 5))
+        resp = self._session.get(pagerequest, headers=_HEADERS, cookies=_COOKIES)
+        if resp.status_code == 200 and "captcha" not in resp.text:
+            return resp.text
+        elif resp.status_code == 503:
+            raise Exception('Error: {0} {1}\nCaptcha detected, consider using scholarly with selenium'
+                    .format(resp.status_code, resp.reason))
+        elif resp.status_code == 429:
+            self._handle_too_many_requests()
+            self._get_page(pagerequest)
+        elif resp.status_code == 200 and "captcha" in resp.text:
+            raise NotImplementedError(
+                    "Captcha detected, consider using scholarly with selenium")
+        else:
+            raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
+
+class ScholarlySelenium(Scholarly):
+
+    def __init__(self, use_proxy):
+        Scholarly.__init__(self, use_proxy)
+
+        if use_proxy:
+            self._session = webdriver.Firefox(proxy = Proxy({
+                    "proxyType": ProxyType.MANUAL,
+                    "httpProxy": "socks5://{0}".format(_PROXY),
+                    "sslProxy": "socks5://{0}".format(_PROXY),
+                    "ftpProxy": "socks5://{0}".format(_PROXY),
+                    "noProxy": ""
+                    }))
+        else:
+            self._session = webdriver.Firefox()
+
+
+    def _get_page(self, pagerequest):
+        """Return the data for a page on scholar.google.com"""
+        # Note that we include a sleep to avoid overloading the scholar server
+        self._session.get(pagerequest)
+        wait_time = 5 + random.uniform(0, 5)
+        wait = WebDriverWait(self._session, wait_time)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
+        except TimeoutException:
+            pass
+
+        wait = WebDriverWait(self._session, 1000000000)
+        wait.until_not(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
+        return self._session.find_element_by_xpath("//body").get_attribute('outerHTML')
+
+def get_scholarly_instance(use_proxy, use_selenium):
+    if use_selenium:
+        return ScholarlySelenium(use_proxy)
+    else:
+        return ScholarlyDefault(use_proxy)
