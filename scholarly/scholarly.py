@@ -23,6 +23,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from datetime import datetime
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -239,22 +240,31 @@ class Scholarly:
         self._use_proxy = use_proxy
         self._session = None
 
-    def _handle_too_many_requests():
-        """ Google Scholar responded with status too many arguments. If we are
+    def _handle_too_many_requests(self):
+        """ Google Scholar responded with status too many requests. If we are
         using TOR, renew your identity. If we are not using tor sleep until we
         are allowed to request again."""
 
         if self._use_proxy:
             with Controller.from_port(port = 9051) as controller:
+                print("Refreshing proxy...")
                 controller.authenticate(password = "")
                 controller.signal(Signal.NEWNYM)
                 time.sleep(5)
+                self._session = webdriver.Firefox(proxy = Proxy({
+                        "proxyType": ProxyType.MANUAL,
+                        "httpProxy": "socks5://{0}".format(_PROXY),
+                        "sslProxy": "socks5://{0}".format(_PROXY),
+                        "ftpProxy": "socks5://{0}".format(_PROXY),
+                        "noProxy": ""
+                        }))
         else:
             print("""Too many requests from scholarly. Consider using proxy
                   and/or scholarly with selenium. Waiting till the end of the
                   day to continue.""")
-            # TODO: Use better sleep time, e.g., sleep till end of day
-            time.sleep(216000 * 8)
+            now = datetime.now()
+            now_sec = now.minute * 60 + now.second + now.hour * 3600
+            time.sleep(24 * 3600 - now_sec)
 
     @abstractmethod
     def _get_page(self, pagerequest):
@@ -383,19 +393,33 @@ class ScholarlySelenium(Scholarly):
 
 
     def _get_page(self, pagerequest):
-        """Return the data for a page on scholar.google.com"""
-        # Note that we include a sleep to avoid overloading the scholar server
+        """Return the data for a page on scholar.google.com.
+        Note that we include a sleep to avoid overloading the scholar server"""
         self._session.get(pagerequest)
         wait_time = 5 + random.uniform(0, 5)
-        wait = WebDriverWait(self._session, wait_time)
-        try:
-            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
-        except TimeoutException:
-            pass
 
-        wait = WebDriverWait(self._session, 1000000000)
-        wait.until_not(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
-        return self._session.find_element_by_xpath("//body").get_attribute('outerHTML')
+        # Wait for captcha to show up
+        while True:
+            wait = WebDriverWait(self._session, wait_time)
+            try:
+                wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
+            except TimeoutException:
+                break
+
+            # Wait for captcha to disapear, if no captcha has shown this does not block
+            wait = WebDriverWait(self._session, 1000000000)
+            wait.until_not(EC.presence_of_element_located((By.CSS_SELECTOR, _CAPTCHA)))
+
+        # Obtain html body
+        text = self._session.page_source
+
+        # Check if google figured out, that we are sending automated queries
+        if "but your computer or network may be sending automated queries" in text and self._use_proxy:
+            self._session.close()
+            self._handle_too_many_requests()
+            return self._get_page(pagerequest)
+
+        return text
 
 def get_scholarly_instance(use_proxy = False, use_selenium = False):
     if use_selenium:
