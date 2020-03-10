@@ -27,7 +27,7 @@ _AUTHSEARCH = '/citations?view_op=search_authors&hl=en&mauthors={0}'
 _CITATIONAUTH = '/citations?user={0}&hl=en'
 _CITATIONPUB = '/citations?view_op=view_citation&citation_for_view={0}'
 _KEYWORDSEARCH = '/citations?view_op=search_authors&hl=en&mauthors=label:{0}'
-_PUBSEARCH = '/scholar?q={0}'
+_PUBSEARCH = '/scholar?q={0}&hl=en'
 _SCHOLARPUB = '/scholar?oi=bibs&hl=en&cites={0}'
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
