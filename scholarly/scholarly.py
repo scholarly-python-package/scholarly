@@ -27,9 +27,10 @@ from datetime import datetime
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
+_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36"
 _HEADERS = {
     'accept-language': 'en-US,en',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36',
+    'User-Agent': _USER_AGENT,
     'accept': 'text/html,application/xhtml+xml,application/xml'
     }
 _HOST = "https://scholar.google.com"
@@ -48,7 +49,7 @@ _SCHOLARCITERE = r"gs_ocit\(event,\'([\w-]*)\'"
 _SCHOLARPUBRE = r"cites=([\w-]*)"
 _EMAILAUTHORRE = r"Verified email at "
 
-_PAGESIZE = 100
+_pAGESIZE = 100
 _PROXY = "127.0.0.1:9050"
 
 class Publication(object):
@@ -77,7 +78,7 @@ class Publication(object):
             if title.find('a'):
                 self.bib['url'] = title.find('a')['href']
             authorinfo = databox.find('div', class_='gs_a')
-            self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
+            self.bib['author'] = ' and '.join(self.get_authorlist(authorinfo))
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
                 if self.bib['abstract'][0:8].lower() == 'abstract':
@@ -93,6 +94,23 @@ class Publication(object):
                 self.bib['eprint'] = __data.find('div', class_='gs_ggs gs_fl').a['href']
         self._filled = False
 
+    def get_authorlist(self, authorinfo):
+        authorlist = list()
+        text = authorinfo.text.replace(u'\xa0', u' ')
+        text = text.split(' - ')[0]
+        for i in text.split(','):
+            i = i.strip()
+            if bool(re.search(r'\d', i)):
+                continue
+            if ("Proceedings" in i or "Conference" in i or "Journal" in i
+                    or "(" in i or ")" in i or "[" in i or "]" in i
+                    or "Transactions" in i):
+                continue
+            i = i.replace("…", "")
+            authorlist.append(i)
+        return authorlist
+
+
     def fill(self):
         """Populate the Publication with information from its profile"""
         if self.source == 'citations':
@@ -105,7 +123,7 @@ class Publication(object):
                 key = item.find(class_='gsc_vcd_field').text
                 val = item.find(class_='gsc_vcd_value')
                 if key == 'Authors':
-                    self.bib['author'] = ' and '.join([i.strip() for i in val.text.split(',')])
+                    self.bib['author'] = ' and '.join(self.get_authorlist(val))
                 elif key == 'Journal':
                     self.bib['journal'] = val.text
                 elif key == 'Volume':
@@ -384,13 +402,14 @@ class ScholarlySelenium(Scholarly):
             self._session = webdriver.Firefox(proxy = Proxy({
                     "proxyType": ProxyType.MANUAL,
                     "httpProxy": "socks5://{0}".format(_PROXY),
+                    "httpsProxy": "socks5://{0}".format(_PROXY),
+                    "socksProxy": "socks5://{0}".format(_PROXY),
                     "sslProxy": "socks5://{0}".format(_PROXY),
                     "ftpProxy": "socks5://{0}".format(_PROXY),
                     "noProxy": ""
                     }))
         else:
             self._session = webdriver.Firefox()
-
 
     def _get_page(self, pagerequest):
         """Return the data for a page on scholar.google.com.
