@@ -55,7 +55,7 @@ def quote(s):
 def make_url(kw, year_since, year_to):
     url = f'/scholar?&q={kw}'
 
-    if year_to is not None:
+    if year_since is not None:
         assert isinstance(year_since, int)
         url += f'&as_ylo={year_since}'
 
