@@ -159,6 +159,7 @@ class Publication(object):
                 self.bib['url'] = title.find('a')['href']
             authorinfo = databox.find('div', class_='gs_a')
             self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
+            self.bib['venue'], self.bib['year'] = authorinfo.text.split(' - ')[1].split(',')
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
                 if self.bib['abstract'][0:8].lower() == 'abstract':
