@@ -12,10 +12,10 @@ result_items = 20
 
 energy_terms = [
     'Wind',
-    # 'Solar',
-    # 'Power system',
-    # 'Energy',
-    # 'Generator',
+    'Solar',
+    'Power system',
+    'Energy',
+    'Generator',
     # 'Coal',
     # 'Oil',
     # 'Natural Gas',
@@ -30,20 +30,20 @@ energy_terms = [
 
 ml_terms = [
     'machine learning',
-    # 'deep learning',
-    # 'support vector machine',
-    # 'random forest',
-    # 'regression tree',
-    # 'neural network'
+    'deep learning',
+    'support vector machine',
+    'random forest',
+    'regression tree',
+    'neural network'
 ]
 
 rs_terms = [
     'remote sensing',
-    # 'satellite',
-    # 'aerial',
-    # 'UAV',
-    # 'unmanned aerial vehicle',
-    # 'hyperspectral'
+    'satellite',
+    'aerial',
+    'UAV',
+    'unmanned aerial vehicle',
+    'hyperspectral'
 ]
 
 
@@ -61,7 +61,8 @@ def make_url(kw, year_since, year_to):
 
     if year_to is not None:
         assert isinstance(year_to, int)
-        assert year_to >= year_since
+        if year_since is not None:
+            assert year_to >= year_since
         url += f'&as_yhi={year_to}'
 
     return url
