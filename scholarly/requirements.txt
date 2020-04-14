@@ -1,0 +1,5 @@
+arrow
+beautifulsoup4
+bibtexparser
+pysocks
+requests[security]
