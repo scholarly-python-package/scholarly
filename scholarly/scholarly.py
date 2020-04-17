@@ -27,9 +27,20 @@ from fake_useragent import UserAgent
 import hashlib
 import random
 import json
-from .publication.publication import Publication
-from .author.author import Author
+if __name__ == '__main__':
+    from author import Author
+    from publication import Publication
+    from templates import urls
+else:
+    from .author import Author
+    from .publication import Publication
+    from .templates import urls
 
+try:
+    import importlib.resources as pkg_resources
+except ImportError:
+    # Try backported to PY<37 `importlib_resources`.
+    import importlib_resources as pkg_resources
 
 class Scholarly:
     __metaclass__ = ABCMeta
@@ -38,26 +49,68 @@ class Scholarly:
         self.__use_proxy = use_proxy
         self.__session = None
         self.__browser = browser
-        self.__URLS = json.load(open('./scholarly/urls.json', 'r'))
+        self.__URLS = urls
         gid = hashlib.md5(str(random.random()).encode('utf-8'))
         gid = gid.hexdigest()[:16]
         self.__URLS["COOKIES"] = {'GSP': 'ID={0}:CF=4'.format(gid)}
 
 
-    def force_quit(self):
-        self.__session.close()
-        self.__session.quit()
+    @property
+    def use_proxy(self):
+        return self.__use_proxy
+
 
     def URLS(self, address:str) -> str:
         return self.__URLS[address]
-    
+
+
+    def force_quit(self):
+        """Quits the session"""
+        try:
+            self.session.quit()
+        except Exception as e:
+            raise
+ 
+
     @abstractmethod
     def _get_page(self, pagerequest):
         pass
 
 
-    def _get_soup(self, pagerequest:str):
-        """Return the BeautifulSoup for a page on scholar.google.com"""
+    @abstractmethod
+    def _get_new_session(self):
+        pass
+
+
+    @property
+    def session(self):
+        return self.__session
+
+    @session.setter
+    def session(self, value):
+        assert (isinstance(value, webdriver.Firefox) or
+                isinstance(value, webdriver.Chrome) or
+                isinstance(value, requests.Session))
+        self.__session = value
+
+
+    def _tor_refresher(self, ) -> webdriver:
+        """Refreshes TOR node"""
+        with Controller.from_port(port = 9151) as controller:
+            print("Refreshing proxy...")
+            controller.authenticate(password = "")
+            controller.signal(Signal.NEWNYM)
+
+
+    def _get_soup(self, pagerequest:str) -> BeautifulSoup:
+        """Returns an html page parsed as a BeautifulSoup
+        
+        Arguments:
+           pagerequest {str} -- a string with the address to be retrieved
+        
+        Returns:
+            BeautifulSoup -- a parsed html
+        """
         html = self._get_page(pagerequest)
         html = html.replace(u'\xa0', u' ')
         return BeautifulSoup(html, 'html.parser')
@@ -100,6 +153,7 @@ class Scholarly:
         """Search by scholar query and return a single Publication object"""
         url = self.URLS('PUBSEARCH').format(requests.utils.quote(paper_title))
         soup = self._get_soup(self.URLS('HOST').format(url))
+        self.__URLS['PUBLIB'] = soup.find('div', id='gs_res_glb').get('data-sva')
         return Publication(soup.find_all('div', 'gs_or')[0], self, 'scholar')
 
 
@@ -137,34 +191,57 @@ class Scholarly:
         soup = self._get_soup(self.URLS('HOST').format(url))
         return self.__search_citation_soup(soup)
 
+
 class ScholarlyDefault(Scholarly):
 
     def __init__(self, use_proxy:bool):
         Scholarly.__init__(self, use_proxy)
+        self.session = self.get_new_session()
 
-        self.__session = requests.Session()
+
+    def _get_new_session(self):
+        self._tor_refresher()
+
+        sess = requests.Session()
+
         if use_proxy:
-            print("using proxy")
-            self.__session.proxies = {
-                "http": "socks5://{0}".format(self.URLS('PROXY')),
-                "https": "socks5://{0}".format(self.URLS('PROXY'))
+            print("Using proxy")
+            self.session.proxies = {
+                "http": self.URLS('PROXY'),
+                "https": self.URLS('PROXY')
             }
+        
+        return sess
+
+
+    def _handle_too_many_requests(self):
+        if self.use_proxy:
+            self._tor_refresher()
+            return self.get_new_session
+        else:
+            print("""Too many requests from scholarly. Consider using proxy
+                      and/or scholarly with selenium. Waiting till the end of the
+                      day to continue.""")
+            now = datetime.now()
+            now_sec = now.minute * 60 + now.second + now.hour * 3600
+            time.sleep(24 * 3600 - now_sec)
     
+
     def _get_page(self, pagerequest:str) -> str:
-        """Return the data for a page on scholar.google.com"""
-        # Note that we include a sleep to avoid being kicked out by google
-        time.sleep(5 + random.uniform(0, 5))
-        resp = self.__session.get(
+        time.sleep(2 + random.uniform(0, 3))
+        
+        resp = self.session.get(
             pagerequest, 
-            headers=self.URLS("HEADERS"), 
+            headers={'User-agent':UserAgent().random}, 
             cookies=self.URLS("COOKIES"))
+    
         if resp.status_code == 200 and "captcha" not in resp.text:
             return resp.text
         elif resp.status_code == 503:
             raise Exception('Error: {0} {1}\n Captcha detected, consider using scholarly with selenium'
                     .format(resp.status_code, resp.reason))
         elif resp.status_code == 429:
-            self._handle_too_many_requests()
+            self.session = self._handle_too_many_requests()
             self._get_page(pagerequest)
         elif resp.status_code == 200 and "captcha" in resp.text:
             raise NotImplementedError(
@@ -172,26 +249,53 @@ class ScholarlyDefault(Scholarly):
         else:
             raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
 
+
 class ScholarlySelenium(Scholarly):
 
-    def __init__(self, use_proxy:bool) -> None:
+    def __init__(self, use_proxy:bool, browser='chrome'):
         print("Using Scholarly with Selenium")
         super().__init__(self, use_proxy)
+        self.__browser = browser
+        self.session = self._get_new_session(browser)
+        
 
-        if use_proxy:
-            print("And a proxy")
-            self.__session = self.get_new_chrome_agent()
+    def _get_new_session(self, browser:str='chrome') -> webdriver:
+        """Creates a new webdriver according to the browser selected
+        
+        Keyword Arguments:
+            browser {str} -- the browser to be used, either 'chrome' or 'firefox' (default: {'chrome'})
+        
+        Returns:
+            webdriver -- an instance of a webdriver.Chrome or webdriver.Firefox
+        
+        Raises:
+            Exception -- browser should be either 'chrome' or 'firefox'
+        """
+        if browser == 'chrome':
+            return self._get_new_chrome_agent(self.use_proxy)
+        elif browser == 'firefox':
+            return self._get_new_firefox_agent(self.use_proxy)
         else:
-            self.__session = webdriver.Chrome()
+            raise Exception("Browser not supported, please use 'chrome' or 'firefox'")
 
 
-    def get_new_chrome_agent(self) -> webdriver.Chrome:
-
+    def _get_new_chrome_agent(self, use_proxy:bool=True) -> webdriver.Chrome:
+        """Creates a Chrome based agent
+        
+        The agent receives a randomized window and agent.
+        Optimized to minimized detection by the scraped server
+        
+        Keyword Arguments:
+            use_proxy {bool} -- whether or not to use proxy (default: {True})
+        
+        Returns:
+            webdriver.Chrome -- a chrome based webdriver
+        """
         chrome_options = webdriver.ChromeOptions()
         
-        chrome_options.add_argument(self.URLS('PROXY'))
+        if use_proxy: 
+            chrome_options.add_argument('--proxy-server={}'.format(self.URLS('PROXY')))
         
-        #Makes the agent less predictable so it can't be detected easily
         chrome_options.add_argument(f'user-agent={UserAgent().random}')
         chrome_options.add_experimental_option(
             "excludeSwitches", 
@@ -205,27 +309,47 @@ class ScholarlySelenium(Scholarly):
         return driver
 
 
-    def get_new_firefox_agent(self) -> webdriver.Firefox:
-        #TODO implement firefox randomization
-        options = webdriver.FirefoxProfile()
-        options.set_preference('general.useragent.override', UserAgent().random)
-        return webdriver.Firefox()
-
-
-    def _handle_too_many_requests(self):
-        """ Google Scholar responded with status too many requests. If we are
-        using TOR, renew your identity. If we are not using tor sleep until we
-        are allowed to request again."""
-
-        if self.__session is not None:
-            self.__session.close()
-            self.__session.quit()
+    def _get_new_firefox_agent(self, use_proxy:bool=True) -> webdriver.Firefox:
+        """Creates a Firefox based agent
         
-        with Controller.from_port(port = 9151) as controller:
-            print("Refreshing proxy...")
-            controller.authenticate(password = "")
-            controller.signal(Signal.NEWNYM)
-        self.__session = self.get_new_chrome_agent()
+        The agent receives a randomized window and agent.
+        Optimized to minimized detection by the scraped server
+        
+        Keyword Arguments:
+            use_proxy {bool} -- whether or not to use proxy (default: {True})
+        
+        Returns:
+            webdriver.Firefox -- a chrome based webdriver
+        """
+        proxy = Proxy({
+            "proxyType": ProxyType.MANUAL,
+            "httpProxy": self.URLS('PROXY'),
+            "httpsProxy": self.URLS('PROXY'),
+            "socksProxy": self.URLS('PROXY'),
+            "sslProxy": self.URLS('PROXY'),
+            "ftpProxy": self.URLS('PROXY'),
+            "noProxy": ""
+        })
+
+        profile = webdriver.FirefoxProfile()
+        profile.set_preference("dom.webdriver.enabled", False)
+        profile.set_preference('useAutomationExtension', False)
+        profile.set_preference("general.useragent.override", UserAgent().random)
+        profile.update_preferences()
+
+        if use_proxy:
+            return webdriver.Firefox(firefox_profile=profile, proxy=proxy)
+        else:
+            return webdriver.Firefox(firefox_profile=profile)
+
+
+    def _webdrive_refresher(self):
+        if self.session is not None:
+            self.session.quit()
+
+        self._tor_refresher()
+
+        return self._get_new_session(self.__browser)
 
 
     def _get_page(self, pagerequest:str) -> str:
@@ -233,24 +357,37 @@ class ScholarlySelenium(Scholarly):
         "but your computer or network may be sending automated queries",
         "have detected unusual traffic from your computer"]
         time.sleep(2) #just in case we get a good TOR server we wait to not overload it
-
-        # Tries to retrieve the paper until no captcha is shown
-        while True:
+        searching = True
+        # Tries to retrieve the page until no captcha is shown
+        while searching:
             try:
-                self.__session.get(pagerequest)
-                wait = WebDriverWait(self.__session, 100)
-                text = self.__session.page_source
+                self.session.get(pagerequest)
+                wait = WebDriverWait(self.session, 100)
+                text = self.session.page_source
                 if any([i in text for i in flags]):
-                    self._handle_too_many_requests()
+                    self._tor_refresher()
+                    self.session = self._get_new_session()
                 else: 
-                    break
+                    searching = False
             except TimeoutException:
-                break
+                raise Exception("Server is too slow, stopping search")
 
-        return self.__session.page_source
+        return self.session.page_source
 
-def get_scholarly_instance(use_proxy:bool=False, use_selenium:bool=False) -> ScholarlySelenium or ScholarlyDefault:
+
+def get_scholarly_instance(use_proxy:bool=False, 
+        use_selenium:bool=True, 
+        browser:str='chrome') -> ScholarlySelenium or ScholarlyDefault:
+    """Returns an instance of the scraper
+    
+    To use selenium a webdriver is required
+    
+    Keyword Arguments:
+        use_proxy {bool} -- Whether or not to use a proxy during scraping (default: {False})
+        use_selenium {bool} -- Whether or not to use Selenium during scraphig (default: {True})
+        browser {str} -- What webdriver to use when scraping with selenium. Either 'chrome' or 'firefox' (default: {'chrome'})
+    """
     if use_selenium:
-        return ScholarlySelenium(use_proxy)
+        return ScholarlySelenium(use_proxy, browser)
     else:
         return ScholarlyDefault(use_proxy)

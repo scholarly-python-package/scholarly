@@ -3,9 +3,9 @@ import pprint
 import hashlib
 import random
 import bibtexparser
+from bibtexparser.bibdatabase import BibDatabase
 import copy
 from datetime import date
-from bibtexparser.bibdatabase import BibDatabase
 
 class Publication(object):
     """Returns an object for a single publication"""
@@ -71,6 +71,9 @@ class Publication(object):
                     link.get('title') is not None and
                     'Cite' == link.get('title')):
                 self.url_scholarbib = self.get_bibtex(cid, pos)
+                sclib = self._scholarly.URLS('PUBLIB').format(id=cid)
+                sclib = self._scholarly.URLS('HOST').format(sclib)
+                self.url_add_sclib = sclib
 
             if 'Cited by' in link.text:
                 self.bib['cites'] = re.findall(r'\d+', link.text)[0]
@@ -160,11 +163,18 @@ class Publication(object):
             self._filled = True
 
         elif self.source == 'scholar':
-            bibtex = self._scholarly._get_soup(self.url_scholarbib)
-            bibtex = bibtex.find('pre').string
-            self.bib.update(bibtexparser.loads(bibtex).entries[0])
-            self.bib['author_count'] = len(self.bib['author'].split('and'))
-            self.bib['age'] = str(int(date.today().year) - int(self.bib['year']))
+            self.bib['add_to_lib'] = self.url_add_sclib
+
+            try:
+                bibtex = self._scholarly._get_soup(self.url_scholarbib)
+                bibtex = bibtex.find('pre').string
+                self.bib.update(bibtexparser.loads(bibtex).entries[0])
+                self.bib['author_count'] = str(len(self.bib['author'].split('and')))
+                self.bib['age'] = str(int(date.today().year) - int(self.bib['year']))
+            except:
+                #did not find year
+                pass
+
             self._filled = True
         return self
 
