@@ -3,25 +3,35 @@ import pprint
 import hashlib
 import random
 
+
 class Author(object):
     """Returns an object for a single author"""
+
     def __init__(self, __data, scholarly):
         self._scholarly = scholarly
         if isinstance(__data, str):
             self.id = __data
         else:
             self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
-            self.url_picture = _HOST+'/citations?view_op=medium_photo&user={}'.format(self.id)
-            self.name = __data.find('h3', class_=_find_tag_class_name(__data, 'h3', 'name')).text
-            affiliation = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'aff'))
+            self.url_picture = _HOST + \
+                '/citations?view_op=medium_photo&user={}'.format(self.id)
+            self.name = __data.find(
+                'h3', class_=_find_tag_class_name(__data, 'h3', 'name')).text
+            affiliation = __data.find(
+                'div', class_=_find_tag_class_name(__data, 'div', 'aff'))
             if affiliation:
                 self.affiliation = affiliation.text
-            email = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'eml'))
+            email = __data.find(
+                'div', class_=_find_tag_class_name(__data, 'div', 'eml'))
             if email:
                 self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
-            self.interests = [i.text.strip() for i in
-                           __data.find_all('a', class_=_find_tag_class_name(__data, 'a', 'one_int'))]
-            citedby = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'cby'))
+            topics = __data.find_all('a',
+                                     class_=_find_tag_class_name(__data,
+                                                                 'a',
+                                                                 'one_int'))
+            self.interests = [i.text.strip() for i in topics]
+            citedby = __data.find(
+                'div', class_=_find_tag_class_name(__data, 'div', 'cby'))
             if citedby and citedby.text != '':
                 self.citedby = int(citedby.text[9:])
         self._filled = False
@@ -33,8 +43,9 @@ class Author(object):
         soup = self._get_soup(_HOST+url)
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
-        self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
-        
+        self.interests = [i.text.strip()
+                          for i in soup.find_all('a', class_='gsc_prf_inta')]
+
         # h-index, i10-index and h-index, i10-index in the last 5 years
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
@@ -56,11 +67,12 @@ class Author(object):
         self.coauthors = []
         for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
             new_coauthor = Author(
-                    re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0], self._scholarly)
+                re.findall(_CITATIONAUTHRE,
+                           row('a')[0]['href'])[0],
+                self._scholarly)
             new_coauthor.name = row.find(tabindex="-1").text
             new_coauthor.affiliation = row.find(class_="gsc_rsb_a_ext").text
             self.coauthors.append(new_coauthor)
-
 
         self.publications = list()
         pubstart = 0
@@ -70,7 +82,8 @@ class Author(object):
                 self.publications.append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
-                url = '{0}&cstart={1}&pagesize={2}'.format(url_citations, pubstart, _PAGESIZE)
+                url = '{0}&cstart={1}&pagesize={2}'.format(
+                    url_citations, pubstart, _PAGESIZE)
                 soup = _get_soup(_HOST+url)
             else:
                 break

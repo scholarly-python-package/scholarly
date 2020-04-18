@@ -4,10 +4,10 @@ scholarly.publication package
 Submodules
 ----------
 
-scholarly.publication.publication module
+scholarly.publication.Publication module
 ----------------------------------------
 
-.. automodule:: scholarly.publication.publication
+.. automodule:: scholarly.publication.Publication
    :members:
    :undoc-members:
    :show-inheritance:

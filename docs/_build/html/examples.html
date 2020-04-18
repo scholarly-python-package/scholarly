@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>scholarly &mdash; scholarly 0.3.0 documentation</title>
+  <title>Example &mdash; scholarly 0.3.0 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Scholarly Package" href="scholarly.html" />
-    <link rel="prev" title="Proxies and Selenium" href="proxy.html" /> 
+    <link rel="next" title="Proxies and Selenium" href="proxy.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,12 +82,11 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxies and Selenium</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">scholarly</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html">Scholarly Package</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">scholarly</a></li>
 </ul>
 
             
@@ -133,13 +132,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>scholarly</li>
+      <li>Example</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -152,17 +151,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="scholarly">
-<h1>scholarly<a class="headerlink" href="#scholarly" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="scholarly.html">Scholarly Package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html#module-scholarly.Scholarly">scholarly.Scholarly module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html#module-scholarly.Publication">scholarly.Publication module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html#module-scholarly.Author">scholarly.Author module</a></li>
-</ul>
-</li>
-</ul>
+  <div class="section" id="example">
+<h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
+<p>Here’s a quick example demonstrating how to retrieve an author’s profile
+then retrieve the titles of the papers that cite his most popular
+(cited) paper.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Retrieve the author&#39;s data, fill-in, and print</span>
+<span class="n">scholarly</span> <span class="o">=</span> <span class="n">get_scholarly_instance</span><span class="p">()</span>
+<span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_author</span><span class="p">(</span><span class="s1">&#39;Steven A Cholewiak&#39;</span><span class="p">)</span>
+<span class="n">author</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">)</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">author</span><span class="p">)</span>
+
+<span class="c1"># Print the titles of the author&#39;s publications</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">pub</span><span class="o">.</span><span class="n">bib</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">author</span><span class="o">.</span><span class="n">publications</span><span class="p">])</span>
+
+<span class="c1"># Take a closer look at the first publication</span>
+<span class="n">pub</span> <span class="o">=</span> <span class="n">author</span><span class="o">.</span><span class="n">publications</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pub</span><span class="p">)</span>
+
+<span class="c1"># Which papers cited that publication?</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">citation</span><span class="o">.</span><span class="n">bib</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">citation</span> <span class="ow">in</span> <span class="n">pub</span><span class="o">.</span><span class="n">get_citedby</span><span class="p">()])</span>
+</pre></div>
 </div>
 </div>
 
@@ -174,10 +183,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="scholarly.html" class="btn btn-neutral float-right" title="Scholarly Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="proxy.html" class="btn btn-neutral float-right" title="Proxies and Selenium" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="proxy.html" class="btn btn-neutral float-left" title="Proxies and Selenium" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

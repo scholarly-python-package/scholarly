@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>scholarly &mdash; scholarly 0.3.0 documentation</title>
+  <title>Usage &mdash; scholarly 0.3.0 documentation</title>
   
 
   
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Scholarly Package" href="scholarly.html" />
-    <link rel="prev" title="Proxies and Selenium" href="proxy.html" /> 
+    <link rel="next" title="Example" href="examples.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,12 +82,11 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxies and Selenium</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">scholarly</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html">Scholarly Package</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">scholarly</a></li>
 </ul>
 
             
@@ -133,13 +132,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>scholarly</li>
+      <li>Usage</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -152,17 +151,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="scholarly">
-<h1>scholarly<a class="headerlink" href="#scholarly" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="scholarly.html">Scholarly Package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html#module-scholarly.Scholarly">scholarly.Scholarly module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html#module-scholarly.Publication">scholarly.Publication module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scholarly.html#module-scholarly.Author">scholarly.Author module</a></li>
-</ul>
-</li>
-</ul>
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<p>Because <code class="docutils literal notranslate"><span class="pre">scholarly</span></code> does not use an official API, no key is required.
+Simply:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scholarly</span> <span class="kn">import</span> <span class="n">get_scholarly_instance</span>
+
+<span class="n">scholarly</span> <span class="o">=</span> <span class="n">get_scholarly_instance</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">scholarly</span><span class="o">.</span><span class="n">search_author</span><span class="p">(</span><span class="s1">&#39;Steven A. Cholewiak&#39;</span><span class="p">)))</span>
+</pre></div>
 </div>
 </div>
 
@@ -174,10 +171,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="scholarly.html" class="btn btn-neutral float-right" title="Scholarly Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="proxy.html" class="btn btn-neutral float-left" title="Proxies and Selenium" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

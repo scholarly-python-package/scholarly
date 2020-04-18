@@ -89,7 +89,8 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="scholarly.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="scholarly.html#module-scholarly.scholarly">scholarly.scholarly module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scholarly.html#module-scholarly.Scholarly">scholarly.Scholarly module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scholarly.html#module-scholarly.test">scholarly.test module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="scholarly.html#module-scholarly">Module contents</a></li>
 </ul>
 </li>
@@ -168,50 +169,32 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-scholarly.publication.publication">
-<span id="scholarly-publication-publication-module"></span><h2>scholarly.publication.publication module<a class="headerlink" href="#module-scholarly.publication.publication" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-scholarly.publication.Publication">
+<span id="scholarly-publication-publication-module"></span><h2>scholarly.publication.Publication module<a class="headerlink" href="#module-scholarly.publication.Publication" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="scholarly.publication.publication.Publication">
-<em class="property">class </em><code class="sig-prename descclassname">scholarly.publication.publication.</code><code class="sig-name descname">Publication</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Publication__data</span></em>, <em class="sig-param"><span class="n">scholarly</span></em>, <em class="sig-param"><span class="n">pubtype</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication" title="Permalink to this definition">¶</a></dt>
+<dt id="scholarly.publication.Publication.Publication">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly.publication.Publication.</code><code class="sig-name descname">Publication</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Publication__data</span></em>, <em class="sig-param"><span class="n">scholarly</span></em>, <em class="sig-param"><span class="n">pubtype</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/Publication.html#Publication"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication.Publication" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Returns an object for a single publication</p>
 <dl class="py method">
-<dt id="scholarly.publication.publication.Publication.bibtex">
-<em class="property">property </em><code class="sig-name descname">bibtex</code><a class="headerlink" href="#scholarly.publication.publication.Publication.bibtex" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="scholarly.publication.publication.Publication.citation_pub">
-<code class="sig-name descname">citation_pub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Publication__data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication.citation_pub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication.citation_pub" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="scholarly.publication.publication.Publication.fill">
-<code class="sig-name descname">fill</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication.fill" title="Permalink to this definition">¶</a></dt>
-<dd><p>Populate the Publication with information from its profile</p>
+<dt id="scholarly.publication.Publication.Publication.bibtex">
+<em class="property">property </em><code class="sig-name descname">bibtex</code><a class="headerlink" href="#scholarly.publication.Publication.Publication.bibtex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains the publication as a bibtex entry</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>str – a bibtex entry</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="scholarly.publication.publication.Publication.get_authorlist">
-<code class="sig-name descname">get_authorlist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">authorinfo</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication.get_authorlist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication.get_authorlist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="scholarly.publication.publication.Publication.get_bibtex">
-<code class="sig-name descname">get_bibtex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pos</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication.get_bibtex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication.get_bibtex" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="scholarly.publication.publication.Publication.get_citedby">
-<code class="sig-name descname">get_citedby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication.get_citedby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication.get_citedby" title="Permalink to this definition">¶</a></dt>
-<dd><p>Searches GScholar for other articles that cite this Publication and
-returns a Publication generator.</p>
+<dt id="scholarly.publication.Publication.Publication.fill">
+<code class="sig-name descname">fill</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/Publication.html#Publication.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication.Publication.fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the Publication with information from Google Scholar</p>
+<p>Please notice that this information is not truly reliable because
+Google Scholar might not have all authors and contains different
+versions of the same publication</p>
 </dd></dl>
-
-<dl class="py method">
-<dt id="scholarly.publication.publication.Publication.scholar_pub">
-<code class="sig-name descname">scholar_pub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Publication__data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication/publication.html#Publication.scholar_pub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.publication.Publication.scholar_pub" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 

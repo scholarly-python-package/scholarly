@@ -1,0 +1,12 @@
+Usage
+-----
+
+Because ``scholarly`` does not use an official API, no key is required.
+Simply:
+
+.. code:: python
+
+    from scholarly import get_scholarly_instance
+
+    scholarly = get_scholarly_instance()
+    print(next(scholarly.search_author('Steven A. Cholewiak')))

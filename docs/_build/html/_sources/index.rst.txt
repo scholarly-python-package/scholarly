@@ -10,8 +10,9 @@ Welcome to scholarly's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   quickstart
+   proxy
    modules
-
 
 
 Indices and tables

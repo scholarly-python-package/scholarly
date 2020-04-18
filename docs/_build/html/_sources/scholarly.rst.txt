@@ -1,30 +1,24 @@
-scholarly package
+Scholarly Package
 =================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   scholarly.author
-   scholarly.publication
-
-Submodules
-----------
-
-scholarly.scholarly module
+scholarly.Scholarly module
 --------------------------
 
-.. automodule:: scholarly.scholarly
+.. automodule:: scholarly.Scholarly
    :members:
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+scholarly.Publication module
+----------------------------
 
-.. automodule:: scholarly
+.. automodule:: scholarly.Publication
    :members:
    :undoc-members:
-   :show-inheritance:
+
+scholarly.Author module
+-----------------------
+
+.. automodule:: scholarly.Author
+   :members:
+   :undoc-members:

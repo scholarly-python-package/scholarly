@@ -4,10 +4,10 @@ scholarly.author package
 Submodules
 ----------
 
-scholarly.author.author module
+scholarly.author.Author module
 ------------------------------
 
-.. automodule:: scholarly.author.author
+.. automodule:: scholarly.author.Author
    :members:
    :undoc-members:
    :show-inheritance:

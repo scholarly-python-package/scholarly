@@ -1,0 +1,1 @@
+sphinx-apidoc -o . .. ../setup.py ../test.py ../scholarly/templates
