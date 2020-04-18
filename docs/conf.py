@@ -12,18 +12,17 @@
 #
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'scholarly'
-copyright = '2020, Victor Silva'
-author = 'Victor Silva'
+copyright = '2020, Victor N. Silva'
+author = 'Victor N. Silva'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = '0.3.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,8 +30,12 @@ release = '0.0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc'
-]
+extensions = [
+	'sphinx.ext.autodoc',
+	'sphinx.ext.coverage',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -40,7 +43,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['../setup.py']
 
 
 # -- Options for HTML output -------------------------------------------------

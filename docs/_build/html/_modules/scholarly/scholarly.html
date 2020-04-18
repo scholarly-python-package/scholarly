@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>scholarly.scholarly &mdash; scholarly 0.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> scholarly
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">scholarly</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">scholarly</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>scholarly.scholarly</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for scholarly.scholarly</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;scholarly.py&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+
+<span class="kn">import</span> <span class="nn">arrow</span>
+<span class="kn">import</span> <span class="nn">bibtexparser</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">stem</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">stem.control</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">selenium</span> <span class="kn">import</span> <span class="n">webdriver</span>
+<span class="kn">from</span> <span class="nn">selenium.webdriver.common.proxy</span> <span class="kn">import</span> <span class="n">Proxy</span><span class="p">,</span> <span class="n">ProxyType</span>
+<span class="kn">from</span> <span class="nn">selenium.webdriver.common.by</span> <span class="kn">import</span> <span class="n">By</span>
+<span class="kn">from</span> <span class="nn">selenium.webdriver.support</span> <span class="kn">import</span> <span class="n">expected_conditions</span> <span class="k">as</span> <span class="n">EC</span>
+<span class="kn">from</span> <span class="nn">selenium.webdriver.support.ui</span> <span class="kn">import</span> <span class="n">WebDriverWait</span>
+<span class="kn">from</span> <span class="nn">selenium.common.exceptions</span> <span class="kn">import</span> <span class="n">TimeoutException</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">fake_useragent</span> <span class="kn">import</span> <span class="n">UserAgent</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">author</span> <span class="kn">import</span> <span class="n">Author</span>
+    <span class="kn">from</span> <span class="nn">publication</span> <span class="kn">import</span> <span class="n">Publication</span>
+    <span class="kn">from</span> <span class="nn">templates</span> <span class="kn">import</span> <span class="n">urls</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.author</span> <span class="kn">import</span> <span class="n">Author</span>
+    <span class="kn">from</span> <span class="nn">.publication</span> <span class="kn">import</span> <span class="n">Publication</span>
+    <span class="kn">from</span> <span class="nn">.templates</span> <span class="kn">import</span> <span class="n">urls</span>
+
+<div class="viewcode-block" id="Scholarly"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly">[docs]</a><span class="k">class</span> <span class="nc">Scholarly</span><span class="p">:</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">,</span> <span class="n">browser</span><span class="o">=</span><span class="s1">&#39;chrome&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__use_proxy</span> <span class="o">=</span> <span class="n">use_proxy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__session</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__browser</span> <span class="o">=</span> <span class="n">browser</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__URLS</span> <span class="o">=</span> <span class="n">urls</span>
+        <span class="n">gid</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="n">gid</span> <span class="o">=</span> <span class="n">gid</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">16</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__URLS</span><span class="p">[</span><span class="s2">&quot;COOKIES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;GSP&#39;</span><span class="p">:</span> <span class="s1">&#39;ID=</span><span class="si">{0}</span><span class="s1">:CF=4&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gid</span><span class="p">)}</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">use_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__use_proxy</span>
+
+
+<div class="viewcode-block" id="Scholarly.URLS"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.URLS">[docs]</a>    <span class="k">def</span> <span class="nf">URLS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__URLS</span><span class="p">[</span><span class="n">address</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Scholarly.force_quit"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.force_quit">[docs]</a>    <span class="k">def</span> <span class="nf">force_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Quits the session&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span></div>
+ 
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pagerequest</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get_new_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__session</span>
+
+    <span class="nd">@session</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Firefox</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Chrome</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__session</span> <span class="o">=</span> <span class="n">value</span>
+
+
+    <span class="k">def</span> <span class="nf">_has_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Please show you&#39;re not a robot&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;but your computer or network may be sending automated queries&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;have detected unusual traffic from your computer&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+    <span class="k">def</span> <span class="nf">_tor_refresher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">webdriver</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Refreshes TOR node&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">Controller</span><span class="o">.</span><span class="n">from_port</span><span class="p">(</span><span class="n">port</span> <span class="o">=</span> <span class="mi">9151</span><span class="p">)</span> <span class="k">as</span> <span class="n">controller</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Refreshing proxy...&quot;</span><span class="p">)</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">Signal</span><span class="o">.</span><span class="n">NEWNYM</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pagerequest</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeautifulSoup</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns an html page parsed as a BeautifulSoup</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments:</span>
+<span class="sd">           pagerequest {str} -- a string with the address to be retrieved</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            BeautifulSoup -- a parsed html</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_page</span><span class="p">(</span><span class="n">pagerequest</span><span class="p">)</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;</span><span class="se">\xa0</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_search_scholar_soup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generator that returns Publication objects from the search page&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;gs_or&#39;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">Publication</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;scholar&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gs_ico gs_ico_nav_next&#39;</span><span class="p">):</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gs_ico gs_ico_nav_next&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">]</span>
+                <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+
+    <span class="k">def</span> <span class="nf">_search_citation_soup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generator that returns Author objects from the author search page&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;gsc_1usr&#39;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">Author</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="n">next_button</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gs_btnPR gs_in_ib gs_btn_half gs_btn_lsb gs_btn_srt gsc_pgn_pnx&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">next_button</span> <span class="ow">and</span> <span class="s1">&#39;disabled&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">next_button</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">next_button</span><span class="p">[</span><span class="s1">&#39;onclick&#39;</span><span class="p">][</span><span class="mi">17</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">getdecoder</span><span class="p">(</span><span class="s2">&quot;unicode_escape&quot;</span><span class="p">)(</span><span class="n">url</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+
+    <span class="k">def</span> <span class="nf">_find_tag_class_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__data</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="n">__data</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;class&#39;</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">and</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="n">element</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Scholarly.search_single_pub"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.search_single_pub">[docs]</a>    <span class="k">def</span> <span class="nf">search_single_pub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paper_title</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Publication</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Search by scholar query and return a single Publication object&quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PUBSEARCH&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">paper_title</span><span class="p">))</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__URLS</span><span class="p">[</span><span class="s1">&#39;PUBLIB&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;gs_res_glb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data-sva&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Publication</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;gs_or&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;scholar&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Scholarly.search_pubs_query"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.search_pubs_query">[docs]</a>    <span class="k">def</span> <span class="nf">search_pubs_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search by scholar query and return a generator of Publication objects&quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PUBSEARCH&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">query</span><span class="p">))</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__search_scholar_soup</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Scholarly.search_author"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.search_author">[docs]</a>    <span class="k">def</span> <span class="nf">search_author</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search by author name and return a generator of Author objects&quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;AUTHSEARCH&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__search_citation_soup</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Scholarly.search_keyword"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.search_keyword">[docs]</a>    <span class="k">def</span> <span class="nf">search_keyword</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search by keyword and return a generator of Author objects&quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;KEYWORDSEARCH&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">keyword</span><span class="p">))</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__search_citation_soup</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Scholarly.search_pubs_custom_url"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.search_pubs_custom_url">[docs]</a>    <span class="k">def</span> <span class="nf">search_pubs_custom_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search by custom URL and return a generator of Publication objects</span>
+<span class="sd">        URL should be of the form &#39;/scholar?q=...&#39;&quot;&quot;&quot;</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__search_scholar_soup</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Scholarly.search_author_custom_url"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.Scholarly.search_author_custom_url">[docs]</a>    <span class="k">def</span> <span class="nf">search_author_custom_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search by custom URL and return a generator of Publication objects</span>
+<span class="sd">        URL should be of the form &#39;/citation?q=...&#39;&quot;&quot;&quot;</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;HOST&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__search_citation_soup</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ScholarlyDefault"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.ScholarlyDefault">[docs]</a><span class="k">class</span> <span class="nc">ScholarlyDefault</span><span class="p">(</span><span class="n">Scholarly</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">:</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="n">Scholarly</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_new_session</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_new_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tor_refresher</span><span class="p">()</span>
+
+        <span class="n">sess</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">use_proxy</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using proxy&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">proxies</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;http&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">),</span>
+                <span class="s2">&quot;https&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">)</span>
+            <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="n">sess</span>
+
+
+    <span class="k">def</span> <span class="nf">_handle_too_many_requests</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_proxy</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tor_refresher</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_new_session</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Too many requests from scholarly. Consider using proxy</span>
+<span class="s2">                      and/or scholarly with selenium. Waiting till the end of the</span>
+<span class="s2">                      day to continue.&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="n">now_sec</span> <span class="o">=</span> <span class="n">now</span><span class="o">.</span><span class="n">minute</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="n">now</span><span class="o">.</span><span class="n">second</span> <span class="o">+</span> <span class="n">now</span><span class="o">.</span><span class="n">hour</span> <span class="o">*</span> <span class="mi">3600</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">-</span> <span class="n">now_sec</span><span class="p">)</span>
+    
+
+    <span class="k">def</span> <span class="nf">_get_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pagerequest</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">searching</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">while</span> <span class="n">searching</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">pagerequest</span><span class="p">,</span> 
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;User-agent&#39;</span><span class="p">:</span><span class="n">UserAgent</span><span class="p">()</span><span class="o">.</span><span class="n">random</span><span class="p">},</span> 
+                <span class="n">cookies</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s2">&quot;COOKIES&quot;</span><span class="p">))</span>
+
+            <span class="n">searching</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_captcha</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">searching</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Captcha or error detected, consider using scholarly with Selenium and a proxy&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_too_many_requests</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">text</span>            </div>
+
+
+<div class="viewcode-block" id="ScholarlySelenium"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.ScholarlySelenium">[docs]</a><span class="k">class</span> <span class="nc">ScholarlySelenium</span><span class="p">(</span><span class="n">Scholarly</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">:</span><span class="nb">bool</span><span class="p">,</span> <span class="n">browser</span><span class="o">=</span><span class="s1">&#39;chrome&#39;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using Scholarly with Selenium&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__browser</span> <span class="o">=</span> <span class="n">browser</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_session</span><span class="p">(</span><span class="n">browser</span><span class="p">)</span>
+        
+
+    <span class="k">def</span> <span class="nf">_get_new_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">browser</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;chrome&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">webdriver</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new webdriver according to the browser selected</span>
+<span class="sd">        </span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">            browser {str} -- the browser to be used, either &#39;chrome&#39; or &#39;firefox&#39; (default: {&#39;chrome&#39;})</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            webdriver -- an instance of a webdriver.Chrome or webdriver.Firefox</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception -- browser should be either &#39;chrome&#39; or &#39;firefox&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">browser</span> <span class="o">==</span> <span class="s1">&#39;chrome&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_chrome_agent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_proxy</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">browser</span> <span class="o">==</span> <span class="s1">&#39;firefox&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_firefox_agent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_proxy</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Browser not supported, please use &#39;chrome&#39; or &#39;firefox&#39;&quot;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_new_chrome_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Chrome</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Chrome based agent</span>
+<span class="sd">        </span>
+<span class="sd">        The agent receives a randomized window and agent.</span>
+<span class="sd">        Optimized to minimized detection by the scraped server</span>
+<span class="sd">        </span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">            use_proxy {bool} -- whether or not to use proxy (default: {True})</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            webdriver.Chrome -- a chrome based webdriver</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chrome_options</span> <span class="o">=</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">ChromeOptions</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">use_proxy</span><span class="p">:</span> 
+            <span class="n">chrome_options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">)))</span>
+        
+        <span class="n">chrome_options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;user-agent={UserAgent().random}&#39;</span><span class="p">)</span>
+        <span class="n">chrome_options</span><span class="o">.</span><span class="n">add_experimental_option</span><span class="p">(</span>
+            <span class="s2">&quot;excludeSwitches&quot;</span><span class="p">,</span> 
+            <span class="p">[</span><span class="s2">&quot;enable-automation&quot;</span><span class="p">])</span>
+        <span class="n">chrome_options</span><span class="o">.</span><span class="n">add_experimental_option</span><span class="p">(</span><span class="s1">&#39;useAutomationExtension&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">chrome_options</span><span class="p">)</span>
+        <span class="n">driver</span><span class="o">.</span><span class="n">set_window_size</span><span class="p">(</span>
+            <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1025</span><span class="p">),</span> 
+            <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1025</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">driver</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_new_firefox_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_proxy</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Firefox</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Firefox based agent</span>
+<span class="sd">        </span>
+<span class="sd">        The agent receives a randomized window and agent.</span>
+<span class="sd">        Optimized to minimized detection by the scraped server</span>
+<span class="sd">        </span>
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">            use_proxy {bool} -- whether or not to use proxy (default: {True})</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            webdriver.Firefox -- a chrome based webdriver</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">proxy</span> <span class="o">=</span> <span class="n">Proxy</span><span class="p">({</span>
+            <span class="s2">&quot;proxyType&quot;</span><span class="p">:</span> <span class="n">ProxyType</span><span class="o">.</span><span class="n">MANUAL</span><span class="p">,</span>
+            <span class="s2">&quot;httpProxy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;httpsProxy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;socksProxy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;sslProxy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;ftpProxy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">URLS</span><span class="p">(</span><span class="s1">&#39;PROXY&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;noProxy&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">})</span>
+
+        <span class="n">profile</span> <span class="o">=</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">FirefoxProfile</span><span class="p">()</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">set_preference</span><span class="p">(</span><span class="s2">&quot;dom.webdriver.enabled&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">set_preference</span><span class="p">(</span><span class="s1">&#39;useAutomationExtension&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">set_preference</span><span class="p">(</span><span class="s2">&quot;general.useragent.override&quot;</span><span class="p">,</span> <span class="n">UserAgent</span><span class="p">()</span><span class="o">.</span><span class="n">random</span><span class="p">)</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">update_preferences</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">use_proxy</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Firefox</span><span class="p">(</span><span class="n">firefox_profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span> <span class="n">proxy</span><span class="o">=</span><span class="n">proxy</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Firefox</span><span class="p">(</span><span class="n">firefox_profile</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_webdrive_refresher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tor_refresher</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__browser</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pagerequest</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#just in case we get a good TOR server we wait to not overload it</span>
+        <span class="n">searching</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Tries to retrieve the page until no captcha is shown</span>
+        <span class="k">while</span> <span class="n">searching</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pagerequest</span><span class="p">)</span>
+                <span class="n">wait</span> <span class="o">=</span> <span class="n">WebDriverWait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">page_source</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_captcha</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tor_refresher</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_session</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">searching</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="n">TimeoutException</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Server is too slow, stopping search&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">page_source</span></div>
+
+
+<div class="viewcode-block" id="get_scholarly_instance"><a class="viewcode-back" href="../../scholarly.html#scholarly.scholarly.get_scholarly_instance">[docs]</a><span class="k">def</span> <span class="nf">get_scholarly_instance</span><span class="p">(</span><span class="n">use_proxy</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+        <span class="n">use_selenium</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">browser</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;chrome&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScholarlySelenium</span> <span class="ow">or</span> <span class="n">ScholarlyDefault</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Returns an instance of the scraper</span>
+<span class="sd">    </span>
+<span class="sd">    To use selenium a webdriver is required</span>
+<span class="sd">    </span>
+<span class="sd">    Keyword Arguments:</span>
+<span class="sd">        use_proxy {bool} -- Whether or not to use a proxy during scraping (default: {False})</span>
+<span class="sd">        use_selenium {bool} -- Whether or not to use Selenium during scraphig (default: {True})</span>
+<span class="sd">        browser {str} -- What webdriver to use when scraping with selenium. Either &#39;chrome&#39; or &#39;firefox&#39; (default: {&#39;chrome&#39;})</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">use_selenium</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ScholarlySelenium</span><span class="p">(</span><span class="n">use_proxy</span><span class="p">,</span> <span class="n">browser</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ScholarlyDefault</span><span class="p">(</span><span class="n">use_proxy</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Victor N. Silva
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

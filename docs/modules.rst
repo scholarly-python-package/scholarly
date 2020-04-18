@@ -5,4 +5,3 @@ scholarly
    :maxdepth: 4
 
    scholarly
-   setup
