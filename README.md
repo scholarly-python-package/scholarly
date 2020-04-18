@@ -1,5 +1,9 @@
 # scholarly
-scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
+[![Documentation Status](https://readthedocs.org/projects/scholarly/badge/?version=latest)](https://scholarly.readthedocs.io/en/latest/?badge=latest)
+
+scholarly scrapes [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way. You can use it to collect information about papers and authors.
+
+Please see [the documentation](https://scholarly.readthedocs.io) for Usage information
 
 
 ## Usage
@@ -140,17 +144,7 @@ git clone https://github.com/OrganicIrradiation/scholarly.git
 ```
 
 
-## Requirements
-Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), [Selenium](https://pypi.org/project/selenium/), and [requests[security]](https://pypi.python.org/pypi/requests/).
-Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
-
-Selenium uses Firefox, therefore you need a Firefox installation. Moreover download and install the latest version of the [geckodriver](https://github.com/mozilla/geckodriver/releases/):
-
-```bash
-wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-<version>.tar.gz
-tar -xzf geckodriver-<version>.tar.gz
-cp geckodriver /usr/local/bin
-```
-
 ## License
-The original code that this project was forked from was released by [Bello Chalmers](https://github.com/lbello/chalmers-web) under a [WTFPL](http://www.wtfpl.net/) license. In keeping with this mentality, all code is released under the [Unlicense](http://unlicense.org/).
+The original code that this project was forked from was released by [Bello Chalmers](https://github.com/lbello/chalmers-web) under a [WTFPL](http://www.wtfpl.net/) license. https://github.com/janruh/scholarly
+
+This is a 3rd party fork from [Organic Irradiation](https://github.com/Organi/scholarly) and [Janhun](https://github.com/janruh/scholarly) In keeping with this mentality, all code is released under the [Unlicense](http://unlicense.org/).
