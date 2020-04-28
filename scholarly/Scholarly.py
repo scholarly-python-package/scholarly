@@ -141,7 +141,7 @@ class Scholarly:
         html = html.replace(u'\xa0', u' ')
         return BeautifulSoup(html, 'html.parser')
 
-    def _search_scholar_soup(self, soup):
+    def __search_scholar_soup(self, soup):
         """Generator that returns Publication objects from the search page"""
         while True:
             for row in soup.find_all('div', 'gs_or'):
@@ -152,7 +152,7 @@ class Scholarly:
             else:
                 break
 
-    def _search_citation_soup(self, soup):
+    def __search_citation_soup(self, soup):
         """Generator that returns Author objects from the author search page"""
         while True:
             for row in soup.find_all('div', 'gsc_1usr'):
