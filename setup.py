@@ -18,7 +18,7 @@ setuptools.setup(
 
     url = 'https://github.com/silvavn/scholarly',
     packages=setuptools.find_packages(),
-    data_files=[('scholarly', ['scholarly/*.json'])],
+    data_files=[('scholarly', ['scholarly/templates/urls.json'])],
     download_url = 'https://github.com/silvavn/scholarly/tarball/v0.3.0',
     keywords = ['Google Scholar', 'academics', 'citations', 'selenium', 'webscrapping'],
     classifiers = [
