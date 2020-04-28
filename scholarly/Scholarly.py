@@ -217,7 +217,7 @@ class _ScholarlyDefault(Scholarly):
     def __init__(self, use_proxy: bool):
         print("Using Scholarly with Requests")
         super().__init__(self, use_proxy)
-        self.session = self._get_new_session()
+        self.session = self._get_new_session(browser)
 
     def _get_new_session(self):
         self._tor_refresher()
@@ -375,7 +375,7 @@ class _ScholarlySelenium(Scholarly):
                 text = self.session.page_source
                 if self._has_captcha(text):
                     self._tor_refresher()
-                    self.session = self._get_new_session()
+                    self.session = self._get_new_session(browser)
                 else:
                     searching = False
             except TimeoutException:
