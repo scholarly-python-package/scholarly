@@ -213,7 +213,7 @@ class Publication(object):
                 requests.utils.quote(self.id_scholarcitedby))
             soup = self._scholarly._get_soup(
                 self._scholarly.URLS('HOST').format(url))
-            return self._scholarly.__search_scholar_soup(soup)
+            return self._scholarly._search_scholar_soup(soup)
         else:
             return []
 

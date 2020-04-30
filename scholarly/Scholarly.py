@@ -141,7 +141,7 @@ class Scholarly:
         html = html.replace(u'\xa0', u' ')
         return BeautifulSoup(html, 'html.parser')
 
-    def __search_scholar_soup(self, soup):
+    def _search_scholar_soup(self, soup):
         """Generator that returns Publication objects from the search page"""
         while True:
             for row in soup.find_all('div', 'gs_or'):
@@ -187,7 +187,7 @@ class Scholarly:
         soup = self._get_soup(self.URLS('HOST').format(url))
         self.__URLS['PUBLIB'] = soup.find(
             'div', id='gs_res_glb').get('data-sva')
-        return self.__search_scholar_soup(soup)
+        return self._search_scholar_soup(soup)
 
     def search_author(self, name: str):
         """Search by author name and return a generator of Author objects"""
@@ -205,7 +205,7 @@ class Scholarly:
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'"""
         soup = self._get_soup(self.URLS('HOST').format(url))
-        return self.__search_scholar_soup(soup)
+        return self._search_scholar_soup(soup)
 
     def search_author_custom_url(self, url: str):
         """Search by custom URL and return a generator of Publication objects
