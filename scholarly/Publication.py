@@ -84,6 +84,9 @@ class Publication(object):
                 self.bib['cites'] = re.findall(r'\d+', link.text)[0]
                 self.bib['citesurl'] = self._scholarly.URLS(
                     'HOST').format(link['href'])
+                self.citedby = int(re.findall(r'\d+', link.text)[0])
+                self.id_scholarcitedby = re.findall(
+                    self._scholarly.URLS('SCHOLARPUBRE'), link['href'])[0]
 
         if __data.find('div', class_='gs_ggs gs_fl'):
             self.bib['eprint'] = __data.find(
