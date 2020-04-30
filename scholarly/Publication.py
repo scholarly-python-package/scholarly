@@ -197,7 +197,7 @@ class Publication(object):
             self._filled = True
         return self
 
-    def __get_citedby(self):
+    def get_citedby(self):
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
         """
