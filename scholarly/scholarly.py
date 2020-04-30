@@ -283,7 +283,6 @@ class Author(object):
             'all' = all of the above (this is the default)
         """
         sections = [section.lower() for section in sections]
-        print(sections)
         url_citations = _CITATIONAUTH.format(self.id)
         url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
         soup = _get_soup(_HOST+url)
