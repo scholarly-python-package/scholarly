@@ -185,6 +185,8 @@ class Scholarly:
         """Run query and return a generator of Publication objects"""
         url = self.URLS('PUBSEARCH').format(requests.utils.quote(query))
         soup = self._get_soup(self.URLS('HOST').format(url))
+        self.__URLS['PUBLIB'] = soup.find(
+            'div', id='gs_res_glb').get('data-sva')
         return self.__search_scholar_soup(soup)
 
     def search_author(self, name: str):
