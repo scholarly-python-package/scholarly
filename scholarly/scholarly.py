@@ -259,6 +259,11 @@ class Author(object):
                 self.citedby = int(citedby.text[9:])
         self._filled = False
 
+    # all Author object sections for fill() method
+    sections = ['basic', 'citation_indices', 'citation_num', 'co-authors',
+            'publications']
+    sections = {section:section for section in sections}
+
     def fill(self, sections=['all']):
         """Populate the Author with information from their profile
 
@@ -272,7 +277,7 @@ class Author(object):
             are broken down as follows:
             'basic' = name, affiliation, and interests;
             'citation_indices' = h-index, i10-index, and 5-year analogues;
-            'num_citations' = number of citations per year;
+            'citation_num' = number of citations per year;
             'co-authors' = co-authors;
             'publications' = publications;
             'all' = all of the above (this is the default)
@@ -282,14 +287,15 @@ class Author(object):
         url_citations = _CITATIONAUTH.format(self.id)
         url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
         soup = _get_soup(_HOST+url)
-        if 'basic' in sections or 'all' in sections:
+        # basic data
+        if self.sections['basic'] in sections or 'all' in sections:
             self.name = soup.find('div', id='gsc_prf_in').text
             self.affiliation = soup.find('div', class_='gsc_prf_il').text
             self.interests = [i.text.strip() for i in
                               soup.find_all('a', class_='gsc_prf_inta')]
         
         # h-index, i10-index and h-index, i10-index in the last 5 years
-        if 'citation_indices' in sections or 'all' in sections:
+        if self.sections['citation_indices'] in sections or 'all' in sections:
             index = soup.find_all('td', class_='gsc_rsb_std')
             if index:
                 self.citedby = int(index[0].text)
@@ -302,13 +308,13 @@ class Author(object):
                 self.hindex = self.hindex5y = self.i10index = self.i10index5y = 0
 
         # number of citations per year
-        if 'citation_num' in sections or 'all' in sections:
+        if self.sections['citation_num'] in sections or 'all' in sections:
             years = [int(y.text) for y in soup.find_all('span', class_='gsc_g_t')]
             cites = [int(c.text) for c in soup.find_all('span', class_='gsc_g_al')]
             self.cites_per_year = dict(zip(years, cites))
 
         # co-authors
-        if 'co-authors' in sections or 'all' in sections:
+        if self.sections['co-authors'] in sections or 'all' in sections:
             self.coauthors = []
             for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
                 new_coauthor = Author(re.findall(_CITATIONAUTHRE, row('a')[0]['href'])[0])
@@ -317,7 +323,8 @@ class Author(object):
                 self.coauthors.append(new_coauthor)
 
 
-        if 'publications' in sections or 'all' in sections:
+        # publications
+        if self.sections['publications'] in sections or 'all' in sections:
             self.publications = list()
             pubstart = 0
             while True:
@@ -331,7 +338,8 @@ class Author(object):
                 else:
                     break
 
-        if 'all' in sections:
+        if 'all' in sections or \
+        set(sections) == set(self.sections.values()):
             self._filled = True
         return self
 
