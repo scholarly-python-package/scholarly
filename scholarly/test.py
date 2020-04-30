@@ -1,16 +1,24 @@
 import unittest
 import scholarly
 
+# TODO a number of these tests are out of date with the current information on
+# Google Scholar. This is the obvious downside of designing static tests that
+# rely on dynamic external data.
 class TestScholarly(unittest.TestCase):
 
     def test_empty_author(self):
+        '''Test that sholarly.search_author('') returns no authors'''
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        ''' Returns 4 individuals with the name 'label' '''
+        ''' As of 2020-04-30, there are  6 individuals that match the name
+        'label' '''
+        # TODO this seems like undesirable functionality for
+        # scholarly.search_keyword() with empty string. Surely, no authors
+        # should be returned. Consider modifying the method itself.
         authors = [a for a in scholarly.search_keyword('')]
-        self.assertEqual(len(authors), 4)
+        self.assertEqual(len(authors), 6)
 
     def test_empty_publication(self):
         pubs = [p for p in scholarly.search_pubs_query('')]
@@ -24,12 +32,12 @@ class TestScholarly(unittest.TestCase):
     def test_keyword(self):
         authors = [a.name for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
-        self.assertIn(u'Steven A. Cholewiak', authors)
+        self.assertIn(u'Steven A. Cholewiak, PhD', authors)
 
     def test_multiple_authors(self):
-        ''' As of March 14, 2019 there are 34 'Zucker's '''
+        ''' As of 2020-04-30 there are 88 'Zucker's '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 58)
+        self.assertEqual(len(authors), 88)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
