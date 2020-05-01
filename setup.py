@@ -1,32 +1,52 @@
 import os
 import setuptools
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+def get_description():
+    with open("README.md", "r") as fh:
+        return fh.read()
 
 setuptools.setup(
     name = 'scholarly',
-    version = '0.2.5',
-    author = 'Steven A. Cholewiak',
-    author_email = 'steven@cholewiak.com',
+    version = '0.3.0',
+    author = 'Victor N. Silva',
+    author_email = 'noreply@noreply.com',
 
-    description = 'Simple access to Google Scholar authors and citations',
-    long_description=long_description,
+    description = 'Scrape Google Scholar!',
+    long_description=get_description(),
     long_description_content_type="text/markdown",
     license='Unlicense',
 
-    url = 'https://github.com/OrganicIrradiation/scholarly',
+    url = 'https://github.com/silvavn/scholarly',
     packages=setuptools.find_packages(),
-    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.5',
-    keywords = ['Google Scholar', 'academics', 'citations'],
+    download_url = 'https://github.com/silvavn/scholarly/tarball/v0.3.0',
+    keywords = ['Google Scholar', 'academics', 'citations', 'selenium', 'webscrapping'],
     classifiers = [
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
+        'Intended Audience :: Researchers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules'],
-    install_requires=['arrow', 'beautifulsoup4', 'bibtexparser', 'requests[security]'],
+    install_requires=['arrow',
+        'beautifulsoup4',
+        'bibtexparser',
+        'bs4',
+        'certifi',
+        'chardet',
+        'fake-useragent',
+        'future',
+        'idna',
+        'numpy',
+        'pandas',
+        'pyparsing',
+        'python-dateutil',
+        'pytz',
+        'requests',
+        'selenium',
+        'six',
+        'soupsieve',
+        'stem',
+        'urllib3',
+        'wincertstore'],
     test_suite="test.py"
 )

@@ -1,0 +1,18 @@
+{
+	"HOST": "https://scholar.google.com{0}",
+	"AUTHSEARCH": "/citations?view_op=search_authors&hl=en&mauthors={0}",
+	"CITATIONAUTH": "/citations?user={0}&hl=en",
+	"CITATIONPUB": "/citations?view_op=view_citation&citation_for_view={0}",
+	"KEYWORDSEARCH": "/citations?view_op=search_authors&hl=en&mauthors=label:{0}",
+	"PUBSEARCH": "/scholar?hl=en&q={0}",
+	"SCHOLARPUB": "/scholar?oi=bibs&hl=en&cites={0}",
+	"CAPTCHA": "iframe[name^='a-'][src^='https://www.google.com/recaptcha/api2/anchor?']",
+	"CITATIONAUTHRE": "user=([\\w-]*)",
+	"CITATIONPUBRE": "citation_for_view=([\\w-]*:[\\w-]*)",
+	"SCHOLARCITERE": "gs_ocit\\(event,\\'([\\w-]*)\\'",
+	"SCHOLARPUBRE": "cites=([\\w-]*)",
+	"EMAILAUTHORRE": "Verified email at ",
+	"PAGESIZE":100,
+	"PROXY":"socks5://127.0.0.1:9150",
+	"BIBCITE":"/scholar?q=info:{0}:scholar.google.com/&output=cite&scirp={1}&hl=en"
+}

@@ -1,1 +1,1 @@
-from .scholarly import get_scholarly_instance
+from .Scholarly import get_scholarly_instance

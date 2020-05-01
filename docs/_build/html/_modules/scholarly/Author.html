@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>scholarly.Author &mdash; scholarly 0.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> scholarly
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../proxy.html">Proxies and Selenium</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">scholarly</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">scholarly</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>scholarly.Author</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for scholarly.Author</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+
+<div class="viewcode-block" id="Author"><a class="viewcode-back" href="../../scholarly.html#scholarly.Author.Author">[docs]</a><span class="k">class</span> <span class="nc">Author</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns an object for a single author&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__data</span><span class="p">,</span> <span class="n">scholarly</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scholarly</span> <span class="o">=</span> <span class="n">scholarly</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">__data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">_CITATIONAUTHRE</span><span class="p">,</span> <span class="n">__data</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;href&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">url_picture</span> <span class="o">=</span> <span class="n">_HOST</span> <span class="o">+</span> \
+                <span class="s1">&#39;/citations?view_op=medium_photo&amp;user=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">__data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                <span class="s1">&#39;h3&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="n">_find_tag_class_name</span><span class="p">(</span><span class="n">__data</span><span class="p">,</span> <span class="s1">&#39;h3&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">text</span>
+            <span class="n">affiliation</span> <span class="o">=</span> <span class="n">__data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                <span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="n">_find_tag_class_name</span><span class="p">(</span><span class="n">__data</span><span class="p">,</span> <span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;aff&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">affiliation</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">affiliation</span> <span class="o">=</span> <span class="n">affiliation</span><span class="o">.</span><span class="n">text</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">__data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                <span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="n">_find_tag_class_name</span><span class="p">(</span><span class="n">__data</span><span class="p">,</span> <span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;eml&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">email</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">_EMAILAUTHORRE</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="n">email</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="n">topics</span> <span class="o">=</span> <span class="n">__data</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
+                                     <span class="n">class_</span><span class="o">=</span><span class="n">_find_tag_class_name</span><span class="p">(</span><span class="n">__data</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;a&#39;</span><span class="p">,</span>
+                                                                 <span class="s1">&#39;one_int&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interests</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">topics</span><span class="p">]</span>
+            <span class="n">citedby</span> <span class="o">=</span> <span class="n">__data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                <span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="n">_find_tag_class_name</span><span class="p">(</span><span class="n">__data</span><span class="p">,</span> <span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;cby&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">citedby</span> <span class="ow">and</span> <span class="n">citedby</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">citedby</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">citedby</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="mi">9</span><span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filled</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Author.fill"><a class="viewcode-back" href="../../scholarly.html#scholarly.Author.Author.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Populate the Author with information from their profile&quot;&quot;&quot;</span>
+        <span class="n">url_citations</span> <span class="o">=</span> <span class="n">_CITATIONAUTH</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&amp;pagesize=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url_citations</span><span class="p">,</span> <span class="n">_PAGESIZE</span><span class="p">)</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="n">_HOST</span><span class="o">+</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;gsc_prf_in&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">affiliation</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_prf_il&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interests</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_prf_inta&#39;</span><span class="p">)]</span>
+
+        <span class="c1"># h-index, i10-index and h-index, i10-index in the last 5 years</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;td&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_rsb_std&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">citedby</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">citedby5y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hindex</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hindex5y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i10index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i10index5y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hindex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hindex5y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i10index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i10index5y</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># number of citations per year</span>
+        <span class="n">years</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;span&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_g_t&#39;</span><span class="p">)]</span>
+        <span class="n">cites</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;span&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_g_al&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cites_per_year</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">years</span><span class="p">,</span> <span class="n">cites</span><span class="p">))</span>
+
+        <span class="c1"># co-authors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coauthors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;span&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_rsb_a_desc&#39;</span><span class="p">):</span>
+            <span class="n">new_coauthor</span> <span class="o">=</span> <span class="n">Author</span><span class="p">(</span>
+                <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">_CITATIONAUTHRE</span><span class="p">,</span>
+                           <span class="n">row</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;href&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scholarly</span><span class="p">)</span>
+            <span class="n">new_coauthor</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tabindex</span><span class="o">=</span><span class="s2">&quot;-1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+            <span class="n">new_coauthor</span><span class="o">.</span><span class="n">affiliation</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="s2">&quot;gsc_rsb_a_ext&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coauthors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_coauthor</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">pubstart</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;tr&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;gsc_a_tr&#39;</span><span class="p">):</span>
+                <span class="n">new_pub</span> <span class="o">=</span> <span class="n">Publication</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scholarly</span><span class="p">,</span> <span class="s1">&#39;citations&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_pub</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;disabled&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;button&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;gsc_bpf_more&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+                <span class="n">pubstart</span> <span class="o">+=</span> <span class="n">_PAGESIZE</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&amp;cstart=</span><span class="si">{1}</span><span class="s1">&amp;pagesize=</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">url_citations</span><span class="p">,</span> <span class="n">pubstart</span><span class="p">,</span> <span class="n">_PAGESIZE</span><span class="p">)</span>
+                <span class="n">soup</span> <span class="o">=</span> <span class="n">_get_soup</span><span class="p">(</span><span class="n">_HOST</span><span class="o">+</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filled</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Victor N. Silva
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

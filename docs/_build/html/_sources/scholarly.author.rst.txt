@@ -1,0 +1,22 @@
+scholarly.author package
+========================
+
+Submodules
+----------
+
+scholarly.author.Author module
+------------------------------
+
+.. automodule:: scholarly.author.Author
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: scholarly.author
+   :members:
+   :undoc-members:
+   :show-inheritance:
