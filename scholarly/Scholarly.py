@@ -152,7 +152,7 @@ class Scholarly:
             else:
                 break
 
-    def _search_citation_soup(self, soup):
+    def __search_citation_soup(self, soup):
         """Generator that returns Author objects from the author search page"""
         while True:
             for row in soup.find_all('div', 'gsc_1usr'):
@@ -185,7 +185,9 @@ class Scholarly:
         """Run query and return a generator of Publication objects"""
         url = self.URLS('PUBSEARCH').format(requests.utils.quote(query))
         soup = self._get_soup(self.URLS('HOST').format(url))
-        return self.__search_scholar_soup(soup)
+        self.__URLS['PUBLIB'] = soup.find(
+            'div', id='gs_res_glb').get('data-sva')
+        return self._search_scholar_soup(soup)
 
     def search_author(self, name: str):
         """Search by author name and return a generator of Author objects"""
@@ -203,7 +205,7 @@ class Scholarly:
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'"""
         soup = self._get_soup(self.URLS('HOST').format(url))
-        return self.__search_scholar_soup(soup)
+        return self._search_scholar_soup(soup)
 
     def search_author_custom_url(self, url: str):
         """Search by custom URL and return a generator of Publication objects
@@ -217,7 +219,7 @@ class _ScholarlyDefault(Scholarly):
     def __init__(self, use_proxy: bool):
         print("Using Scholarly with Requests")
         super().__init__(self, use_proxy)
-        self.session = self._get_new_session()
+        self.session = self._get_new_session(browser)
 
     def _get_new_session(self):
         self._tor_refresher()
@@ -375,7 +377,7 @@ class _ScholarlySelenium(Scholarly):
                 text = self.session.page_source
                 if self._has_captcha(text):
                     self._tor_refresher()
-                    self.session = self._get_new_session()
+                    self.session = self._get_new_session(browser)
                 else:
                     searching = False
             except TimeoutException:

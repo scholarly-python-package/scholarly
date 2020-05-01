@@ -2,6 +2,8 @@ import re
 import pprint
 import hashlib
 import random
+import requests
+import arrow
 import bibtexparser
 from bibtexparser.bibdatabase import BibDatabase
 import copy
@@ -84,6 +86,9 @@ class Publication(object):
                 self.bib['cites'] = re.findall(r'\d+', link.text)[0]
                 self.bib['citesurl'] = self._scholarly.URLS(
                     'HOST').format(link['href'])
+                self.citedby = int(re.findall(r'\d+', link.text)[0])
+                self.id_scholarcitedby = re.findall(
+                    self._scholarly.URLS('SCHOLARPUBRE'), link['href'])[0]
 
         if __data.find('div', class_='gs_ggs gs_fl'):
             self.bib['eprint'] = __data.find(
@@ -197,7 +202,7 @@ class Publication(object):
             self._filled = True
         return self
 
-    def __get_citedby(self):
+    def get_citedby(self):
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
         """
