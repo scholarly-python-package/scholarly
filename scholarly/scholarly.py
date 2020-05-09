@@ -23,12 +23,12 @@ _HEADERS = {
     'accept': 'text/html,application/xhtml+xml,application/xml'
     }
 _HOST = 'https://scholar.google.com'
-_AUTHSEARCH = '/citations?view_op=search_authors&hl=en&mauthors={0}'
-_CITATIONAUTH = '/citations?user={0}&hl=en'
-_CITATIONPUB = '/citations?view_op=view_citation&citation_for_view={0}'
-_KEYWORDSEARCH = '/citations?view_op=search_authors&hl=en&mauthors=label:{0}'
-_PUBSEARCH = '/scholar?q={0}'
-_SCHOLARPUB = '/scholar?oi=bibs&hl=en&cites={0}'
+_AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
+_CITATIONAUTH = '/citations?hl=en&user={0}'
+_CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
+_KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
+_PUBSEARCH = '/scholar?hl=en&q={0}'
+_SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
