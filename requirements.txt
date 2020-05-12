@@ -1,5 +1,6 @@
 arrow
 beautifulsoup4
 bibtexparser
-pysocks
+PySocks
 requests[security]
+free-proxy
