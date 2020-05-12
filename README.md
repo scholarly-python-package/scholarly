@@ -1,10 +1,25 @@
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
-To install the latest version from the GitHub repository:
+## Installation
+Use `pip` to install from pypi:
+
+```bash
+pip install scholarly
 ```
+
+or `pip` to install from github:
+
+```bash
 pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
 ```
+
+or clone the package using git:
+
+```bash
+git clone https://github.com/OrganicIrradiation/scholarly.git
+```
+
 
 If you want to have support for proxies, you may also want to install the following libraries:
 ```
@@ -15,6 +30,13 @@ If you want to use Tor as proxy:
 ```
 sudo apt-get install -y tor
 ```
+
+## Requirements
+Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), and [requests[security]](https://pypi.python.org/pypi/requests/).
+Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
+
+
+
 
 ## Usage
 Because `scholarly` does not use an official API, no key is required. Simply:
@@ -133,30 +155,6 @@ scholarly.use_proxy(**proxies)
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
-
-## Installation
-Use `pip` to install from pypi:
-
-```bash
-pip install scholarly
-```
-
-or `pip` to install from github:
-
-```bash
-pip install git+https://github.com/OrganicIrradiation/scholarly.git
-```
-
-or clone the package using git:
-
-```bash
-git clone https://github.com/OrganicIrradiation/scholarly.git
-```
-
-
-## Requirements
-Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), and [requests[security]](https://pypi.python.org/pypi/requests/).
-Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
 
 
 ## License
