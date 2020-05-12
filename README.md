@@ -1,6 +1,20 @@
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
+To install the latest version from the GitHub repository:
+```
+pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
+```
+
+If you want to have support for proxies, you may also want to install the following libraries:
+```
+pip3 install -U free-proxy PySocks 
+```
+
+If you want to use Tor as proxy:
+```
+sudo apt-get install -y tor
+```
 
 ## Usage
 Because `scholarly` does not use an official API, no key is required. Simply:
@@ -95,14 +109,29 @@ print([citation.bib['title'] for citation in pub.get_citedby()])
 Just run `scholarly.use_proxy()`. Parameters are an http and an https proxy.
 *Note: this is a completely optional - opt-in feature'
 
-```python
-    >>> # default values are shown below
-    >>> proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
-    >>> scholarly.use_proxy(**proxies)
-    >>> # If proxy is correctly set up, the following runs through it
-    >>> scholarly.search_author('Steven A Cholewiak')
-    >>>
+Example using FreeProxy:
 
+```python
+from fp.fp import FreeProxy
+from scholarly import scholarly
+
+proxy = FreeProxy(rand=True, timeout=1, country_id=['US', 'CA']).get()  
+scholarly.use_proxy(http=proxy, https=proxy)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+Example using Tor:
+
+```python
+from scholarly import scholarly
+# default values are shown below
+proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
+scholarly.use_proxy(**proxies)
+# If proxy is correctly set up, the following runs through it
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
 ```
 
 ## Installation
