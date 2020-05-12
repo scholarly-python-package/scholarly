@@ -8,6 +8,7 @@ import arrow
 import bibtexparser
 import codecs
 import hashlib
+import logging
 import pprint
 import random
 import re
@@ -40,10 +41,14 @@ _SESSION = requests.Session()
 _PAGESIZE = 100
 
 
+logger = logging.getLogger('scholarly')
+
+
 def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
     """ Routes scholarly through a proxy (e.g. tor).
         Requires pysocks
         Proxy must be running."""
+    logger.info("Enabling proxies: http=%r https=%r", http, https)
     _SESSION.proxies ={
             'http': http,
             'https': https
@@ -51,6 +56,7 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
 
 
 def _handle_captcha(url):
+    logger.warning("Hit captcha: %s", url)
     # TODO: PROBLEMS HERE! NEEDS ATTENTION
     # Get the captcha image
     captcha_url = _HOST + '/sorry/image?id={0}'.format(g_id)
@@ -76,6 +82,7 @@ def _handle_captcha(url):
 
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
+    logger.info("Getting %s", pagerequest)
     # Note that we include a sleep to avoid overloading the scholar server
     time.sleep(5+random.uniform(0, 5))
     resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES)
@@ -103,28 +110,38 @@ def _get_soup(pagerequest):
 
 def _search_scholar_soup(soup):
     """Generator that returns Publication objects from the search page"""
+    logger.info("Reading search page")
     while True:
-        for row in soup.find_all('div', 'gs_or'):
+        rows = soup.find_all('div', 'gs_or')
+        logger.info("Found %d publications", len(rows))
+        for row in rows:
             yield Publication(row, 'scholar')
         if soup.find(class_='gs_ico gs_ico_nav_next'):
+            logger.info("Loading next search page")
             url = soup.find(class_='gs_ico gs_ico_nav_next').parent['href']
             soup = _get_soup(_HOST+url)
         else:
+            logger.info("No more search pages")
             break
 
 
 def _search_citation_soup(soup):
     """Generator that returns Author objects from the author search page"""
     while True:
-        for row in soup.find_all('div', 'gsc_1usr'):
+        rows = soup.find_all('div', 'gsc_1usr')
+        logger.info("Found %d citations", len(rows))
+        for row in rows:
             yield Author(row)
         next_button = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_lsb gs_btn_srt gsc_pgn_pnx')
         if next_button and 'disabled' not in next_button.attrs:
+            logger.info("Loading next page of citations")
             url = next_button['onclick'][17:-1]
             url = codecs.getdecoder("unicode_escape")(url)[0]
             soup = _get_soup(_HOST+url)
         else:
+            logger.info("No more pages of citations")
             break
+
 
 def _find_tag_class_name(__data, tag, text):
     elements = __data.find_all(tag)
