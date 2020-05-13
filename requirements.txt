@@ -3,4 +3,5 @@ beautifulsoup4
 bibtexparser
 PySocks
 requests[security]
+requests[socks]
 free-proxy

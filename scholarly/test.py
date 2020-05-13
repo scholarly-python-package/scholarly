@@ -1,16 +1,22 @@
 import unittest
 import scholarly
 
+
 class TestScholarly(unittest.TestCase):
+    
+    def setUp(self):
+        # Testing using Tor, as other proxies tend to be less reliable
+        proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
+        scholarly.use_proxy(**proxies)
 
     def test_empty_author(self):
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        ''' Returns 4 individuals with the name 'label' '''
+        ''' Returns 6 individuals with the name 'label' '''
         authors = [a for a in scholarly.search_keyword('')]
-        self.assertEqual(len(authors), 4)
+        self.assertEqual(len(authors), 6)
 
     def test_empty_publication(self):
         pubs = [p for p in scholarly.search_pubs_query('')]
@@ -24,18 +30,18 @@ class TestScholarly(unittest.TestCase):
     def test_keyword(self):
         authors = [a.name for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
-        self.assertIn(u'Steven A. Cholewiak', authors)
+        self.assertIn(u'Steven A. Cholewiak, PhD', authors)
 
     def test_multiple_authors(self):
-        ''' As of March 14, 2019 there are 34 'Zucker's '''
+        ''' As of May 12, 2020 there are at least 89 'Zucker's '''
         authors = [a.name for a in scholarly.search_author('Zucker')]
-        self.assertEqual(len(authors), 58)
+        self.assertGreaterEqual(len(authors), 89)
         self.assertIn(u'Steven W Zucker', authors)
 
     def test_multiple_publications(self):
-        ''' As of March 14, 2019 there are 28 pubs that fit the search term'''
+        ''' As of May 12, 2020 there are 29 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('"naive physics" stability "3d shape"')]
-        self.assertEqual(len(pubs), 28)
+        self.assertGreaterEqual(len(pubs), 28)
         self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
@@ -52,7 +58,7 @@ class TestScholarly(unittest.TestCase):
 
     def test_single_author(self):
         author = next(scholarly.search_author('Steven A. Cholewiak')).fill()
-        self.assertEqual(author.name, u'Steven A. Cholewiak')
+        self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
 
 if __name__ == '__main__':

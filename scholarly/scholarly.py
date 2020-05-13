@@ -119,7 +119,7 @@ class _SearchScholarIterator(object):
         self._soup = _get_soup(_HOST + url)
         self.url = url
         self._pos = 0
-        self._rows = self._soup.find_all('div', 'gs_or')
+        self._rows = self._soup.find_all('div', class_="gs_r gs_or gs_scl")
         logger.info("Found %d publications", len(self._rows))
 
     # Iterator protocol
