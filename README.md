@@ -70,6 +70,58 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
  'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisig=AAGBfm0AAAAAXGSbUf67ybEFA3NEyJzRusXRbR441api&scisf=4&ct=citation&cd=0&hl=en'}
 ```
 
+* `Author.fill(sections=['all'])` -- Populate the Author object with
+  information from their profile. The optional `sections` parameter takes a
+  list of the portions of author information to fill, as follows:
+  - `'basic'` = name, affiliation, and interests;
+  - `'citation_indices'` = h-index, i10-index, and 5-year analogues;
+  - `'citation_num'` = number of citations per year;
+  - `'co-authors'` = co-authors;
+  - `'publications'` = publications;
+  - `'all'` = all of the above (this is the default)
+
+```python
+>>> search_query = scholarly.search_author('Steven A Cholewiak')
+>>> author = next(search_query)
+>>> print(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
+{'_filled': False,
+ 'affiliation': 'Vision Scientist',
+ 'citedby': 261,
+ 'citedby5y': 185,
+ 'coauthors': [<scholarly.scholarly.Author object at 0x7fdb210e0550>,
+               <scholarly.scholarly.Author object at 0x7fdb20718210>,
+               <scholarly.scholarly.Author object at 0x7fdb20718290>,
+               <scholarly.scholarly.Author object at 0x7fdb20718350>,
+               <scholarly.scholarly.Author object at 0x7fdb20718410>,
+               <scholarly.scholarly.Author object at 0x7fdb207185d0>,
+               <scholarly.scholarly.Author object at 0x7fdb207184d0>,
+               <scholarly.scholarly.Author object at 0x7fdb207186d0>,
+               <scholarly.scholarly.Author object at 0x7fdb207187d0>,
+               <scholarly.scholarly.Author object at 0x7fdb20718510>,
+               <scholarly.scholarly.Author object at 0x7fdb20718890>,
+               <scholarly.scholarly.Author object at 0x7fdb20718790>,
+               <scholarly.scholarly.Author object at 0x7fdb20718a10>,
+               <scholarly.scholarly.Author object at 0x7fdb20718ad0>,
+               <scholarly.scholarly.Author object at 0x7fdb20718c10>,
+               <scholarly.scholarly.Author object at 0x7fdb20718b90>,
+               <scholarly.scholarly.Author object at 0x7fdb20718d10>,
+               <scholarly.scholarly.Author object at 0x7fdb20718e10>,
+               <scholarly.scholarly.Author object at 0x7fdb20718bd0>,
+               <scholarly.scholarly.Author object at 0x7fdb20718f50>],
+ 'email': '@berkeley.edu',
+ 'hindex': 8,
+ 'hindex5y': 8,
+ 'i10index': 7,
+ 'i10index5y': 7,
+ 'id': '4bahYMkAAAAJ',
+ 'interests': ['Depth Cues',
+               '3D Shape',
+               'Shape from Texture & Shading',
+               'Naive Physics',
+               'Haptics'],
+ 'name': 'Steven A. Cholewiak, PhD',
+ 'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
+```
 
 ### Example
 Here's a quick example demonstrating how to retrieve an author's profile then retrieve the titles of the papers that cite his most popular (cited) paper.
