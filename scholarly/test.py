@@ -3,6 +3,9 @@ import scholarly
 import requests
 
 
+# TODO a number of these tests are out of date with the current information on
+# Google Scholar. This is the obvious downside of designing static tests that
+# rely on dynamic external data.
 class TestScholarly(unittest.TestCase):
 
     def _tor_works(self):
@@ -29,12 +32,16 @@ class TestScholarly(unittest.TestCase):
         #    scholarly.use_random_proxy()
 
     def test_empty_author(self):
-        ''' Returns zero results '''
+        '''Test that sholarly.search_author('') returns no authors'''
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        ''' Returns 6 individuals with the name 'label' '''
+        ''' As of 2020-04-30, there are  6 individuals that match the name
+        'label' '''
+        # TODO this seems like undesirable functionality for
+        # scholarly.search_keyword() with empty string. Surely, no authors
+        # should be returned. Consider modifying the method itself.
         authors = [a for a in scholarly.search_keyword('')]
         self.assertEqual(len(authors), 6)
 
@@ -65,6 +72,7 @@ class TestScholarly(unittest.TestCase):
         ''' As of May 12, 2020 there are at least 29 pubs that fit the search term'''
         pubs = [p.bib['title'] for p in scholarly.search_pubs_query('"naive physics" stability "3d shape"')]
         self.assertGreaterEqual(len(pubs), 29)
+
         self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
@@ -83,6 +91,7 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(filled.bib['year'] == u'2018')
 
     def test_single_author(self):
+
         query = 'Steven A. Cholewiak'
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
