@@ -25,8 +25,8 @@ class TestScholarly(unittest.TestCase):
     def setUp(self):
         if self._tor_works():
             scholarly.use_tor()
-        else:
-            scholarly.use_random_proxy()
+        #else:
+        #    scholarly.use_random_proxy()
 
     def test_empty_author(self):
         ''' Returns zero results '''

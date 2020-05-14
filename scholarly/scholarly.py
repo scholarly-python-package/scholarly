@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from bs4 import BeautifulSoup
 
-from fp.fp import FreeProxy
+# from fp.fp import FreeProxy
 
 import arrow
 import bibtexparser
@@ -58,6 +58,7 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
     }
 
 
+'''
 def use_random_proxy():
     logger.info("Picking a random proxy and waiting")
     proxy = None
@@ -68,7 +69,7 @@ def use_random_proxy():
         proxy = FreeProxy(timeout=1, rand=True).get()
         logger.info("Got as proxy: %s", proxy)
     use_proxy(http=proxy, https=proxy)
-
+'''
 
 def use_tor():
     logger.info("Setting tor as the proxy")
