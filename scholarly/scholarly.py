@@ -4,6 +4,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from bs4 import BeautifulSoup
 
+from fp.fp import FreeProxy
+
 import arrow
 import bibtexparser
 import codecs
@@ -15,6 +17,8 @@ import re
 import requests
 import sys
 import time
+
+
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -41,6 +45,7 @@ _SESSION = requests.Session()
 _PAGESIZE = 100
 
 
+logging.basicConfig(filename='scholar.log',level=logging.INFO)
 logger = logging.getLogger('scholarly')
 
 
@@ -53,52 +58,48 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
             'http': http,
             'https': https
     }
-
-
-def _handle_captcha(url):
-    logger.warning("Hit captcha: %s", url)
-    # TODO: PROBLEMS HERE! NEEDS ATTENTION
-    # Get the captcha image
-    captcha_url = _HOST + '/sorry/image?id={0}'.format(g_id)
-    captcha = _SESSION.get(captcha_url, headers=_HEADERS)
-    # Upload to remote host and display to user for human verification
-    img_upload = requests.post('http://postimage.org/',
-        files={'upload[]': ('scholarly_captcha.jpg', captcha.text)})
-    print(img_upload.text)
-    img_url_soup = BeautifulSoup(img_upload.text, 'html.parser')
-    img_url = img_url_soup.find_all(alt='scholarly_captcha')[0].get('src')
-    print('CAPTCHA image URL: {0}'.format(img_url))
-    # Need to check Python version for input
-    if sys.version[0]=="3":
-        g_response = input('Enter CAPTCHA: ')
-    else:
-        g_response = raw_input('Enter CAPTCHA: ')
-    # Once we get a response, follow through and load the new page.
-    url_response = _HOST+'/sorry/CaptchaRedirect?continue={0}&id={1}&captcha={2}&submit=Submit'.format(dest_url, g_id, g_response)
-    resp_captcha = _SESSION.get(url_response, headers=_HEADERS, cookies=_COOKIES)
-    print('Forwarded to {0}'.format(resp_captcha.url))
-    return resp_captcha.url
+    
+def use_random_proxy():
+    logger.info("Picking a random proxy and waiting")
+    proxy = None
+    while not proxy:
+        # Note that we include a sleep to avoid overloading the scholar server
+        # and if there are no proxies available, we again wait
+        time.sleep(1+random.uniform(0, 1))
+        proxy = FreeProxy(timeout=1, rand=True).get()
+        logger.info("Got as proxy: %s", proxy)
+    use_proxy(http=proxy, https=proxy)
+    
+def use_tor():
+    logger.info("Setting tor as the proxy")
+    use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050')
 
 
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
     logger.info("Getting %s", pagerequest)
-    # Note that we include a sleep to avoid overloading the scholar server
-    time.sleep(5+random.uniform(0, 5))
-    resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES)
-    if resp.status_code == 200:
-        return resp.text
-    if resp.status_code == 503:
-        # Inelegant way of dealing with the G captcha
-        raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
-        # TODO: Need to fix captcha handling
-        # dest_url = requests.utils.quote(_SCHOLARHOST+pagerequest)
-        # soup = BeautifulSoup(resp.text, 'html.parser')
-        # captcha_url = soup.find('img').get('src')
-        # resp = _handle_captcha(captcha_url)
-        # return _get_page(re.findall(r'https:\/\/(?:.*?)(\/.*)', resp)[0])
-    else:
-        raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
+    # Delay for avoiding overloading scholar
+    time.sleep(1+random.uniform(0, 1))
+    
+    try:
+        resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES, timeout=1)
+        if resp.status_code == 200:
+            if 'scholarly_captcha' in resp.text:
+                logger.info("Got a CAPTCHA. Retrying...")
+            # elif 'not a robot when JavaScript is turned off' in resp.text:
+            #     logger.info("Got a cannot verify . Retrying...")                
+            else:
+                return resp.text
+        else:
+            logger.info("Got a response code %s. Retrying...", resp.status_code)
+    except Exception as e:
+        logger.info("Exception %s while fetching page. Retrying...", str(e))
+    
+    # TODO: This works fine when the underlying proxy is rotating (e.g., with Tor)
+    # In other scenarios, we want to rotate the random proxy or switch from
+    # direct querying to a proxy.
+    return _get_page(pagerequest)
+
 
 
 def _get_soup(pagerequest):
@@ -119,7 +120,7 @@ class _SearchScholarIterator(object):
         self._soup = _get_soup(_HOST + url)
         self.url = url
         self._pos = 0
-        self._rows = self._soup.find_all('div', 'gs_or')
+        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
         logger.info("Found %d publications", len(self._rows))
 
     # Iterator protocol
@@ -155,17 +156,17 @@ def _search_citation_soup(soup):
     """Generator that returns Author objects from the author search page"""
     while True:
         rows = soup.find_all('div', 'gsc_1usr')
-        logger.info("Found %d citations", len(rows))
+        logger.info("Found %d authors", len(rows))
         for row in rows:
             yield Author(row)
         next_button = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_lsb gs_btn_srt gsc_pgn_pnx')
         if next_button and 'disabled' not in next_button.attrs:
-            logger.info("Loading next page of citations")
+            logger.info("Loading next page of authors")
             url = next_button['onclick'][17:-1]
             url = codecs.getdecoder("unicode_escape")(url)[0]
             soup = _get_soup(_HOST+url)
         else:
-            logger.info("No more pages of citations")
+            logger.info("No more pages of authors")
             break
 
 
