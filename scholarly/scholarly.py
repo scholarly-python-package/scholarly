@@ -15,16 +15,15 @@ import pprint
 import random
 import re
 import requests
-import sys
 import time
-
-
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
 _HEADERS = {
     'accept-language': 'en-US,en',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' +
+                  '(KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 ' +
+                  'Chrome/41.0.2272.76 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml'
     }
 _HOST = 'https://scholar.google.com'
@@ -44,8 +43,7 @@ _EMAILAUTHORRE = r'Verified email at '
 _SESSION = requests.Session()
 _PAGESIZE = 100
 
-
-logging.basicConfig(filename='scholar.log',level=logging.INFO)
+logging.basicConfig(filename='scholar.log', level=logging.INFO)
 logger = logging.getLogger('scholarly')
 
 
@@ -54,11 +52,12 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
         Requires pysocks
         Proxy must be running."""
     logger.info("Enabling proxies: http=%r https=%r", http, https)
-    _SESSION.proxies ={
+    _SESSION.proxies = {
             'http': http,
             'https': https
     }
-    
+
+
 def use_random_proxy():
     logger.info("Picking a random proxy and waiting")
     proxy = None
@@ -69,7 +68,8 @@ def use_random_proxy():
         proxy = FreeProxy(timeout=1, rand=True).get()
         logger.info("Got as proxy: %s", proxy)
     use_proxy(http=proxy, https=proxy)
-    
+
+
 def use_tor():
     logger.info("Setting tor as the proxy")
     use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050')
@@ -80,26 +80,25 @@ def _get_page(pagerequest):
     logger.info("Getting %s", pagerequest)
     # Delay for avoiding overloading scholar
     time.sleep(1+random.uniform(0, 1))
-    
+
     try:
         resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES, timeout=1)
         if resp.status_code == 200:
             if 'scholarly_captcha' in resp.text:
                 logger.info("Got a CAPTCHA. Retrying...")
             # elif 'not a robot when JavaScript is turned off' in resp.text:
-            #     logger.info("Got a cannot verify . Retrying...")                
+            #     logger.info("Got a cannot verify . Retrying...")
             else:
                 return resp.text
         else:
             logger.info("Got a response code %s. Retrying...", resp.status_code)
     except Exception as e:
         logger.info("Exception %s while fetching page. Retrying...", str(e))
-    
+
     # TODO: This works fine when the underlying proxy is rotating (e.g., with Tor)
     # In other scenarios, we want to rotate the random proxy or switch from
     # direct querying to a proxy.
     return _get_page(pagerequest)
-
 
 
 def _get_soup(pagerequest):
@@ -189,14 +188,14 @@ class Publication(object):
             if citedby and not (citedby.text.isspace() or citedby.text == ''):
                 self.citedby = int(citedby.text)
             year = __data.find(class_='gsc_a_h')
-            if year and year.text and not year.text.isspace() and len(year.text)>0:
+            if year and year.text and not year.text.isspace() and len(year.text) > 0:
                 self.bib['year'] = int(year.text)
         elif self.source == 'scholar':
             databox = __data.find('div', class_='gs_ri')
             title = databox.find('h3', class_='gs_rt')
-            if title.find('span', class_='gs_ctu'): # A citation
+            if title.find('span', class_='gs_ctu'):  # A citation
                 title.span.extract()
-            elif title.find('span', class_='gs_ctc'): # A book or PDF
+            elif title.find('span', class_='gs_ctc'):  # A book or PDF
                 title.span.extract()
             self.bib['title'] = title.text.strip()
             if title.find('a'):
@@ -205,7 +204,7 @@ class Publication(object):
             self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
             try:
                 self.bib['venue'], self.bib['year'] = authorinfo.text.split(' - ')[1].split(',')
-            except:
+            except Exception as e:
                 self.bib['venue'], self.bib['year'] = 'NA', 'NA'
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
@@ -300,7 +299,7 @@ class Author(object):
             if email:
                 self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
             self.interests = [i.text.strip() for i in
-                           __data.find_all('a', class_=_find_tag_class_name(__data, 'a', 'one_int'))]
+                              __data.find_all('a', class_=_find_tag_class_name(__data, 'a', 'one_int'))]
             citedby = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'cby'))
             if citedby and citedby.text != '':
                 self.citedby = int(citedby.text[9:])
@@ -314,7 +313,7 @@ class Author(object):
         self.name = soup.find('div', id='gsc_prf_in').text
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in soup.find_all('a', class_='gsc_prf_inta')]
-        
+
         # h-index, i10-index and h-index, i10-index in the last 5 years
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
@@ -339,7 +338,6 @@ class Author(object):
             new_coauthor.name = row.find(tabindex="-1").text
             new_coauthor.affiliation = row.find(class_="gsc_rsb_a_ext").text
             self.coauthors.append(new_coauthor)
-
 
         self.publications = list()
         pubstart = 0
@@ -392,4 +390,3 @@ def search_author_custom_url(url):
     URL should be of the form '/citation?q=...'"""
     soup = _get_soup(_HOST+url)
     return _search_citation_soup(soup)
-

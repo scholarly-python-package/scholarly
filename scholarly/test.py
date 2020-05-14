@@ -2,32 +2,31 @@ import unittest
 import scholarly
 import requests
 
+
 class TestScholarly(unittest.TestCase):
-    
-    
+
     def _tor_works(self):
         '''
         Checks if Tor is working
         '''
         with requests.Session() as session:
-            session.proxies ={
-                    'http'  : 'socks5://127.0.0.1:9050',
-                    'https' : 'socks5://127.0.0.1:9050'
-            } 
+            session.proxies = {
+                    'http': 'socks5://127.0.0.1:9050',
+                    'https': 'socks5://127.0.0.1:9050'
+            }
             try:
                 resp = session.get("https://www.google.com")
                 if resp.status_code == 200:
                     return True
-            except:
+            except Exception as e:
                 pass
-            return False    
-    
+            return False
+
     def setUp(self):
         if self._tor_works():
             scholarly.use_tor()
         else:
             scholarly.use_random_proxy()
-        
 
     def test_empty_author(self):
         ''' Returns zero results '''
@@ -46,7 +45,7 @@ class TestScholarly(unittest.TestCase):
     def test_get_cited_by(self):
         query = 'frequency-domain analysis of haptic gratings cholewiak'
         pubs = [p for p in scholarly.search_pubs_query(query)]
-        self.assertGreaterEqual(len(pubs),1)
+        self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
         cites = [c for c in filled.get_citedby()]
         self.assertEqual(len(cites), filled.citedby)
@@ -71,7 +70,7 @@ class TestScholarly(unittest.TestCase):
     def test_publication_contents(self):
         query = 'Creating correct blur and its effect on accommodation'
         pubs = [p for p in scholarly.search_pubs_query(query)]
-        self.assertGreaterEqual(len(pubs),1)
+        self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
         self.assertTrue(filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
         self.assertTrue(filled.bib['journal'] == u'Journal of vision')
@@ -86,11 +85,11 @@ class TestScholarly(unittest.TestCase):
     def test_single_author(self):
         query = 'Steven A. Cholewiak'
         authors = [a for a in scholarly.search_author(query)]
-        self.assertGreaterEqual(len(authors),1)
+        self.assertGreaterEqual(len(authors), 1)
         author = authors[0].fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
 
+
 if __name__ == '__main__':
     unittest.main()
-
