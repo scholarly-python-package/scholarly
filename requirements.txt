@@ -5,3 +5,4 @@ PySocks
 requests[security]
 requests[socks]
 stem
+fake_useragent

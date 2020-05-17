@@ -1,0 +1,237 @@
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=
+WARNING:fake_useragent:Error occurred during loading data. Trying to use cache server https://fake-useragent.herokuapp.com/browsers/0.1.11
+Traceback (most recent call last):
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 1319, in do_open
+    encode_chunked=req.has_header('Transfer-encoding'))
+  File "C:\Users\Victor\Anaconda3\lib\http\client.py", line 1252, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "C:\Users\Victor\Anaconda3\lib\http\client.py", line 1298, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "C:\Users\Victor\Anaconda3\lib\http\client.py", line 1247, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Users\Victor\Anaconda3\lib\http\client.py", line 1026, in _send_output
+    self.send(msg)
+  File "C:\Users\Victor\Anaconda3\lib\http\client.py", line 966, in send
+    self.connect()
+  File "C:\Users\Victor\Anaconda3\lib\http\client.py", line 938, in connect
+    (self.host,self.port), self.timeout, self.source_address)
+  File "C:\Users\Victor\Anaconda3\lib\socket.py", line 728, in create_connection
+    raise err
+  File "C:\Users\Victor\Anaconda3\lib\socket.py", line 716, in create_connection
+    sock.connect(sa)
+socket.timeout: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Victor\Anaconda3\lib\site-packages\fake_useragent\utils.py", line 67, in get
+    context=context,
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 222, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 525, in open
+    response = self._open(req, data)
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 543, in _open
+    '_open', req)
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 503, in _call_chain
+    result = func(*args)
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 1347, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+  File "C:\Users\Victor\Anaconda3\lib\urllib\request.py", line 1321, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error timed out>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Victor\Anaconda3\lib\site-packages\fake_useragent\utils.py", line 166, in load
+    verify_ssl=verify_ssl,
+  File "C:\Users\Victor\Anaconda3\lib\site-packages\fake_useragent\utils.py", line 122, in get_browser_versions
+    verify_ssl=verify_ssl,
+  File "C:\Users\Victor\Anaconda3\lib\site-packages\fake_useragent\utils.py", line 84, in get
+    raise FakeUserAgentError('Maximum amount of retries reached')
+fake_useragent.errors.FakeUserAgentError: Maximum amount of retries reached
+INFO:scholarly:Found 0 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label:
+INFO:scholarly:Found 6 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=
+INFO:scholarly:Found 0 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=frequency-domain%20analysis%20of%20haptic%20gratings%20cholewiak
+INFO:scholarly:Found 1 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.googleusercontent.com/scholar.bib?q=info:MwL6-YApQfsJ:scholar.google.com/&output=citation&scisdr=CgXHNMOUGAA:AAGBfm0AAAAAXsG1M8leKpyEZ-3_7amIXQJStIDYguIn&scisig=AAGBfm0AAAAAXsG1M7XK4P9uj91WjnNRSbSf_ChY9Clu&scisf=4&ct=citation&cd=0&hl=en
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&oi=bibs&cites=18104797610932568627
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=10&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=20&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=30&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=40&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 9 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label:3d_shape
+INFO:scholarly:Found 2 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=cattani
+INFO:scholarly:Found 10 authors
+INFO:scholarly:Loading next page of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=cattani&after_author=986_AM_-__8J&astart=10
+INFO:scholarly:Found 10 authors
+INFO:scholarly:Loading next page of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=cattani&after_author=ourwAOP___8J&astart=20
+INFO:scholarly:Found 4 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=%22naive%20physics%22%20stability%20%223d%20shape%22
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=10&q=%22naive+physics%22+stability+%223d+shape%22&hl=en&as_sdt=0,5
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=20&q=%22naive+physics%22+stability+%223d+shape%22&hl=en&as_sdt=0,5
+INFO:scholarly:Found 9 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=Creating%20correct%20blur%20and%20its%20effect%20on%20accommodation
+INFO:scholarly:Found 1 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.googleusercontent.com/scholar.bib?q=info:yaFMes1ZwnMJ:scholar.google.com/&output=citation&scisdr=CgXHNMOUGAA:AAGBfm0AAAAAXsG1TTVVG0Cm4IwEhGqwmTO3y4hnSnkS&scisig=AAGBfm0AAAAAXsG1TSLeNBQoKIESzGSPcOpOEM5klwuG&scisf=4&ct=citation&cd=0&hl=en
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=Steven%20A.%20Cholewiak
+INFO:scholarly:Found 1 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&user=4bahYMkAAAAJ&pagesize=100
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=
+INFO:scholarly:Found 0 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label:
+INFO:scholarly:Found 6 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=
+INFO:scholarly:Found 0 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=frequency-domain%20analysis%20of%20haptic%20gratings%20cholewiak
+INFO:scholarly:Found 1 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.googleusercontent.com/scholar.bib?q=info:MwL6-YApQfsJ:scholar.google.com/&output=citation&scisdr=CgXHNMOUGAA:AAGBfm0AAAAAXsG1aLkLvP06_Nmqaqx_KsjGLMwvnT2A&scisig=AAGBfm0AAAAAXsG1aOWaDKYU9rh0BP8SGa6kJ0NmA-Gh&scisf=4&ct=citation&cd=0&hl=en
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&oi=bibs&cites=18104797610932568627
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=10&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=20&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=30&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=40&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 9 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label:3d_shape
+INFO:scholarly:Found 2 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=cattani
+INFO:scholarly:Found 10 authors
+INFO:scholarly:Loading next page of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=cattani&after_author=986_AM_-__8J&astart=10
+INFO:scholarly:Found 10 authors
+INFO:scholarly:Loading next page of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=cattani&after_author=ourwAOP___8J&astart=20
+INFO:scholarly:Found 4 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=%22naive%20physics%22%20stability%20%223d%20shape%22
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=10&q=%22naive+physics%22+stability+%223d+shape%22&hl=en&as_sdt=0,5
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=20&q=%22naive+physics%22+stability+%223d+shape%22&hl=en&as_sdt=0,5
+INFO:scholarly:Found 9 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=Creating%20correct%20blur%20and%20its%20effect%20on%20accommodation
+INFO:scholarly:Found 1 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.googleusercontent.com/scholar.bib?q=info:yaFMes1ZwnMJ:scholar.google.com/&output=citation&scisdr=CgXHNMOUGAA:AAGBfm0AAAAAXsG1giEyTgaY33az98rD3ozS8HjpTnS6&scisig=AAGBfm0AAAAAXsG1gv9Gq7gwOc44X1k8M3tiEHRwOaVm&scisf=4&ct=citation&cd=0&hl=en
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=Steven%20A.%20Cholewiak
+INFO:scholarly:Found 1 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&user=4bahYMkAAAAJ&pagesize=100
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=
+INFO:scholarly:Found 0 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label:
+INFO:scholarly:Found 6 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=
+INFO:scholarly:Found 0 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=frequency-domain%20analysis%20of%20haptic%20gratings%20cholewiak
+INFO:scholarly:Found 1 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.googleusercontent.com/scholar.bib?q=info:MwL6-YApQfsJ:scholar.google.com/&output=citation&scisdr=CgXHNMOUGAA:AAGBfm0AAAAAXsG2TCujz9YKu6xXNZw9GSrEh_5VbisZ&scisig=AAGBfm0AAAAAXsG2TA1b61YCE9_eGwnXdwuQ9xSZu9UE&scisf=4&ct=citation&cd=0&hl=en
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&oi=bibs&cites=18104797610932568627
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=10&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=20&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=30&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=40&hl=en&as_sdt=0,5&sciodt=0,5&cites=18104797610932568627&scipsc=
+INFO:scholarly:Found 9 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label:3d_shape
+INFO:scholarly:Found 2 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=cattani
+INFO:scholarly:Found 10 authors
+INFO:scholarly:Loading next page of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=cattani&after_author=986_AM_-__8J&astart=10
+INFO:scholarly:Found 10 authors
+INFO:scholarly:Loading next page of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=cattani&after_author=ourwAOP___8J&astart=20
+INFO:scholarly:Found 4 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=%22naive%20physics%22%20stability%20%223d%20shape%22
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=10&q=%22naive+physics%22+stability+%223d+shape%22&hl=en&as_sdt=0,5
+INFO:scholarly:Found 10 publications
+INFO:scholarly:Loading next search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?start=20&q=%22naive+physics%22+stability+%223d+shape%22&hl=en&as_sdt=0,5
+INFO:scholarly:Found 9 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Reading search page
+INFO:scholarly:Getting https://scholar.google.com/scholar?hl=en&q=Creating%20correct%20blur%20and%20its%20effect%20on%20accommodation
+INFO:scholarly:Found 1 publications
+INFO:scholarly:No more search pages
+INFO:scholarly:Getting https://scholar.googleusercontent.com/scholar.bib?q=info:yaFMes1ZwnMJ:scholar.google.com/&output=citation&scisdr=CgXHNMOUGAA:AAGBfm0AAAAAXsG2aKjrI5F_I-K69DBZadKzTHHYzW5J&scisig=AAGBfm0AAAAAXsG2aH6APsC01DZTI3iLF-LkkTptoPPU&scisf=4&ct=citation&cd=0&hl=en
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=Steven%20A.%20Cholewiak
+INFO:scholarly:Found 1 authors
+INFO:scholarly:No more pages of authors
+INFO:scholarly:Getting https://scholar.google.com/citations?hl=en&user=4bahYMkAAAAJ&pagesize=100
