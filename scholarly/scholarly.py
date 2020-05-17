@@ -142,6 +142,7 @@ def _get_page(pagerequest):
                                    headers=_HEADERS,
                                    cookies=_COOKIES,
                                    timeout=_TIMEOUT)
+                
                 if resp.status_code == 200:
                     if _has_captcha(resp.text):
                         logger.info("Got a CAPTCHA. Retrying...")
@@ -153,10 +154,11 @@ def _get_page(pagerequest):
 
             except Exception as e:
                 logger.info(f"Exception {e} while fetching page. Retrying...")
-                # Check if Tor is running and refresh it
-                if _TOR_WORKS and _CAN_REFRESH_TOR:
-                    logger.info("Refreshing Tor ID...")
-                    _refresh_tor_id()
+            
+            # Check if Tor is running and refresh it
+            if _TOR_WORKS and _CAN_REFRESH_TOR:
+                logger.info("Refreshing Tor ID...")
+                _refresh_tor_id()
 
     return resp.text
 
