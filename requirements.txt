@@ -4,4 +4,4 @@ bibtexparser
 PySocks
 requests[security]
 requests[socks]
-free-proxy
+stem
