@@ -4,8 +4,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from bs4 import BeautifulSoup
 
-# from fp.fp import FreeProxy
-
 import arrow
 import bibtexparser
 import codecs
@@ -108,23 +106,20 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
     }
 
 
-'''
-def use_random_proxy():
-    logger.info("Picking a random proxy and waiting")
-    proxy = None
-    while not proxy:
-        # Note that we include a sleep to avoid overloading the scholar server
-        # and if there are no proxies available, we again wait
-        time.sleep(1+random.uniform(0, 1))
-        proxy = FreeProxy(timeout=1, rand=True).get()
-        logger.info("Got as proxy: %s", proxy)
-    use_proxy(http=proxy, https=proxy)
-'''
-
-
 def use_tor():
     logger.info("Setting tor as the proxy")
     use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050')
+
+
+def _has_captcha(text):
+    flags = ["Please show you're not a robot",
+             "network may be sending automated queries",
+             "have detected unusual traffic from your computer",
+             "scholarly_captcha"]
+
+    if any([i in text for i in flags]):
+        return True
+    return False
 
 
 def _get_page(pagerequest):
@@ -145,10 +140,8 @@ def _get_page(pagerequest):
         try:
             resp = session.get(pagerequest, headers=_HEADERS, cookies=_COOKIES, timeout=_TIMEOUT)
             if resp.status_code == 200:
-                if 'scholarly_captcha' in resp.text:
+                if _has_captcha(resp.text):
                     logger.info("Got a CAPTCHA. Retrying...")
-                elif 'not a robot when JavaScript is turned off' in resp.text:
-                    logger.info("Got a cannot verify . Retrying...")
                 else:
                     return resp.text
             else:
