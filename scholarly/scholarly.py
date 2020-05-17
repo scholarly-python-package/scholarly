@@ -73,12 +73,13 @@ def _tor_works():
         except Exception as e:
             pass
         return False
-    
+
+
 _TOR_WORKS = _tor_works()
 
 
 def _refresh_tor_id():
-    with Controller.from_port(port = 9051) as controller:
+    with Controller.from_port(port=9051) as controller:
         controller.authenticate(password="scholarly_password")
         controller.signal(Signal.NEWNYM)
 
@@ -88,23 +89,23 @@ def _can_refresh_tor():
     try:
         _refresh_tor_id()
         return True
-    except:
+    except Exception as e:
         return False
-    
+
+
 _CAN_REFRESH_TOR = _can_refresh_tor()
 
-        
 
 def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
     """ Routes scholarly through a proxy (e.g. tor).
         Requires pysocks
         Proxy must be running."""
     logger.info("Enabling proxies: http=%r https=%r", http, https)
+    global _PROXIES
     _PROXIES = {
         "http": http,
         "https": https,
     }
-
 
 
 '''
@@ -120,6 +121,7 @@ def use_random_proxy():
     use_proxy(http=proxy, https=proxy)
 '''
 
+
 def use_tor():
     logger.info("Setting tor as the proxy")
     use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050')
@@ -130,10 +132,10 @@ def _get_page(pagerequest):
     logger.info("Getting %s", pagerequest)
     # Delay for avoiding overloading scholar
     time.sleep(1+random.uniform(0, 1))
-    
+
     # If Tor is running we use the proxy
     with requests.Session() as session:
-        if _TOR_WORKS: 
+        if _TOR_WORKS:
             # Tor uses the 9050 port as the default socks port
             session.proxies = {'http':  'socks5://127.0.0.1:9050',
                                'https': 'socks5://127.0.0.1:9050'}
@@ -155,11 +157,11 @@ def _get_page(pagerequest):
             logger.info("Exception %s while fetching page. Retrying...", str(e))
 
     # We only reach this part if there was an error. We refresh our Tor identify if Tor runs
-    if _TOR_WORKS and _CAN_REFRESH_TOR: 
+    if _TOR_WORKS and _CAN_REFRESH_TOR:
         logger.info("Refreshing Tor ID...")
         time.sleep(2+random.uniform(0, 2))
         _refresh_tor_id()
-        
+
     return _get_page(pagerequest)
 
 
@@ -368,9 +370,12 @@ class Author(object):
         self._filled = False
 
     # all Author object sections for fill() method
-    sections = ['basic', 'citation_indices', 'citation_num', 'co-authors',
-            'publications']
-    sections = {section:section for section in sections}
+    sections = ['basic',
+                'citation_indices',
+                'citation_num',
+                'co-authors',
+                'publications']
+    sections = {section: section for section in sections}
 
     def fill(self, sections=['all']):
         """Populate the Author with information from their profile
@@ -401,7 +406,7 @@ class Author(object):
             self.affiliation = soup.find('div', class_='gsc_prf_il').text
             self.interests = [i.text.strip() for i in
                               soup.find_all('a', class_='gsc_prf_inta')]
-        
+
         # h-index, i10-index and h-index, i10-index in the last 5 years
         if self.sections['citation_indices'] in sections or 'all' in sections:
             index = soup.find_all('td', class_='gsc_rsb_std')
@@ -430,7 +435,6 @@ class Author(object):
                 new_coauthor.affiliation = row.find(class_="gsc_rsb_a_ext").text
                 self.coauthors.append(new_coauthor)
 
-
         # publications
         if self.sections['publications'] in sections or 'all' in sections:
             self.publications = list()
@@ -446,8 +450,7 @@ class Author(object):
                 else:
                     break
 
-        if 'all' in sections or \
-        set(sections) == set(self.sections.values()):
+        if 'all' in sections or set(sections) == set(self.sections.values()):
             self._filled = True
 
         return self

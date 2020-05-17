@@ -1,11 +1,7 @@
 import unittest
 import scholarly
-import requests
 
 
-# TODO a number of these tests are out of date with the current information on
-# Google Scholar. This is the obvious downside of designing static tests that
-# rely on dynamic external data.
 class TestScholarly(unittest.TestCase):
 
     def test_empty_author(self):
@@ -16,8 +12,8 @@ class TestScholarly(unittest.TestCase):
         self.assertIs(len(authors), 0)
 
     def test_empty_keyword(self):
-        """ 
-        As of 2020-04-30, there are  6 individuals that match the name 'label' 
+        """
+        As of 2020-04-30, there are  6 individuals that match the name 'label'
         """
         # TODO this seems like undesirable functionality for
         # scholarly.search_keyword() with empty string. Surely, no authors
@@ -67,7 +63,7 @@ class TestScholarly(unittest.TestCase):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
         ["naive physics" stability "3d shape"].
-        
+
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
