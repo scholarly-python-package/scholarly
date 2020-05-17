@@ -13,14 +13,17 @@ import pprint
 import random
 import re
 import requests
-import sys
 import time
+from stem import Signal
+from stem.control import Controller
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
 _HEADERS = {
     'accept-language': 'en-US,en',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 Chrome/41.0.2272.76 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' +
+                  '(KHTML, like Gecko) Ubuntu Chromium/41.0.2272.76 ' +
+                  'Chrome/41.0.2272.76 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml'
     }
 _HOST = 'https://scholar.google.com'
@@ -37,11 +40,58 @@ _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _EMAILAUTHORRE = r'Verified email at '
 
-_SESSION = requests.Session()
 _PAGESIZE = 100
+_TIMEOUT = 2
 
+_PROXIES = {
+    "http": None,
+    "https": None,
+}
 
+_HTTP_PROXY = None
+_HTTPS_PROXY = None
+
+logging.basicConfig(filename='scholar.log', level=logging.INFO)
 logger = logging.getLogger('scholarly')
+
+
+def _tor_works():
+    """
+    Checks if Tor is working
+    """
+    with requests.Session() as session:
+        session.proxies = {
+                'http': 'socks5://127.0.0.1:9050',
+                'https': 'socks5://127.0.0.1:9050'
+        }
+        try:
+            resp = session.get("https://www.google.com")
+            if resp.status_code == 200:
+                return True
+        except Exception as e:
+            pass
+        return False
+
+
+_TOR_WORKS = _tor_works()
+
+
+def _refresh_tor_id():
+    with Controller.from_port(port=9051) as controller:
+        controller.authenticate(password="scholarly_password")
+        controller.signal(Signal.NEWNYM)
+
+
+def _can_refresh_tor():
+    time.sleep(1+random.uniform(0, 1))
+    try:
+        _refresh_tor_id()
+        return True
+    except Exception as e:
+        return False
+
+
+_CAN_REFRESH_TOR = _can_refresh_tor()
 
 
 def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
@@ -49,56 +99,63 @@ def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
         Requires pysocks
         Proxy must be running."""
     logger.info("Enabling proxies: http=%r https=%r", http, https)
-    _SESSION.proxies ={
-            'http': http,
-            'https': https
+    global _PROXIES
+    _PROXIES = {
+        "http": http,
+        "https": https,
     }
 
 
-def _handle_captcha(url):
-    logger.warning("Hit captcha: %s", url)
-    # TODO: PROBLEMS HERE! NEEDS ATTENTION
-    # Get the captcha image
-    captcha_url = _HOST + '/sorry/image?id={0}'.format(g_id)
-    captcha = _SESSION.get(captcha_url, headers=_HEADERS)
-    # Upload to remote host and display to user for human verification
-    img_upload = requests.post('http://postimage.org/',
-        files={'upload[]': ('scholarly_captcha.jpg', captcha.text)})
-    print(img_upload.text)
-    img_url_soup = BeautifulSoup(img_upload.text, 'html.parser')
-    img_url = img_url_soup.find_all(alt='scholarly_captcha')[0].get('src')
-    print('CAPTCHA image URL: {0}'.format(img_url))
-    # Need to check Python version for input
-    if sys.version[0]=="3":
-        g_response = input('Enter CAPTCHA: ')
-    else:
-        g_response = raw_input('Enter CAPTCHA: ')
-    # Once we get a response, follow through and load the new page.
-    url_response = _HOST+'/sorry/CaptchaRedirect?continue={0}&id={1}&captcha={2}&submit=Submit'.format(dest_url, g_id, g_response)
-    resp_captcha = _SESSION.get(url_response, headers=_HEADERS, cookies=_COOKIES)
-    print('Forwarded to {0}'.format(resp_captcha.url))
-    return resp_captcha.url
+def use_tor():
+    logger.info("Setting tor as the proxy")
+    use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050')
+
+
+def _has_captcha(text):
+    flags = ["Please show you're not a robot",
+             "network may be sending automated queries",
+             "have detected unusual traffic from your computer",
+             "scholarly_captcha"]
+
+    if any([i in text for i in flags]):
+        return True
+    return False
 
 
 def _get_page(pagerequest):
     """Return the data for a page on scholar.google.com"""
     logger.info("Getting %s", pagerequest)
-    # Note that we include a sleep to avoid overloading the scholar server
-    time.sleep(5+random.uniform(0, 5))
-    resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES)
-    if resp.status_code == 200:
-        return resp.text
-    if resp.status_code == 503:
-        # Inelegant way of dealing with the G captcha
-        raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
-        # TODO: Need to fix captcha handling
-        # dest_url = requests.utils.quote(_SCHOLARHOST+pagerequest)
-        # soup = BeautifulSoup(resp.text, 'html.parser')
-        # captcha_url = soup.find('img').get('src')
-        # resp = _handle_captcha(captcha_url)
-        # return _get_page(re.findall(r'https:\/\/(?:.*?)(\/.*)', resp)[0])
-    else:
-        raise Exception('Error: {0} {1}'.format(resp.status_code, resp.reason))
+    # Delay for avoiding overloading scholar
+    time.sleep(1+random.uniform(0, 1))
+
+    # If Tor is running we use the proxy
+    with requests.Session() as session:
+        if _TOR_WORKS:
+            # Tor uses the 9050 port as the default socks port
+            session.proxies = {'http':  'socks5://127.0.0.1:9050',
+                               'https': 'socks5://127.0.0.1:9050'}
+        else:
+            session.proxies = _PROXIES
+
+        try:
+            resp = session.get(pagerequest, headers=_HEADERS, cookies=_COOKIES, timeout=_TIMEOUT)
+            if resp.status_code == 200:
+                if _has_captcha(resp.text):
+                    logger.info("Got a CAPTCHA. Retrying...")
+                else:
+                    return resp.text
+            else:
+                logger.info("Got a response code %s. Retrying...", resp.status_code)
+        except Exception as e:
+            logger.info("Exception %s while fetching page. Retrying...", str(e))
+
+    # We only reach this part if there was an error. We refresh our Tor identify if Tor runs
+    if _TOR_WORKS and _CAN_REFRESH_TOR:
+        logger.info("Refreshing Tor ID...")
+        time.sleep(2+random.uniform(0, 2))
+        _refresh_tor_id()
+
+    return _get_page(pagerequest)
 
 
 def _get_soup(pagerequest):
@@ -119,7 +176,7 @@ class _SearchScholarIterator(object):
         self._soup = _get_soup(_HOST + url)
         self.url = url
         self._pos = 0
-        self._rows = self._soup.find_all('div', 'gs_or')
+        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
         logger.info("Found %d publications", len(self._rows))
 
     # Iterator protocol
@@ -155,17 +212,17 @@ def _search_citation_soup(soup):
     """Generator that returns Author objects from the author search page"""
     while True:
         rows = soup.find_all('div', 'gsc_1usr')
-        logger.info("Found %d citations", len(rows))
+        logger.info("Found %d authors", len(rows))
         for row in rows:
             yield Author(row)
         next_button = soup.find(class_='gs_btnPR gs_in_ib gs_btn_half gs_btn_lsb gs_btn_srt gsc_pgn_pnx')
         if next_button and 'disabled' not in next_button.attrs:
-            logger.info("Loading next page of citations")
+            logger.info("Loading next page of authors")
             url = next_button['onclick'][17:-1]
             url = codecs.getdecoder("unicode_escape")(url)[0]
             soup = _get_soup(_HOST+url)
         else:
-            logger.info("No more pages of citations")
+            logger.info("No more pages of authors")
             break
 
 
@@ -188,14 +245,14 @@ class Publication(object):
             if citedby and not (citedby.text.isspace() or citedby.text == ''):
                 self.citedby = int(citedby.text)
             year = __data.find(class_='gsc_a_h')
-            if year and year.text and not year.text.isspace() and len(year.text)>0:
+            if year and year.text and not year.text.isspace() and len(year.text) > 0:
                 self.bib['year'] = int(year.text)
         elif self.source == 'scholar':
             databox = __data.find('div', class_='gs_ri')
             title = databox.find('h3', class_='gs_rt')
-            if title.find('span', class_='gs_ctu'): # A citation
+            if title.find('span', class_='gs_ctu'):  # A citation
                 title.span.extract()
-            elif title.find('span', class_='gs_ctc'): # A book or PDF
+            elif title.find('span', class_='gs_ctc'):  # A book or PDF
                 title.span.extract()
             self.bib['title'] = title.text.strip()
             if title.find('a'):
@@ -204,7 +261,7 @@ class Publication(object):
             self.bib['author'] = ' and '.join([i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
             try:
                 self.bib['venue'], self.bib['year'] = authorinfo.text.split(' - ')[1].split(',')
-            except:
+            except Exception as e:
                 self.bib['venue'], self.bib['year'] = 'NA', 'NA'
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
@@ -299,16 +356,19 @@ class Author(object):
             if email:
                 self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
             self.interests = [i.text.strip() for i in
-                           __data.find_all('a', class_=_find_tag_class_name(__data, 'a', 'one_int'))]
+                              __data.find_all('a', class_=_find_tag_class_name(__data, 'a', 'one_int'))]
             citedby = __data.find('div', class_=_find_tag_class_name(__data, 'div', 'cby'))
             if citedby and citedby.text != '':
                 self.citedby = int(citedby.text[9:])
         self._filled = False
 
     # all Author object sections for fill() method
-    sections = ['basic', 'citation_indices', 'citation_num', 'co-authors',
-            'publications']
-    sections = {section:section for section in sections}
+    sections = ['basic',
+                'citation_indices',
+                'citation_num',
+                'co-authors',
+                'publications']
+    sections = {section: section for section in sections}
 
     def fill(self, sections=['all']):
         """Populate the Author with information from their profile
@@ -332,13 +392,14 @@ class Author(object):
         url_citations = _CITATIONAUTH.format(self.id)
         url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
         soup = _get_soup(_HOST+url)
+
         # basic data
         if self.sections['basic'] in sections or 'all' in sections:
             self.name = soup.find('div', id='gsc_prf_in').text
             self.affiliation = soup.find('div', class_='gsc_prf_il').text
             self.interests = [i.text.strip() for i in
                               soup.find_all('a', class_='gsc_prf_inta')]
-        
+
         # h-index, i10-index and h-index, i10-index in the last 5 years
         if self.sections['citation_indices'] in sections or 'all' in sections:
             index = soup.find_all('td', class_='gsc_rsb_std')
@@ -367,7 +428,6 @@ class Author(object):
                 new_coauthor.affiliation = row.find(class_="gsc_rsb_a_ext").text
                 self.coauthors.append(new_coauthor)
 
-
         # publications
         if self.sections['publications'] in sections or 'all' in sections:
             self.publications = list()
@@ -383,9 +443,9 @@ class Author(object):
                 else:
                     break
 
-        if 'all' in sections or \
-        set(sections) == set(self.sections.values()):
+        if 'all' in sections or set(sections) == set(self.sections.values()):
             self._filled = True
+
         return self
 
     def __str__(self):
@@ -423,4 +483,3 @@ def search_author_custom_url(url):
     URL should be of the form '/citation?q=...'"""
     soup = _get_soup(_HOST+url)
     return _search_citation_soup(soup)
-
