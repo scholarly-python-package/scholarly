@@ -16,6 +16,8 @@ import random
 import re
 import requests
 import time
+from stem import Signal
+from stem.control import Controller
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
 _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
@@ -40,22 +42,69 @@ _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _EMAILAUTHORRE = r'Verified email at '
 
-_SESSION = requests.Session()
 _PAGESIZE = 100
+_TIMEOUT = 2
+
+_PROXIES = {
+    "http": None,
+    "https": None,
+}
+
+_HTTP_PROXY = None
+_HTTPS_PROXY = None
 
 logging.basicConfig(filename='scholar.log', level=logging.INFO)
 logger = logging.getLogger('scholarly')
 
+
+def _tor_works():
+    """
+    Checks if Tor is working
+    """
+    with requests.Session() as session:
+        session.proxies = {
+                'http': 'socks5://127.0.0.1:9050',
+                'https': 'socks5://127.0.0.1:9050'
+        }
+        try:
+            resp = session.get("https://www.google.com")
+            if resp.status_code == 200:
+                return True
+        except Exception as e:
+            pass
+        return False
+    
+_TOR_WORKS = _tor_works()
+
+
+def _refresh_tor_id():
+    with Controller.from_port(port = 9051) as controller:
+        controller.authenticate(password="scholarly_password")
+        controller.signal(Signal.NEWNYM)
+
+
+def _can_refresh_tor():
+    time.sleep(1+random.uniform(0, 1))
+    try:
+        _refresh_tor_id()
+        return True
+    except:
+        return False
+    
+_CAN_REFRESH_TOR = _can_refresh_tor()
+
+        
 
 def use_proxy(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'):
     """ Routes scholarly through a proxy (e.g. tor).
         Requires pysocks
         Proxy must be running."""
     logger.info("Enabling proxies: http=%r https=%r", http, https)
-    _SESSION.proxies = {
-            'http': http,
-            'https': https
+    _PROXIES = {
+        "http": http,
+        "https": https,
     }
+
 
 
 '''
@@ -81,24 +130,36 @@ def _get_page(pagerequest):
     logger.info("Getting %s", pagerequest)
     # Delay for avoiding overloading scholar
     time.sleep(1+random.uniform(0, 1))
-
-    try:
-        resp = _SESSION.get(pagerequest, headers=_HEADERS, cookies=_COOKIES, timeout=1)
-        if resp.status_code == 200:
-            if 'scholarly_captcha' in resp.text:
-                logger.info("Got a CAPTCHA. Retrying...")
-            # elif 'not a robot when JavaScript is turned off' in resp.text:
-            #     logger.info("Got a cannot verify . Retrying...")
-            else:
-                return resp.text
+    
+    # If Tor is running we use the proxy
+    with requests.Session() as session:
+        if _TOR_WORKS: 
+            # Tor uses the 9050 port as the default socks port
+            session.proxies = {'http':  'socks5://127.0.0.1:9050',
+                               'https': 'socks5://127.0.0.1:9050'}
         else:
-            logger.info("Got a response code %s. Retrying...", resp.status_code)
-    except Exception as e:
-        logger.info("Exception %s while fetching page. Retrying...", str(e))
+            session.proxies = _PROXIES
 
-    # TODO: This works fine when the underlying proxy is rotating (e.g., with Tor)
-    # In other scenarios, we want to rotate the random proxy or switch from
-    # direct querying to a proxy.
+        try:
+            resp = session.get(pagerequest, headers=_HEADERS, cookies=_COOKIES, timeout=_TIMEOUT)
+            if resp.status_code == 200:
+                if 'scholarly_captcha' in resp.text:
+                    logger.info("Got a CAPTCHA. Retrying...")
+                elif 'not a robot when JavaScript is turned off' in resp.text:
+                    logger.info("Got a cannot verify . Retrying...")
+                else:
+                    return resp.text
+            else:
+                logger.info("Got a response code %s. Retrying...", resp.status_code)
+        except Exception as e:
+            logger.info("Exception %s while fetching page. Retrying...", str(e))
+
+    # We only reach this part if there was an error. We refresh our Tor identify if Tor runs
+    if _TOR_WORKS and _CAN_REFRESH_TOR: 
+        logger.info("Refreshing Tor ID...")
+        time.sleep(2+random.uniform(0, 2))
+        _refresh_tor_id()
+        
     return _get_page(pagerequest)
 
 
