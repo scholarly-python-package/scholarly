@@ -5,7 +5,7 @@ scholarly is a module that allows you to retrieve author and publication informa
 Use `pip` to install from pypi:
 
 ```bash
-pip install scholarly
+pip3 install scholarly
 ```
 
 or `pip` to install from github:
