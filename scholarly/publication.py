@@ -189,13 +189,14 @@ class Publication(object):
                 elif key == 'Publisher':
                     self.bib['publisher'] = val.text
                 elif key == 'Publication date':
-                    self.bib['year'] = arrow.get(val.text, [
-                                                 'YYYY/M',
-                                                 'YYYY/MM/DD',
-                                                 'YYYY',
-                                                 'YYYY/M/DD',
-                                                 'YYYY/M/D',
-                                                 'YYYY/MM/D']).year
+
+                    patterns = ['YYYY/M',
+                                'YYYY/MM/DD',
+                                'YYYY',
+                                'YYYY/M/DD',
+                                'YYYY/M/D',
+                                'YYYY/MM/D']
+                    self.bib['year'] = arrow.get(val.text, patterns).year
                 elif key == 'Description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
