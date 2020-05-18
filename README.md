@@ -1,4 +1,5 @@
 [![Python package](https://github.com/OrganicIrradiation/scholarly/workflows/Python%20package/badge.svg?branch=master)](https://github.com/OrganicIrradiation/scholarly/actions?query=branch%3Amaster)
+[![Known Vulnerabilities](https://snyk.io/test/github/OrganicIrradiation/scholarly/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/OrganicIrradiation/scholarly?targetFile=requirements.txt)
 
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
