@@ -81,7 +81,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
 ```
 
-* `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
+* `search_pubs` -- Search for articles/publications and return generator of Publication objects.
 
 ```python
 >>> search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
@@ -111,6 +111,38 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
  'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisdr=CgXsOAkeGAA:AAGBfm0AAAAAXsLLJNxa7vzefAEwz6a3tLCEoMsli6vj&scisig=AAGBfm0AAAAAXsLLJNK0I3FleN-7_r_TxUF8m5JDa9W5&scisf=4&ct=citation&cd=0&hl=en'}
 ```
 
+* You can export a publication to Bibtex by using the `bibtex` property.
+Here's a quick example:
+
+```python
+>>> query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
+>>> pub = next(query)
+>>> print(pub.bibtex)
+```
+
+by running the code about you should get the following bibtext entry:
+
+```bib
+@inproceedings{ester1996density,
+ abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. However, the application to large spatial databases rises the following requirements for clustering algorithms: minimal requirements of domain knowledge to determine the input},
+ author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\"o}rg and Xu, Xiaowei},
+ booktitle = {Kdd},
+ cites = {17500},
+ eprint = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
+ gsrank = {1},
+ number = {34},
+ pages = {226--231},
+ title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
+ url = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
+ venue = {Kdd},
+ volume = {96},
+ year = {1996}
+}
+```
+
+
+
+
 * `Author.fill(sections=[])` -- Populate the Author object with
   information from their profile. The optional `sections` parameter takes a
   list of the portions of author information to fill, as follows:
@@ -137,72 +169,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
                 'filled': False,
                 'id': 'Smr99uEAAAAJ',
                 'name': 'Martin Banks'},
-               {'affiliation': 'Durham University, Computer Science & Physics',
-                'filled': False,
-                'id': '3xJXtlwAAAAJ',
-                'name': 'Gordon D. Love'},
-               {'affiliation': 'Professor of ECE, Purdue University',
-                'filled': False,
-                'id': 'OiVOAHMAAAAJ',
-                'name': 'Hong Z Tan'},
-               {'affiliation': 'Deepmind',
-                'filled': False,
-                'id': 'MnUboHYAAAAJ',
-                'name': 'Ari Weinstein'},
-               {'affiliation': "Brigham and Women's Hospital/Harvard Medical School",
-                'filled': False,
-                'id': 'dqokykoAAAAJ',
-                'name': 'Chia-Chien Wu'},
-               {'affiliation': 'Professor of Psychology and Cognitive Science, Rutgers '
-                'University',
-                'filled': False,
-                'id': 'KoJrMIAAAAAJ',
-                'name': 'Jacob Feldman'},
-               {'affiliation': 'PhD Student, EECS, UC Berkeley',
-                'filled': False,
-                'id': 'aYyDsZ0AAAAJ',
-                'name': 'Pratul Srinivasan'},
-               {'affiliation': 'Formerly: Indiana University, Rutgers University, University '
-                'of Pennsylvania',
-                'filled': False,
-                'id': 'FoVvIK0AAAAJ',
-                'name': 'Peter C. Pantelis'},
-               {'affiliation': 'Yale University',
-                'filled': False,
-                'id': 'rNTIQXYAAAAJ',
-                'name': 'Steven W Zucker'},
-               {'affiliation': 'Brown University',
-                'filled': False,
-                'id': 'JPZWLKQAAAAJ',
-                'name': 'Ben Kunsberg'},
-               {'affiliation': 'Rutgers University, New Brunswick, NJ',
-                'filled': False,
-                'id': '9XRvM88AAAAJ',
-                'name': 'Manish Singh'},
-               {'affiliation': 'Silicon Valley Professor of ECE, Purdue University',
-                'filled': False,
-                'id': 'fD3JviYAAAAJ',
-                'name': 'David S. Ebert'},
-               {'affiliation': 'MIT',
-                'filled': False,
-                'id': 'rRJ9wTJMUB8C',
-                'name': 'Joshua B. Tenenbaum'},
-               {'affiliation': 'Chief Scientist, isee AI',
-                'filled': False,
-                'id': 'bTdT7hAAAAAJ',
-                'name': 'Chris Baker'},
-               {'affiliation': 'Professor of Psychology, Ewha Womans University',
-                'filled': False,
-                'id': 'KXQb7CAAAAAJ',
-                'name': 'Sung-Ho Kim'},
-               {'affiliation': 'Assistant Professor, Boston University',
-                'filled': False,
-                'id': 'NN4GKo8AAAAJ',
-                'name': 'Melissa M. Kibbe'},
-               {'affiliation': 'Nvidia Corporation',
-                'filled': False,
-                'id': 'nHx9IgYAAAAJ',
-                'name': 'Peter Shirley'},
+               ...
                {'affiliation': 'Professor and Dean, School of Engineering, University of '
                 'California, Merced',
                 'filled': False,

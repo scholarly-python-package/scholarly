@@ -234,6 +234,8 @@ class Publication(object):
         Returns:
             str -- a bibtex entry
         """
+        if not self._filled:
+            self.fill()
         a = BibDatabase()
         a.entries = [self.bib]
         return bibtexparser.dumps(a)
