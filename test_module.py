@@ -94,6 +94,21 @@ class TestScholarly(unittest.TestCase):
         author = authors[0].fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
+        
+    def test_filling_multiple_publications(self):
+        """
+        Download all publications for author and check that all publications can be filled
+        """
+        query = 'Ipeirotis'
+        authors = [a for a in scholarly.search_author(query)]
+        self.assertGreaterEqual(len(authors), 1)
+        author = authors[0].fill()
+        # Check that we can fill without problem the first ten publications
+        publications = [p.fill() for p in author.publications[:10]]
+        self.assertEqual(len(publications),10)
+        abstracts_populated = ['abstract' in p.bib for p in publications]
+        self.assertTrue(all(abstracts_populated))
+        
 
 if __name__ == '__main__':
     unittest.main()

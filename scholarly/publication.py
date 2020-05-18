@@ -155,7 +155,7 @@ class Publication(object):
                 elif key == 'Description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
-                    self.bib['abstract'] = val.find(class_='gsh_csp').text
+                    self.bib['abstract'] = val.find(class_='gsh_small').text
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
