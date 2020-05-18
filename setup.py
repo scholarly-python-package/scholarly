@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = 'scholarly',
-    version = '0.2.5',
+    version = '0.2.6',
     author = 'Steven A. Cholewiak',
     author_email = 'steven@cholewiak.com',
 
@@ -24,9 +24,9 @@ setuptools.setup(
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules'],
-    install_requires=['arrow', 'beautifulsoup4', 'bibtexparser', 'requests[security]'],
-    test_suite="test.py"
+    install_requires=['arrow', 'beautifulsoup4', 'bibtexparser', 'requests[security]', 'requests[socks]', 
+    'stem', 'fake_useragent', 'PySocks'],
+    test_suite="test_module.py"
 )

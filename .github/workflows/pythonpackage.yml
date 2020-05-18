@@ -39,4 +39,4 @@ jobs:
       run: ./setup_tor.sh
     - name: Test with unittest
       run: |
-        cd scholarly && python3 -m unittest -v test.py
+        python3 -m unittest -v test_module.py

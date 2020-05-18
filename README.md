@@ -42,7 +42,7 @@ Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
 Because `scholarly` does not use an official API, no key is required. Simply:
 
 ```python
-import scholarly
+from scholarly import scholarly
 
 print(next(scholarly.search_author('Steven A. Cholewiak')))
 ```

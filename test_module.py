@@ -1,6 +1,5 @@
 import unittest
-import scholarly
-
+from scholarly import scholarly
 
 class TestScholarly(unittest.TestCase):
 
