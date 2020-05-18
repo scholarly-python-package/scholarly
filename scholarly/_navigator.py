@@ -15,6 +15,7 @@ from stem.control import Controller
 from fake_useragent import UserAgent
 from .publication import _SearchScholarIterator
 from .author import Author
+from .publication import Publication
 import sys
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
@@ -26,6 +27,7 @@ _HEADERS = {
 _HOST = 'https://scholar.google.com{0}'
 
 _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
+_PUBSEARCH = '"/scholar?hl=en&q={0}"'
 
 _TIMEOUT = 2
 
@@ -158,6 +160,7 @@ class Navigator(object):
 
     def _get_soup(self, url: str) -> BeautifulSoup:
         """Return the BeautifulSoup for a page on scholar.google.com"""
+        print(_HOST.format(url))
         html = self._get_page(_HOST.format(url))
         html = html.replace(u'\xa0', u' ')
         res = BeautifulSoup(html, 'html.parser')
@@ -186,6 +189,14 @@ class Navigator(object):
             else:
                 self.logger.info("No more author pages")
                 break
+
+    def search_publication(self, url: str, filled: bool = False) -> Publication:
+        """Search by scholar query and return a single Publication object"""
+        soup = self._get_soup(url)
+        res = Publication(self, soup.find_all('div', 'gs_or')[0], 'scholar')
+        if filled:
+            res.fill()
+        return res
 
     def search_publications(self, url: str) -> _SearchScholarIterator:
         return _SearchScholarIterator(self, url)
