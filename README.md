@@ -53,10 +53,10 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 ```python
 >>> search_query = scholarly.search_author('Marty Banks, Berkeley')
 >>> print(next(search_query))
-{'_filled': False,
- 'affiliation': 'Professor of Vision Science, UC Berkeley',
- 'citedby': 17758,
+{'affiliation': 'Professor of Vision Science, UC Berkeley',
+ 'citedby': 20160,
  'email': '@berkeley.edu',
+ 'filled': False,
  'id': 'Smr99uEAAAAJ',
  'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
  'name': 'Martin Banks',
@@ -68,14 +68,17 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 ```python
 >>> search_query = scholarly.search_keyword('Haptics')
 >>> print(next(search_query))
-{'_filled': False,
- 'affiliation': 'Stanford University',
- 'citedby': 31731,
- 'email': '@cs.stanford.edu',
- 'id': '4arkOLcAAAAJ',
- 'interests': ['Robotics', 'Haptics', 'Human Motion Understanding'],
- 'name': 'Oussama Khatib',
- 'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'}
+{'affiliation': 'Postdoctoral research assistant, University of Bremen',
+ 'citedby': 55943,
+ 'email': '@collision-detection.com',
+ 'filled': False,
+ 'id': 'lHrs3Y4AAAAJ',
+ 'interests': ['Computer Graphics',
+               'Collision Detection',
+               'Haptics',
+               'Geometric Data Structures'],
+ 'name': 'Rene Weller',
+ 'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
 ```
 
 * `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
@@ -83,8 +86,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 ```python
 >>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
 >>> print(next(search_query))
-{'_filled': False,
- 'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
+{'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
                      'physically stable or not. Such judgments allow observers '
                      'to predict the physical behavior of objects, and hence '
                      'to guide their motor actions. We investigated the visual '
@@ -96,55 +98,122 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
                      'perceived critical angle, ie, the tilt angle at which '
                      'the object …',
          'author': 'SA Cholewiak and RW Fleming and M Singh',
-         'eprint': 'http://jov.arvojournals.org/article.aspx?articleid=2213254',
+         'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
          'title': 'Perception of physical stability and center of mass of 3-D '
                   'objects',
-         'url': 'http://jov.arvojournals.org/article.aspx?articleid=2213254'},
- 'citedby': 14,
+         'url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
+         'venue': 'Journal of vision',
+         'year': ' 2015'},
+ 'citedby': 19,
+ 'filled': False,
  'id_scholarcitedby': '15736880631888070187',
  'source': 'scholar',
- 'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisig=AAGBfm0AAAAAXGSbUf67ybEFA3NEyJzRusXRbR441api&scisf=4&ct=citation&cd=0&hl=en'}
+ 'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisdr=CgXsOAkeGAA:AAGBfm0AAAAAXsLLJNxa7vzefAEwz6a3tLCEoMsli6vj&scisig=AAGBfm0AAAAAXsLLJNK0I3FleN-7_r_TxUF8m5JDa9W5&scisf=4&ct=citation&cd=0&hl=en'}
 ```
 
-* `Author.fill(sections=['all'])` -- Populate the Author object with
+* `Author.fill(sections=[])` -- Populate the Author object with
   information from their profile. The optional `sections` parameter takes a
   list of the portions of author information to fill, as follows:
-  - `'basic'` = name, affiliation, and interests;
-  - `'citation_indices'` = h-index, i10-index, and 5-year analogues;
-  - `'citation_num'` = number of citations per year;
-  - `'co-authors'` = co-authors;
+  - `'basics'` = name, affiliation, and interests;
+  - `'indices'` = h-index, i10-index, and 5-year analogues;
+  - `'counts'` = number of citations per year;
+  - `'coauthors'` = co-authors;
   - `'publications'` = publications;
-  - `'all'` = all of the above (this is the default)
+  - `'[]'` = all of the above (this is the default)
 
 ```python
 >>> search_query = scholarly.search_author('Steven A Cholewiak')
 >>> author = next(search_query)
 >>> print(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
-{'_filled': False,
- 'affiliation': 'Vision Scientist',
- 'citedby': 261,
- 'citedby5y': 185,
- 'coauthors': [<scholarly.scholarly.Author object at 0x7fdb210e0550>,
-               <scholarly.scholarly.Author object at 0x7fdb20718210>,
-               <scholarly.scholarly.Author object at 0x7fdb20718290>,
-               <scholarly.scholarly.Author object at 0x7fdb20718350>,
-               <scholarly.scholarly.Author object at 0x7fdb20718410>,
-               <scholarly.scholarly.Author object at 0x7fdb207185d0>,
-               <scholarly.scholarly.Author object at 0x7fdb207184d0>,
-               <scholarly.scholarly.Author object at 0x7fdb207186d0>,
-               <scholarly.scholarly.Author object at 0x7fdb207187d0>,
-               <scholarly.scholarly.Author object at 0x7fdb20718510>,
-               <scholarly.scholarly.Author object at 0x7fdb20718890>,
-               <scholarly.scholarly.Author object at 0x7fdb20718790>,
-               <scholarly.scholarly.Author object at 0x7fdb20718a10>,
-               <scholarly.scholarly.Author object at 0x7fdb20718ad0>,
-               <scholarly.scholarly.Author object at 0x7fdb20718c10>,
-               <scholarly.scholarly.Author object at 0x7fdb20718b90>,
-               <scholarly.scholarly.Author object at 0x7fdb20718d10>,
-               <scholarly.scholarly.Author object at 0x7fdb20718e10>,
-               <scholarly.scholarly.Author object at 0x7fdb20718bd0>,
-               <scholarly.scholarly.Author object at 0x7fdb20718f50>],
+{'affiliation': 'Vision Scientist',
+ 'citedby': 262,
+ 'citedby5y': 186,
+ 'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental Psychology, University '
+                'of Giessen',
+                'filled': False,
+                'id': 'ruUKktgAAAAJ',
+                'name': 'Roland Fleming'},
+               {'affiliation': 'Professor of Vision Science, UC Berkeley',
+                'filled': False,
+                'id': 'Smr99uEAAAAJ',
+                'name': 'Martin Banks'},
+               {'affiliation': 'Durham University, Computer Science & Physics',
+                'filled': False,
+                'id': '3xJXtlwAAAAJ',
+                'name': 'Gordon D. Love'},
+               {'affiliation': 'Professor of ECE, Purdue University',
+                'filled': False,
+                'id': 'OiVOAHMAAAAJ',
+                'name': 'Hong Z Tan'},
+               {'affiliation': 'Deepmind',
+                'filled': False,
+                'id': 'MnUboHYAAAAJ',
+                'name': 'Ari Weinstein'},
+               {'affiliation': "Brigham and Women's Hospital/Harvard Medical School",
+                'filled': False,
+                'id': 'dqokykoAAAAJ',
+                'name': 'Chia-Chien Wu'},
+               {'affiliation': 'Professor of Psychology and Cognitive Science, Rutgers '
+                'University',
+                'filled': False,
+                'id': 'KoJrMIAAAAAJ',
+                'name': 'Jacob Feldman'},
+               {'affiliation': 'PhD Student, EECS, UC Berkeley',
+                'filled': False,
+                'id': 'aYyDsZ0AAAAJ',
+                'name': 'Pratul Srinivasan'},
+               {'affiliation': 'Formerly: Indiana University, Rutgers University, University '
+                'of Pennsylvania',
+                'filled': False,
+                'id': 'FoVvIK0AAAAJ',
+                'name': 'Peter C. Pantelis'},
+               {'affiliation': 'Yale University',
+                'filled': False,
+                'id': 'rNTIQXYAAAAJ',
+                'name': 'Steven W Zucker'},
+               {'affiliation': 'Brown University',
+                'filled': False,
+                'id': 'JPZWLKQAAAAJ',
+                'name': 'Ben Kunsberg'},
+               {'affiliation': 'Rutgers University, New Brunswick, NJ',
+                'filled': False,
+                'id': '9XRvM88AAAAJ',
+                'name': 'Manish Singh'},
+               {'affiliation': 'Silicon Valley Professor of ECE, Purdue University',
+                'filled': False,
+                'id': 'fD3JviYAAAAJ',
+                'name': 'David S. Ebert'},
+               {'affiliation': 'MIT',
+                'filled': False,
+                'id': 'rRJ9wTJMUB8C',
+                'name': 'Joshua B. Tenenbaum'},
+               {'affiliation': 'Chief Scientist, isee AI',
+                'filled': False,
+                'id': 'bTdT7hAAAAAJ',
+                'name': 'Chris Baker'},
+               {'affiliation': 'Professor of Psychology, Ewha Womans University',
+                'filled': False,
+                'id': 'KXQb7CAAAAAJ',
+                'name': 'Sung-Ho Kim'},
+               {'affiliation': 'Assistant Professor, Boston University',
+                'filled': False,
+                'id': 'NN4GKo8AAAAJ',
+                'name': 'Melissa M. Kibbe'},
+               {'affiliation': 'Nvidia Corporation',
+                'filled': False,
+                'id': 'nHx9IgYAAAAJ',
+                'name': 'Peter Shirley'},
+               {'affiliation': 'Professor and Dean, School of Engineering, University of '
+                'California, Merced',
+                'filled': False,
+                'id': 'r6MrFYoAAAAJ',
+                'name': 'Edwin D. Hirleman Jr.'},
+               {'affiliation': 'Vice President of Research, NVIDIA Corporation',
+                'filled': False,
+                'id': 'AE7Xvl0AAAAJ',
+                'name': 'David Luebke'}],
  'email': '@berkeley.edu',
+ 'filled': False,
  'hindex': 8,
  'hindex5y': 8,
  'i10index': 7,
@@ -208,6 +277,18 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
+## Tests
+
+To run tests execute the `test_module.py` file as:
+
+```bash
+python3 test_module
+```
+
+or
+```bash
+python3 -m unittest -v test_module.py
+```
 
 ## License
 The original code that this project was forked from was released by [Bello Chalmers](https://github.com/lbello/chalmers-web) under a [WTFPL](http://www.wtfpl.net/) license. In keeping with this mentality, all code is released under the [Unlicense](http://unlicense.org/).
