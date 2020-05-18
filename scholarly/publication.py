@@ -200,7 +200,10 @@ class Publication(object):
                 elif key == 'Description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
-                    self.bib['abstract'] = val.find(class_='gsh_csp').text
+                    abstract = val.find(class_='gsh_csp')
+                    if abstract is None:
+                        abstract = val.find(class_='gsh_small')
+                    self.bib['abstract'] = abstract.text
                 elif key == 'Total citations':
                     self.citedby = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
