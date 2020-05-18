@@ -64,7 +64,6 @@ class Publication(object):
         self.source = pubtype
         if self.source == 'citations':
             self.bib['title'] = __data.find('a', class_='gsc_a_at').text
-            print(self.bib['title'])
             self.id_citations = re.findall(_CITATIONPUBRE, __data.find(
                 'a', class_='gsc_a_at')['data-href'])[0]
             citedby = __data.find(class_='gsc_a_ac')
@@ -146,11 +145,11 @@ class Publication(object):
                 elif key == 'Publisher':
                     self.bib['publisher'] = val.text
                 elif key == 'Publication date':
-                    self.bib['year'] = arrow.get(val.text).year
+                    self.bib['year'] = arrow.get(val.text, ['YYYY/M']).year
                 elif key == 'Description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
-                    self.bib['abstract'] = val
+                    self.bib['abstract'] = val.find(class_='gsh_csp').text
                 elif key == 'Total citations':
                     self.id_scholarcitedby = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
