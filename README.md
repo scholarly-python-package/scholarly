@@ -117,10 +117,10 @@ Here's a quick example:
 ```python
 >>> query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
 >>> pub = next(query)
->>> print(pub.bibtex)
+>>> pub.bibtex
 ```
 
-by running the code about you should get the following bibtext entry:
+by running the code above you should get the following bibtext entry:
 
 ```bib
 @inproceedings{ester1996density,
