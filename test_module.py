@@ -39,7 +39,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
         cites = [c for c in filled.get_citedby()]
-        self.assertEqual(len(cites), filled.bib['cites'])
+        self.assertEqual(str(len(cites)), filled.bib['cites'])
 
     def test_keyword(self):
         """
