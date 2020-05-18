@@ -95,6 +95,5 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
 
-
 if __name__ == '__main__':
     unittest.main()

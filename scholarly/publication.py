@@ -16,13 +16,13 @@ class _SearchScholarIterator(object):
     I have removed all logging from here for simplicity. -V
     """
 
-    def __init__(self, nav, url:str):
+    def __init__(self, nav, url: str):
         self._url = url
         self._nav = nav
         self._load_url(url)
 
-    def _load_url(self, url:str):
-        #this is temporary until setup json file
+    def _load_url(self, url: str):
+        # this is temporary until setup json file
         self._soup = self._nav._get_soup(url)
         self._pos = 0
         self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
@@ -50,7 +50,7 @@ class _SearchScholarIterator(object):
         return {'url': self._url, 'pos': self._pos}
 
     def __setstate__(self, state):
-        #this needs validation -V
+        # this needs validation -V
         self._load_url(state['url'])
         self._pos = state['pos']
 
@@ -64,13 +64,16 @@ class Publication(object):
         self.source = pubtype
         if self.source == 'citations':
             self.bib['title'] = __data.find('a', class_='gsc_a_at').text
+            print(self.bib['title'])
             self.id_citations = re.findall(_CITATIONPUBRE, __data.find(
                 'a', class_='gsc_a_at')['data-href'])[0]
             citedby = __data.find(class_='gsc_a_ac')
             if citedby and not (citedby.text.isspace() or citedby.text == ''):
                 self.citedby = int(citedby.text)
             year = __data.find(class_='gsc_a_h')
-            if year and year.text and not year.text.isspace() and len(year.text) > 0:
+            if (year and year.text
+                    and not year.text.isspace()
+                    and len(year.text) > 0):
                 self.bib['year'] = int(year.text)
         elif self.source == 'scholar':
             databox = __data.find('div', class_='gs_ri')
@@ -83,12 +86,13 @@ class Publication(object):
             if title.find('a'):
                 self.bib['url'] = title.find('a')['href']
             authorinfo = databox.find('div', class_='gs_a')
+            authorlist = authorinfo.text.split(' - ')[0].split(',')
             self.bib['author'] = ' and '.join(
-                [i.strip() for i in authorinfo.text.split(' - ')[0].split(',')])
+                [i.strip() for i in authorlist])
             try:
                 self.bib['venue'], self.bib['year'] = authorinfo.text.split(
                     ' - ')[1].split(',')
-            except Exception as e:
+            except Exception:
                 self.bib['venue'], self.bib['year'] = 'NA', 'NA'
             if databox.find('div', class_='gs_rs'):
                 self.bib['abstract'] = databox.find('div', class_='gs_rs').text
@@ -106,6 +110,10 @@ class Publication(object):
                 self.bib['eprint'] = __data.find(
                     'div', class_='gs_ggs gs_fl').a['href']
         self._filled = False
+
+    @property
+    def filled(self):
+        return self._filled
 
     def fill(self):
         """Populate the Publication with information from its profile"""
@@ -171,4 +179,15 @@ class Publication(object):
             return []
 
     def __str__(self):
-        return pprint.pformat(self.__dict__)
+        pdict = dict(self.__dict__)
+        try:
+            pdict["filled"] = self.filled
+            del pdict['nav']
+            del pdict['_filled']
+        except Exception:
+            raise
+
+        return pprint.pformat(pdict)
+
+    def __repr__(self):
+        return self.__str__()

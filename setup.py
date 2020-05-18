@@ -15,11 +15,12 @@ setuptools.setup(
 
     url = 'https://github.com/OrganicIrradiation/scholarly',
     packages=setuptools.find_packages(),
-    download_url = 'https://github.com/OrganicIrradiation/scholarly/tarball/v0.2.5',
+    download_url = 'https://github.com/OrganicIrradiation/scholarly/zip/v0.3',
     keywords = ['Google Scholar', 'academics', 'citations'],
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
