@@ -59,7 +59,7 @@ class Navigator(object):
         super(Navigator, self).__init__()
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
-
+        self._tor = self._tor_works()
 
     def _get_page(self, pagerequest:str):
         """Return the data for a page on scholar.google.com"""
@@ -69,10 +69,7 @@ class Navigator(object):
             # If Tor is running we use the proxy
             # Did not use with for shorter indented lines -V
             session = requests.Session()
-            if self._tor_works():
-                # I *really* dislike that we do two requests every time
-                # checking if tor is working after connection is established
-                # should only happen when errors happen.
+            if self._tor:
 
                 # Tor uses the 9050 port as the default socks port
                 # on windows 9150 for socks and 9151 for control
@@ -93,21 +90,21 @@ class Navigator(object):
                     if self._has_captcha(resp.text):
                         raise Exception("Got a CAPTCHA. Retrying.")
                     else:
-                        break
+                        session.close()
+                        return resp.text
                 else:
                     self.logger.info(f"""Got a response code {resp.status_code}. 
                                     Retrying...""")
-                    raise
+                    raise Exception(f"Status code {resp.status_code}")
 
             except Exception as e:
                 self.logger.info(f"Exception {e} while fetching page. Retrying.")
                 # Check if Tor is running and refresh it
                 self.logger.info("Refreshing Tor ID...")
-                self._refresh_tor_id()
+                if self._tor:
+                    self._refresh_tor_id()
                 session.close()
-        session.close()
-        return resp.text
-
+        
 
     def _tor_works(self) -> bool:
         """ Checks if Tor is working"""
@@ -125,17 +122,15 @@ class Navigator(object):
                 self.logger.info("NO TOR :(")
                 return False
 
-
     def _refresh_tor_id(self) -> bool:
         try:
             with Controller.from_port(port=_TOR_CONTROL) as controller:
-                controller.authenticate(password="")
+                controller.authenticate(password="scholarly_password")
                 controller.signal(Signal.NEWNYM)
             return True
         except Exception as e:
             self.logger.info(f"Exception {e} while refreshing TOR. Retrying...")
             return False
-
 
     def use_proxy(self, http:str, https:str):
         """ Routes scholarly through a proxy (e.g. tor).
@@ -147,28 +142,25 @@ class Navigator(object):
             "https": https,
         }
 
-
     def use_tor(self):
         self.logger.info("Setting tor as the proxy")
         self._use_proxy(http=_TOR_SOCK,
                   https=_TOR_SOCK)
-
 
     def _has_captcha(self, text:str) -> bool:
         flags = ["Please show you're not a robot",
                  "network may be sending automated queries",
                  "have detected unusual traffic from your computer",
                  "scholarly_captcha",
+                 "/sorry/image",
                  "enable JavaScript"]
         return any([i in text for i in flags])
-
 
     def _get_soup(self, url:str) -> BeautifulSoup:
         """Return the BeautifulSoup for a page on scholar.google.com"""
         html = self._get_page(_HOST.format(url))
         html = html.replace(u'\xa0', u' ')
         return BeautifulSoup(html, 'html.parser')
-
 
     def search_authors(self, url:str):
         """Generator that returns Author objects from the author search page"""
@@ -189,7 +181,6 @@ class Navigator(object):
             else:
                 self.logger.info("No more author pages")
                 break
-
 
     def search_publications(self, url:str) -> _SearchScholarIterator:
         return _SearchScholarIterator(self, url)

@@ -54,6 +54,7 @@ class _SearchScholarIterator(object):
         self._load_url(state['url'])
         self._pos = state['pos']
 
+
 class Publication(object):
     """Returns an object for a single publication"""
 

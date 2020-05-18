@@ -1,6 +1,7 @@
 import unittest
 from scholarly import scholarly
 
+
 class TestScholarly(unittest.TestCase):
 
     def test_empty_author(self):

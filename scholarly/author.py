@@ -9,6 +9,7 @@ _PAGESIZE = 100
 _EMAILAUTHORRE = r'Verified email at '
 _CITATIONAUTH = '/citations?hl=en&user={0}'
 
+
 class Author(object):
     """Returns an object for a single author"""
 

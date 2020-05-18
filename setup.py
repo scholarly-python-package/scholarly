@@ -1,4 +1,3 @@
-import os
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -6,10 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = 'scholarly',
-    version = '0.2.6',
-    author = 'Steven A. Cholewiak',
-    author_email = 'steven@cholewiak.com',
-
+    version = '0.3',
+    author = 'Steven A. Cholewiak, Panos Ipeirotis, Victor Silva',
+    author_email = 'steven@cholewiak.com, pi1@stern.nyu.edu, vsilva@ualberta.ca',
     description = 'Simple access to Google Scholar authors and citations',
     long_description=long_description,
     long_description_content_type="text/markdown",
