@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 import codecs
 import hashlib
 import logging
-import pprint
 import random
 import re
 import requests
@@ -142,7 +141,7 @@ class Navigator(object):
         """ Routes scholarly through a proxy (e.g. tor).
             Requires pysocks
             Proxy must be running."""
-        logger.info("Enabling proxies: http=%r https=%r", http, https)
+        self.logger.info("Enabling proxies: http=%r https=%r", http, https)
         _PROXIES = {
             "http": http,
             "https": https,
@@ -150,8 +149,8 @@ class Navigator(object):
 
 
     def use_tor(self):
-        logger.info("Setting tor as the proxy")
-        _use_proxy(http=_TOR_SOCK,
+        self.logger.info("Setting tor as the proxy")
+        self._use_proxy(http=_TOR_SOCK,
                   https=_TOR_SOCK)
 
 

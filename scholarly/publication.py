@@ -2,6 +2,8 @@ import re
 import bibtexparser
 import arrow
 import requests
+import pprint
+
 
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'

@@ -1,5 +1,7 @@
 from .publication import Publication
 import re 
+import pprint
+
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -125,7 +127,7 @@ class Author(object):
                     pubstart += _PAGESIZE
                     url = '{0}&cstart={1}&pagesize={2}'.format(
                         url_citations, pubstart, _PAGESIZE)
-                    soup = _get_soup(_HOST+url)
+                    soup = self.nav._get_soup(url)
                 else:
                     break
 
