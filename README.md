@@ -1,3 +1,5 @@
+![Python package](https://github.com/OrganicIrradiation/scholarly/workflows/Python%20package/badge.svg?branch=master)
+
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
