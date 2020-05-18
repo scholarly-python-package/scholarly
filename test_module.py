@@ -25,7 +25,7 @@ class TestScholarly(unittest.TestCase):
         """
         Test that searching for an empty publication returns zero results
         """
-        pubs = [p for p in scholarly.search_pubs_query('')]
+        pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
     def test_get_cited_by(self):
@@ -35,16 +35,16 @@ class TestScholarly(unittest.TestCase):
         the number of papers that are returned
         """
         query = 'frequency-domain analysis of haptic gratings cholewiak'
-        pubs = [p for p in scholarly.search_pubs_query(query)]
+        pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
         cites = [c for c in filled.get_citedby()]
-        self.assertEqual(len(cites), filled.citedby)
+        self.assertEqual(len(cites), filled.bib['cites'])
 
     def test_keyword(self):
         """
-        When we search for the keyword "3d_shape" the author Steven A. Cholewiak
-        should be among those listed
+        When we search for the keyword "3d_shape" the author
+        Steven A. Cholewiak should be among those listed
         """
         authors = [a.name for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
@@ -67,14 +67,14 @@ class TestScholarly(unittest.TestCase):
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
-        pubs = [p.bib['title'] for p in scholarly.search_pubs_query('"naive physics" stability "3d shape"')]
+        pubs = [p.bib['title'] for p in scholarly.search_pubs('"naive physics" stability "3d shape"')]
         self.assertGreaterEqual(len(pubs), 29)
 
         self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
         query = 'Creating correct blur and its effect on accommodation'
-        pubs = [p for p in scholarly.search_pubs_query(query)]
+        pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
         self.assertTrue(filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
@@ -97,3 +97,4 @@ class TestScholarly(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
