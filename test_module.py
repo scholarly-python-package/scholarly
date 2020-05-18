@@ -112,7 +112,7 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(all(abstracts_populated))
         # Check that the abstracts have reasonable lengths
         abstracts_length = [len(p.bib['abstract']) for p in publications]
-        abstracts_check = [ 1000>l>500 for l in abstracts_check] 
+        abstracts_check = [ 1000>l>500 for l in abstracts_length] 
         self.assertTrue(all(abstracts_check))
 
 if __name__ == '__main__':
