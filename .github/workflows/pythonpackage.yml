@@ -40,3 +40,8 @@ jobs:
     - name: Test with unittest
       run: |
         python3 -m unittest -v test_module.py
+    - name: Check test code coverage
+      run: bash <(curl -s https://codecov.io/bash)
+      env:
+        CODECOV_TOKEN: "c5555b24-0ed7-4219-97c4-96b5ad4f8129"
+        
