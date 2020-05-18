@@ -84,7 +84,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
 * `search_pubs_query` -- Search for articles/publications and return generator of Publication objects.
 
 ```python
->>> search_query = scholarly.search_pubs_query('Perception of physical stability and center of mass of 3D objects')
+>>> search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
 >>> print(next(search_query))
 {'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
                      'physically stable or not. Such judgments allow observers '
