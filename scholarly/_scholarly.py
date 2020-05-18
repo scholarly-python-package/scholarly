@@ -6,13 +6,14 @@ _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 
+
 class _Scholarly(object):
     """docstring for scholarly"""
     def __init__(self):
         self.nav = Navigator()
 
     def search_pubs_query(self, query):
-        """Search by scholar query and return a generator of Publication objects"""
+        """Search by query and returns a generator of Publication objects"""
         url = _PUBSEARCH.format(requests.utils.quote(query))
         return self.nav.search_publications(url)
 
