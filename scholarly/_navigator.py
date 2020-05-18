@@ -160,7 +160,12 @@ class Navigator(object):
         """Return the BeautifulSoup for a page on scholar.google.com"""
         html = self._get_page(_HOST.format(url))
         html = html.replace(u'\xa0', u' ')
-        return BeautifulSoup(html, 'html.parser')
+        res = BeautifulSoup(html, 'html.parser')
+        try:
+            self.publib = res.find('div', id='gs_res_glb').get('data-sva')
+        except:
+            pass
+        return res
 
     def search_authors(self, url: str):
         """Generator that returns Author objects from the author search page"""

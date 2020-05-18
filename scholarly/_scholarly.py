@@ -12,7 +12,7 @@ class _Scholarly(object):
     def __init__(self):
         self.nav = Navigator()
 
-    def search_pubs_query(self, query):
+    def search_pubs(self, query):
         """Search by query and returns a generator of Publication objects"""
         url = _PUBSEARCH.format(requests.utils.quote(query))
         return self.nav.search_publications(url)
