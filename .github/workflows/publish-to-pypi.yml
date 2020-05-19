@@ -1,0 +1,29 @@
+name: Publish package to PyPI
+on: push
+
+jobs:
+  build-n-publish:
+    name: Build and publish package to PyPI
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+
+    - name: Install pep517
+      run: >-
+        pip3 install pep517 --user
+
+    - name: Build a binary wheel and a source tarball
+      run: >-
+        python3 -m pep517.build --source --binary --out-dir dist/ .
+
+    - name: Publish package to PyPI
+      if: startsWith(github.event.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.pypi_password }}        
