@@ -13,11 +13,30 @@ class _Scholarly(object):
         self.nav = Navigator()
 
     def use_proxy(self, http: str, https: str):
-        self.nav._use_proxy(http, https)
+        self.nav._use_proxy(http, https)        
+        
+    def search_pubs(self, query, patents=True, citations=True, year_low=None, year_high=None):
+        """
+        Searches by query and returns a generator of Publication objects
 
-    def search_pubs(self, query):
-        """Search by query and returns a generator of Publication objects"""
+        search_pubs(query, patents=True, year_low=None, year_high=None)
+        Args:
+            query: string with search terms
+            patents: bool, whether to include patents in search results (default True)
+            citations: bool, whether to include citations in search results (default True)
+            year_low: int, if given, earliest year from which to include results (default None)
+            year_high: int, if given, latest year from which to include results (default None)
+        Returns:
+            generator object with search results
+        Example:
+            s = scholarly.search_pubs_query('cancer', year_low=2015)
+        """
         url = _PUBSEARCH.format(requests.utils.quote(query))
+        yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
+        yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
+        citations = '&as_vis={0}'.format(1- int(citations))
+        patents = '&as_sdt={0},33'.format(1- int(patents))
+        url = url + yr_lo + yr_hi + citations + patents
         return self.nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False):
