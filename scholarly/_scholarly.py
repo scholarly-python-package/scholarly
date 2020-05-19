@@ -12,10 +12,18 @@ class _Scholarly(object):
     def __init__(self):
         self.nav = Navigator()
 
+    def use_proxy(self, http: str, https: str):
+        self.nav._use_proxy(http, https)
+
     def search_pubs(self, query):
         """Search by query and returns a generator of Publication objects"""
         url = _PUBSEARCH.format(requests.utils.quote(query))
         return self.nav.search_publications(url)
+
+    def search_single_pub(self, pub_title: str, filled: bool = False):
+        """Search by scholar query and return a single Publication object"""
+        url = _PUBSEARCH.format(requests.utils.quote(pub_title))
+        return self.nav.search_publication(url, filled)
 
     def search_author(self, name):
         """Search by author name and return a generator of Author objects"""
