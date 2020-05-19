@@ -51,10 +51,21 @@ elif sys.platform.startswith("win"):
     _TOR_CONTROL = 9151
 
 
-class Navigator(object):
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args,
+                                                                 **kwargs)
+        return cls._instances[cls]
+
+
+class Navigator(object, metaclass=Singleton):
     """I did not call it browser because there are other packages with
     that exact name. -Victor
     """
+
     def __init__(self):
         # TODO: Implement Singleton pattern since we don't need multiple navs.
         super(Navigator, self).__init__()
@@ -134,17 +145,14 @@ class Navigator(object):
             self.logger.info(err)
             return False
 
-    def use_proxy(self, http: str, https: str):
+    def _use_proxy(self, http: str, https: str):
         """ Routes scholarly through a proxy (e.g. tor).
             Requires pysocks
             Proxy must be running."""
         self.logger.info("Enabling proxies: http=%r https=%r", http, https)
-        _PROXIES = {
-            "http": http,
-            "https": https,
-        }
+        glo
 
-    def use_tor(self):
+    def _use_tor(self):
         self.logger.info("Setting tor as the proxy")
         self._use_proxy(http=_TOR_SOCK,
                         https=_TOR_SOCK)
@@ -160,7 +168,6 @@ class Navigator(object):
 
     def _get_soup(self, url: str) -> BeautifulSoup:
         """Return the BeautifulSoup for a page on scholar.google.com"""
-        print(_HOST.format(url))
         html = self._get_page(_HOST.format(url))
         html = html.replace(u'\xa0', u' ')
         res = BeautifulSoup(html, 'html.parser')
