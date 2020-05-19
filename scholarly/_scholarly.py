@@ -32,8 +32,8 @@ class _Scholarly(object):
         url = _PUBSEARCH.format(requests.utils.quote(query))
         yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
         yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
-        citations = 'as_vis={0}'.format(1- int(citations))
-        patents = 'as_sdt={0},33'.format(1- int(patents))
+        citations = '&as_vis={0}'.format(1- int(citations))
+        patents = '&as_sdt={0},33'.format(1- int(patents))
         url = url + yr_lo + yr_hi + citations + patents
         return self.nav.search_publications(url)
 
