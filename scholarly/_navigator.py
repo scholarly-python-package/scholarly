@@ -150,7 +150,6 @@ class Navigator(object, metaclass=Singleton):
             Requires pysocks
             Proxy must be running."""
         self.logger.info("Enabling proxies: http=%r https=%r", http, https)
-        glo
 
     def _use_tor(self):
         self.logger.info("Setting tor as the proxy")
