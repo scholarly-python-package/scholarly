@@ -219,7 +219,7 @@ print([citation.bib['title'] for citation in pub.get_citedby()])
 ```
 
 ### Using a proxy
-Just run `scholarly.use_proxy()`. Parameters are an http and an https proxy.
+Just run `scholarly.nav.use_proxy()`. Parameters are an http and an https proxy.
 *Note: this is a completely optional - opt-in feature'
 
 Example using FreeProxy:
