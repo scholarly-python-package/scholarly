@@ -229,19 +229,22 @@ from fp.fp import FreeProxy
 from scholarly import scholarly
 
 proxy = FreeProxy(rand=True, timeout=1, country_id=['US', 'CA']).get()  
-scholarly.use_proxy(http=proxy, https=proxy)
+scholarly.nav.use_proxy(http=proxy, https=proxy)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-Example using Tor:
-
+Example using Tor. First, if you want to use Tor as proxy:
+```
+sudo apt-get install -y tor
+```
+then
 ```python
 from scholarly import scholarly
 # default values are shown below
 proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
-scholarly.use_proxy(**proxies)
+scholarly.nav.use_proxy(**proxies)
 # If proxy is correctly set up, the following runs through it
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
