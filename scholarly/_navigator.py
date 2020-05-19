@@ -15,6 +15,7 @@ from stem.control import Controller
 from fake_useragent import UserAgent
 from .publication import _SearchScholarIterator
 from .author import Author
+from .publication import Publication
 import sys
 
 _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
@@ -26,6 +27,7 @@ _HEADERS = {
 _HOST = 'https://scholar.google.com{0}'
 
 _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
+_PUBSEARCH = '"/scholar?hl=en&q={0}"'
 
 _TIMEOUT = 2
 
@@ -49,10 +51,21 @@ elif sys.platform.startswith("win"):
     _TOR_CONTROL = 9151
 
 
-class Navigator(object):
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args,
+                                                                 **kwargs)
+        return cls._instances[cls]
+
+
+class Navigator(object, metaclass=Singleton):
     """I did not call it browser because there are other packages with
     that exact name. -Victor
     """
+
     def __init__(self):
         # TODO: Implement Singleton pattern since we don't need multiple navs.
         super(Navigator, self).__init__()
@@ -132,17 +145,13 @@ class Navigator(object):
             self.logger.info(err)
             return False
 
-    def use_proxy(self, http: str, https: str):
+    def _use_proxy(self, http: str, https: str):
         """ Routes scholarly through a proxy (e.g. tor).
             Requires pysocks
             Proxy must be running."""
         self.logger.info("Enabling proxies: http=%r https=%r", http, https)
-        _PROXIES = {
-            "http": http,
-            "https": https,
-        }
 
-    def use_tor(self):
+    def _use_tor(self):
         self.logger.info("Setting tor as the proxy")
         self._use_proxy(http=_TOR_SOCK,
                         https=_TOR_SOCK)
@@ -186,6 +195,14 @@ class Navigator(object):
             else:
                 self.logger.info("No more author pages")
                 break
+
+    def search_publication(self, url: str, filled: bool = False) -> Publication:
+        """Search by scholar query and return a single Publication object"""
+        soup = self._get_soup(url)
+        res = Publication(self, soup.find_all('div', 'gs_or')[0], 'scholar')
+        if filled:
+            res.fill()
+        return res
 
     def search_publications(self, url: str) -> _SearchScholarIterator:
         return _SearchScholarIterator(self, url)

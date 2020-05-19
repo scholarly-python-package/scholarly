@@ -12,6 +12,9 @@ class _Scholarly(object):
     def __init__(self):
         self.nav = Navigator()
 
+    def use_proxy(self, http: str, https: str):
+        self.nav._use_proxy(http, https)        
+        
     def search_pubs(self, query, patents=True, citations=True, year_low=None, year_high=None):
         """
         Searches by query and returns a generator of Publication objects
@@ -26,8 +29,7 @@ class _Scholarly(object):
         Returns:
             generator object with search results
         Example:
-            s = scholarly.search_pubs_query('cancer', year_low=2015)        
-        
+            s = scholarly.search_pubs_query('cancer', year_low=2015)
         """
         url = _PUBSEARCH.format(requests.utils.quote(query))
         yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
@@ -36,6 +38,11 @@ class _Scholarly(object):
         patents = '&as_sdt={0},33'.format(1- int(patents))
         url = url + yr_lo + yr_hi + citations + patents
         return self.nav.search_publications(url)
+
+    def search_single_pub(self, pub_title: str, filled: bool = False):
+        """Search by scholar query and return a single Publication object"""
+        url = _PUBSEARCH.format(requests.utils.quote(pub_title))
+        return self.nav.search_publication(url, filled)
 
     def search_author(self, name):
         """Search by author name and return a generator of Author objects"""
