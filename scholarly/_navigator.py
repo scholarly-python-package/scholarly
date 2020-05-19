@@ -10,6 +10,8 @@ import hashlib
 import logging
 import random
 import requests
+import tempfile
+import stem.process
 from stem import Signal
 from stem.control import Controller
 from fake_useragent import UserAgent
@@ -27,28 +29,11 @@ _HEADERS = {
 _HOST = 'https://scholar.google.com{0}'
 
 _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
-_PUBSEARCH = '"/scholar?hl=en&q={0}"'
 
 _TIMEOUT = 2
 
-_PROXIES = {
-    "http": None,
-    "https": None,
-}
-
-_HTTP_PROXY = None
-_HTTPS_PROXY = None
-
-_TOR_SOCK = None
-_TOR_CONTROL = None
-
-
-if sys.platform.startswith("linux"):
-    _TOR_SOCK = "socks5://127.0.0.1:9050"
-    _TOR_CONTROL = 9051
-elif sys.platform.startswith("win"):
-    _TOR_SOCK = "socks5://127.0.0.1:9150"
-    _TOR_CONTROL = 9151
+_SCHOLAR_TOR_SOCK_PORT = 9600
+_SCHOLAR_TOR_CONTROL_PORT = 9601
 
 
 class Singleton(type):
@@ -71,7 +56,11 @@ class Navigator(object, metaclass=Singleton):
         super(Navigator, self).__init__()
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
-        self._tor = self._tor_works()
+        # By default, attempt to start a Tor process
+        self._tor_sock_proxy = None
+        self._tor = self._use_tor()
+        self._http_proxy = None
+        self._https_proxy = None
 
     def _get_page(self, pagerequest: str):
         """Return the data for a page on scholar.google.com"""
@@ -82,13 +71,11 @@ class Navigator(object, metaclass=Singleton):
             # Did not use with for shorter indented lines -V
             session = requests.Session()
             if self._tor:
-
-                # Tor uses the 9050 port as the default socks port
-                # on windows 9150 for socks and 9151 for control
-                session.proxies = {'http':  _TOR_SOCK,
-                                   'https': _TOR_SOCK}
+                session.proxies = {'http':  self._tor_sock_proxy,
+                                   'https': self._tor_sock_proxy}
             else:
-                session.proxies = _PROXIES
+                session.proxies = {'http':  self._http_proxy,
+                                   'https': self._https_proxy}
 
             try:
                 _HEADERS['User-Agent'] = UserAgent().random
@@ -122,8 +109,8 @@ class Navigator(object, metaclass=Singleton):
         """ Checks if Tor is working"""
         with requests.Session() as session:
             session.proxies = {
-                'http': _TOR_SOCK,
-                'https': _TOR_SOCK
+                'http': self._tor_sock_proxy,
+                'https': self._tor_sock_proxy
             }
             try:
                 # Changed to twitter so we dont ping google twice every time
@@ -136,8 +123,8 @@ class Navigator(object, metaclass=Singleton):
 
     def _refresh_tor_id(self) -> bool:
         try:
-            with Controller.from_port(port=_TOR_CONTROL) as controller:
-                controller.authenticate(password="scholarly_password")
+            with Controller.from_port(port=self._tor_control_port) as controller:
+                controller.authenticate()
                 controller.signal(Signal.NEWNYM)
             return True
         except Exception as e:
@@ -149,12 +136,44 @@ class Navigator(object, metaclass=Singleton):
         """ Routes scholarly through a proxy (e.g. tor).
             Requires pysocks
             Proxy must be running."""
-        self.logger.info("Enabling proxies: http=%r https=%r", http, https)
+        self.logger.info("Enabling proxies: http=%r https=%r", http, https)        
+        self._http_proxy = http
+        self._https_proxy = https
 
-    def _use_tor(self):
-        self.logger.info("Setting tor as the proxy")
-        self._use_proxy(http=_TOR_SOCK,
-                        https=_TOR_SOCK)
+    def _use_tor(self, tor_cmd=None, tor_sock_port=_SCHOLAR_TOR_SOCK_PORT, tor_control_port=_SCHOLAR_TOR_CONTROL_PORT):
+        '''
+        Starts a Tor client running in a schoar-specific port, together with a 
+        scholar-specific control port.
+        '''
+        self.logger.info("Starting tor as the proxy")
+        
+        if tor_cmd is None:
+            if sys.platform.startswith("linux"):
+                tor_cmd = '/usr/sbin/tor'
+            elif sys.platform.startswith("win"):
+                tor_cmd = 'C:\\Tor\tor.exe'
+
+        self._tor_sock_port = tor_sock_port
+        self._tor_control_port = tor_control_port
+
+        # TODO: Check that the launched Tor process stops after scholar is done
+        tor_process = stem.process.launch_tor_with_config(
+            tor_cmd=tor_cmd,
+            config={
+                'ControlPort': str(self._tor_control_port),
+                'SocksPort': str(self._tor_sock_port),
+                'DataDirectory': tempfile.mkdtemp()
+            },
+            # take_ownership = True
+        )        
+        self._tor_sock_proxy = f"socks5://127.0.0.1:{self._tor_sock_port}"
+        if self._tor_works():
+            self._use_proxy(http=self._tor_sock_proxy, https=self._tor_sock_proxy)
+            self._tor = True
+            return True
+        else:
+            return False
+
 
     def _has_captcha(self, text: str) -> bool:
         flags = ["Please show you're not a robot",
