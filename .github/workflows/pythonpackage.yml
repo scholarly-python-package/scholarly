@@ -30,11 +30,7 @@ jobs:
         sudo apt-get install -y tor
         python3 -m pip install --upgrade pip
         pip3 install flake8 pytest
-        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
-    - name: Run Black code formatter
-      uses: lgeiger/black-action@v1.0.1
-      with: 
-        args: ". --check"      
+        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi   
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
