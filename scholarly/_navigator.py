@@ -166,7 +166,9 @@ class Navigator(object, metaclass=Singleton):
         self._tor = False
         self._proxy = self._proxy_works()
 
-    def _use_tor(self, tor_cmd=None, tor_sock_port=_SCHOLAR_TOR_SOCK_PORT, tor_control_port=_SCHOLAR_TOR_CONTROL_PORT):
+    def _use_tor(self, tor_cmd=None, 
+                 tor_sock_port=self._SCHOLAR_TOR_CONTROL_PORT, 
+                 tor_control_port=self._SCHOLAR_TOR_CONTROL_PORT):
         '''
         Starts a Tor client running in a schoar-specific port, together with a 
         scholar-specific control port.
