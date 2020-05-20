@@ -18,12 +18,12 @@ class _Scholarly(object):
     def search_pubs(self, query):
         """Search by query and returns a generator of Publication objects"""
         url = _PUBSEARCH.format(requests.utils.quote(query))
-        return self._nav.search_publications(url)
+        return self.__nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False):
         """Search by scholar query and return a single Publication object"""
         url = _PUBSEARCH.format(requests.utils.quote(pub_title))
-        return self._nav.search_publication(url, filled)
+        return self.__nav.search_publication(url, filled)
 
     def search_author(self, name):
         """Search by author name and return a generator of Author objects"""
