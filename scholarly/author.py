@@ -151,7 +151,11 @@ class Author(object):
         return self
 
     @property
-    def filled(self):
+    def filled(self) -> bool:
+        """Returns whether or not the author characteristics are filled
+        :returns: Whether Author object is filled
+        :rtype: {bool}
+        """
         return self._filled == self._sections
 
     def __str__(self):
