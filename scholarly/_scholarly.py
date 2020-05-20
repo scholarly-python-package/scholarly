@@ -10,37 +10,37 @@ _PUBSEARCH = '/scholar?hl=en&q={0}'
 class _Scholarly(object):
     """docstring for scholarly"""
     def __init__(self):
-        self.nav = Navigator()
+        self.__nav = Navigator()
 
     def use_proxy(self, http: str, https: str):
-        self.nav._use_proxy(http, https)
+        self.__nav._use_proxy(http, https)
 
     def search_pubs(self, query):
         """Search by query and returns a generator of Publication objects"""
         url = _PUBSEARCH.format(requests.utils.quote(query))
-        return self.nav.search_publications(url)
+        return self._nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False):
         """Search by scholar query and return a single Publication object"""
         url = _PUBSEARCH.format(requests.utils.quote(pub_title))
-        return self.nav.search_publication(url, filled)
+        return self._nav.search_publication(url, filled)
 
     def search_author(self, name):
         """Search by author name and return a generator of Author objects"""
         url = _AUTHSEARCH.format(requests.utils.quote(name))
-        return self.nav.search_authors(url)
+        return self.__nav.search_authors(url)
 
     def search_keyword(self, keyword):
         """Search by keyword and return a generator of Author objects"""
         url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
-        return self.nav.search_authors(url)
+        return self.__nav.search_authors(url)
 
     def search_pubs_custom_url(self, url):
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'"""
-        return self.nav.search_publications(url)
+        return self.__nav.search_publications(url)
 
     def search_author_custom_url(self, url):
         """Search by custom URL and return a generator of Author objects
         URL should be of the form '/citation?q=...'"""
-        return self.nav.search_authors(url)
+        return self.__nav.search_authors(url)
