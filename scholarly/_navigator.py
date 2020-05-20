@@ -28,6 +28,7 @@ _HEADERS = {
 }
 _HOST = 'https://scholar.google.com{0}'
 
+_PUBSEARCH = '"/scholar?hl=en&q={0}"'
 _SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
 
 _TIMEOUT = 2
