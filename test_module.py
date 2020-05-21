@@ -1,8 +1,40 @@
 import unittest
+import sys
 from scholarly import scholarly
+import random
 
 
 class TestScholarly(unittest.TestCase):
+
+    def setUp(self):
+        # Tor uses the 9050 port as the default socks port
+        # on windows 9150 for socks and 9151 for control
+        if sys.platform.startswith("linux"):
+            tor_sock_port = 9050
+            tor_control_port = 9051
+        elif sys.platform.startswith("win"):
+            tor_sock_port = 9150
+            tor_control_port = 9151
+        tor_password = "scholarly_password"
+        scholarly.nav._setup_tor(tor_sock_port, tor_control_port, tor_password)
+
+    def test_launch_tor(self):
+        """
+        Test that we can launch a Tor process
+        """
+        if sys.platform.startswith("linux"):
+            tor_cmd = '/usr/bin/tor'
+        elif sys.platform.startswith("win"):
+            tor_cmd = 'C:\\Tor\\tor.exe'
+
+        tor_sock_port = random.randrange(9000, 9500)
+        tor_control_port = random.randrange(9500, 9999)
+
+        result = scholarly.nav._launch_tor(tor_cmd, tor_sock_port, tor_control_port)
+        self.assertTrue(result["proxy_works"])
+        self.assertTrue(result["refresh_works"])
+        self.assertEqual(result["tor_control_port"], tor_control_port)
+        self.assertEqual(result["tor_sock_port"], tor_sock_port)
 
     def test_empty_author(self):
         """
@@ -94,10 +126,10 @@ class TestScholarly(unittest.TestCase):
         author = authors[0].fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
-        
+
     def test_filling_multiple_publications(self):
         """
-        Download a few publications for author and check that abstracts are 
+        Download a few publications for author and check that abstracts are
         populated with lengths within the expected limits
         """
         query = 'Ipeirotis'
@@ -106,15 +138,15 @@ class TestScholarly(unittest.TestCase):
         author = authors[0].fill()
         # Check that we can fill without problem the first ten publications
         publications = [p.fill() for p in author.publications[:5]]
-        self.assertEqual(len(publications),5)
+        self.assertEqual(len(publications), 5)
         abstracts_populated = ['abstract' in p.bib for p in publications]
         # Check that all publications have the abstract field populated
         self.assertTrue(all(abstracts_populated))
         # Check that the abstracts have reasonable lengths
         abstracts_length = [len(p.bib['abstract']) for p in publications]
-        abstracts_check = [ 1000>l>500 for l in abstracts_length] 
+        abstracts_check = [1000 > n > 500 for n in abstracts_length]
         self.assertTrue(all(abstracts_check))
+
 
 if __name__ == '__main__':
     unittest.main()
-

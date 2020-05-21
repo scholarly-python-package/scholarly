@@ -13,8 +13,49 @@ class _Scholarly(object):
         self.nav = Navigator()
 
     def use_proxy(self, http: str, https: str):
-        self.nav._use_proxy(http, https)        
-        
+        """
+        Defines a proxy to use for the network connection.
+        If you use a Tor proxy without the appropriate setup for refreshing
+        the id, then you can use this function to set the Tor SOCK proxy as the
+        proxy for scholarly.
+        """
+        self.nav._use_proxy(http, https)
+
+    def use_tor(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
+        """
+        Use this function to use Tor, where it is possible to access a Control Port
+        for refreshing the ID. If you do not have access to the control port,
+        then simply set the proxy using the `use_proxy` method.
+
+        Args:
+            :param tor_sock_port: defines the port where the sock proxy will run.
+            :param tor_control_port: defines the port where the control port will run.
+            :param tor_password: the password for authenticating against the control port
+        Returns:
+            A dictionary whether the proxy works, and whether it is possible to refresh the id
+        Example:
+            scholarly.use_tor(9050, 9051, "scholarly_password")
+        """
+        self.nav._setup_tor(tor_sock_port, tor_control_port, tor_password)
+
+    def launch_tor(self, tor_cmd: str, tor_sock_port=None, tor_control_port=None):
+        """
+        Use this method to launch a temporary Tor proxy that will be used only
+        by scholarly. It is necessary to pass the location of the Tor executable
+        in the `tor_cmd` parameter
+
+        Args:
+            :param tor_cmd: points to the Tor executable in your system
+            :param tor_sock_port: (optional) defines the port where the sock proxy will run.
+            :param tor_control_port: (optional) defines the port where the control port will run.
+        Returns:
+            A dictionary showing the ports where the Tor server is running,
+            whether the proxy works, and whether it is possible to refresh the id
+        Example:
+            scholarly.launch_tor('/usr/bin/tor')
+        """
+        self.nav._launch_tor(tor_cmd, tor_sock_port, tor_control_port)
+
     def search_pubs(self, query, patents=True, citations=True, year_low=None, year_high=None):
         """
         Searches by query and returns a generator of Publication objects
@@ -34,8 +75,8 @@ class _Scholarly(object):
         url = _PUBSEARCH.format(requests.utils.quote(query))
         yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
         yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
-        citations = '&as_vis={0}'.format(1- int(citations))
-        patents = '&as_sdt={0},33'.format(1- int(patents))
+        citations = '&as_vis={0}'.format(1 - int(citations))
+        patents = '&as_sdt={0},33'.format(1 - int(patents))
         url = url + yr_lo + yr_hi + citations + patents
         return self.nav.search_publications(url)
 
