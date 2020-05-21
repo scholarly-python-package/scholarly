@@ -49,7 +49,7 @@ print(pub)
 print([citation.bib['title'] for citation in pub.get_citedby()])
 ```
 
-### Methods for `scholar`
+## Methods for `scholar`
 
 #### `search_author` -- Search for an author by name and return a generator of Author objects.
 
@@ -213,7 +213,7 @@ The optional `sections` parameter takes a
 
 
 
-### Using proxies
+## Using proxies
 
 In general, Google Scholar does not like bots, and can often block scholarly. We are actively
 working towards making scholarly more robust towards that front.
