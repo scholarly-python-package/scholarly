@@ -1,9 +1,25 @@
 import unittest
+import sys
 from scholarly import scholarly
 
 
 class TestScholarly(unittest.TestCase):
 
+    def setUp(self):
+        # Tor uses the 9050 port as the default socks port
+        # on windows 9150 for socks and 9151 for control
+        if sys.platform.startswith("linux"):
+            tor_sock_port = 9050
+            tor_control_port = 9051
+        elif sys.platform.startswith("win"):
+            tor_sock_port = 9150
+            tor_control_port = 9151
+            
+        tor_password = "scholarly_password"
+        
+        scholarly.nav._setup_tor(tor_sock_port, tor_control_port, tor_password)
+    
+    
     def test_empty_author(self):
         """
         Test that sholarly.search_author('') returns no authors

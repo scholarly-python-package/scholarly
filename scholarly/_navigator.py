@@ -48,29 +48,19 @@ class Navigator(object, metaclass=Singleton):
         super(Navigator, self).__init__()
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
-        self._tor = False
-        self._proxy = False
-        self._setup_tor()
+
+        # If we use a proxy or Tor, we set this to True
+        self._proxy_works = False
+        
+        # If we have a Tor server that we can refresh, we set this to True
+        self._can_refresh_tor = False
+        self._tor_control_port = None
+        self._tor_password = None
+
+        # Setting requests timeout to be reasonably long
+        # to accomodate slowness of the Tor network
         self._TIMEOUT = 10
-        self._SCHOLAR_TOR_SOCK_PORT = 9600
-        self._SCHOLAR_TOR_CONTROL_PORT = 9601        
 
-    def _setup_tor(self):
-        """Initialized ToR Proxy"""
-
-        # Tor uses the 9050 port as the default socks port
-        # on windows 9150 for socks and 9151 for control
-        if sys.platform.startswith("linux"):
-            self._TOR_SOCK = "socks5://127.0.0.1:9050"
-            self._TOR_CONTROL = 9051
-        elif sys.platform.startswith("win"):
-            self._TOR_SOCK = "socks5://127.0.0.1:9150"
-            self._TOR_CONTROL = 9151
-
-        self.proxies = {'http': self._TOR_SOCK,
-                        'https': self._TOR_SOCK}
-
-        self._tor = self._proxy_works()
 
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
@@ -87,7 +77,7 @@ class Navigator(object, metaclass=Singleton):
             # Use ToR by default. If proxy was setup, use it.
             # Otherwise the local IP is used
             session = requests.Session()
-            if self._tor or self._proxy:
+            if self._proxy_works:
                 session.proxies = self.proxies
 
             try:
@@ -115,17 +105,21 @@ class Navigator(object, metaclass=Singleton):
                 # Check if Tor is running and refresh it
                 self.logger.info("Refreshing Tor ID...")
                 session.close()
-                if self._tor:
-                    self._refresh_tor_id()
+                if self._can_refresh_tor:
+                    self._refresh_tor_id(self._tor_control_port, self._tor_password)
 
-    def _proxy_works(self) -> bool:
-        """Checks if a proxy is working
+
+    def _proxy_works(self, proxies) -> bool:
+        """Checks if a proxy is working.
+        
+        :param proxies: A dictionary {'http': url1, 'https': url1} 
+                        with the urls of the proxies
 
         :returns: whether the proxy is working or not
         :rtype: {bool}
         """
         with requests.Session() as session:
-            session.proxies = self.proxies
+            session.proxies = proxies
             try:
                 # Changed to twitter so we dont ping google twice every time
                 resp = session.get("http://www.twitter.com")
@@ -135,15 +129,19 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info(f"Proxy not working: Exception {e}")
                 return False
 
-    def _refresh_tor_id(self) -> bool:
-        """Refreshes the id by using a new ToR node
 
-        :returns: Whether or not the refresh was succesfull
+    def _refresh_tor_id(self, tor_control_port: int, password=None: str) -> bool:
+        """Refreshes the id by using a new ToR node.
+
+        :returns: Whether or not the refresh was succesful
         :rtype: {bool}
         """
         try:
-            with Controller.from_port(port=self._TOR_CONTROL) as controller:
-                controller.authenticate(password="scholarly_password")
+            with Controller.from_port(port=tor_control_port) as controller:
+                if password: 
+                    controller.authenticate(password=password)
+                else:
+                    controller.authenticate()
                 controller.signal(Signal.NEWNYM)
             return True
         except Exception as e:
@@ -151,56 +149,90 @@ class Navigator(object, metaclass=Singleton):
             self.logger.info(err)
             return False
 
-    def _use_proxy(self, http: str, https: str):
-        """Allows user to use their own proxy
 
-        By using this function the user will be using their own proxy and not
-        ToR. The proxy must be running. ToR will be disabled.
+    def _use_proxy(self, http: str, https: str):
+        """Allows user to set their own proxy for the connection session
+
         :param http: the http proxy
         :type http: str
         :param https: the https proxy
         :type https: str
         """
         self.logger.info("Enabling proxies: http=%r https=%r", http, https)
-        self.proxies = {'http': http, 'https': https}
-        self._tor = False
-        self._proxy = self._proxy_works()
+        
+        self._proxy_works = self._proxy_works()
+        if self._proxy_works:
+            self.proxies = {'http': http, 'https': https}
 
-    def _use_tor(self, tor_cmd=None, 
-                 tor_sock_port=self._SCHOLAR_TOR_CONTROL_PORT, 
-                 tor_control_port=self._SCHOLAR_TOR_CONTROL_PORT):
+    def _setup_tor(self, tor_sock_port: int , tor_control_port: int, tor_password: str):
+        """
+        Setting up Tor Proxy
+        
+        :param tor_sock_port: the port where the Tor sock proxy is running
+        :type tor_sock_port: int
+        :param tor_control_port: the port where the Tor control server is running
+        :type tor_control_port: int
+        :param tor_password: the password for the Tor control server
+        :type tor_password: str          
+        """
+        
+        proxy = f"socks5://127.0.0.1:{tor_sock_port}"
+        self._use_proxy(http: proxy, https: proxy)
+        
+        self._can_refresh_tor = self._refresh_tor_id(tor_control_port, tor_password)
+        if self._can_refresh_tor:
+            self._tor_control_port = tor_control_port
+            self._tor_password = tor_password
+        else:
+            self._tor_control_port = None
+            self._tor_password = None
+        
+        return {
+            "proxy_works": self._proxy_works,
+            "refresh_works": self._can_refresh_tor,
+            "proxies": self.proxies,
+            "tor_control_port": tor_control_port,
+            "tor_sock_port": tor_sock_port
+        }        
+        
+            
+    def _launch_tor(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
         '''
-        Starts a Tor client running in a schoar-specific port, together with a 
-        scholar-specific control port.
+        Starts a Tor client running in a schoar-specific port, 
+        together with a scholar-specific control port.
         '''
-        self.logger.info("Starting tor as the proxy")
+        self.logger.info("Attempting to start owned Tor as the proxy")
         
         if tor_cmd is None:
-            if sys.platform.startswith("linux"):
-                tor_cmd = '/usr/sbin/tor'
-            elif sys.platform.startswith("win"):
-                tor_cmd = 'C:\\Tor\tor.exe'
+            self.logger.info("No tor_cmd argument passed. This should point to the location of tor executable")
+            return {
+                "proxy_works": False,
+                "refresh_works": False,
+                "proxies": {'http': None, 'https': None}
+                "tor_control_port": None,
+                "tor_sock_port": None
+            }
 
-        self._tor_sock_port = tor_sock_port
-        self._tor_control_port = tor_control_port
+        if tor_sock_port is None:
+            # TODO: pick a random port
+            tor_sock_port = 9960
+            
+        if tor_control_port is None:
+            # TODO: pick a random port
+            tor_control_port = 9961
 
         # TODO: Check that the launched Tor process stops after scholar is done
         tor_process = stem.process.launch_tor_with_config(
             tor_cmd=tor_cmd,
             config={
-                'ControlPort': str(self._tor_control_port),
-                'SocksPort': str(self._tor_sock_port),
+                'ControlPort': str(tor_sock_port),
+                'SocksPort': str(tor_control_port),
                 'DataDirectory': tempfile.mkdtemp()
             },
-            # take_ownership = True
-        )        
-        self._tor_sock_proxy = f"socks5://127.0.0.1:{self._tor_sock_port}"
-        if self._tor_works():
-            self._use_proxy(http=self._tor_sock_proxy, https=self._tor_sock_proxy)
-            self._tor = True
-            return True
-        else:
-            return False
+            take_ownership = True
+        )
+        
+        return self._setup_tor(tor_sock_port, tor_control_port, tor_password=None)
 
 
     def _has_captcha(self, text: str) -> bool:
