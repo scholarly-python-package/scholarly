@@ -1,7 +1,6 @@
 import re
 import bibtexparser
 import arrow
-import requests
 import pprint
 from bibtexparser.bibdatabase import BibDatabase
 

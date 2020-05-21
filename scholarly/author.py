@@ -119,7 +119,7 @@ class Author(object):
         The `sections` argument allows for finer granularity of the profile
         information to be pulled.
 
-        :param sections: 
+        :param sections:
         The sections of author information that will be filled
         They are broken down as follows:
             'basics' = [name, affiliation, and interests],

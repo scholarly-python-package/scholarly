@@ -1,3 +1,6 @@
+[![Python package](https://github.com/OrganicIrradiation/scholarly/workflows/Python%20package/badge.svg?branch=master)](https://github.com/OrganicIrradiation/scholarly/actions?query=branch%3Amaster)
+[![Known Vulnerabilities](https://snyk.io/test/github/OrganicIrradiation/scholarly/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/OrganicIrradiation/scholarly?targetFile=requirements.txt)
+
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
@@ -5,7 +8,7 @@ scholarly is a module that allows you to retrieve author and publication informa
 Use `pip` to install from pypi:
 
 ```bash
-pip install scholarly
+pip3 install scholarly
 ```
 
 or `pip` to install from github:
@@ -13,29 +16,6 @@ or `pip` to install from github:
 ```bash
 pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
 ```
-
-or clone the package using git:
-
-```bash
-git clone https://github.com/OrganicIrradiation/scholarly.git
-```
-
-
-If you want to have support for proxies, you may also want to install the following libraries:
-```
-pip3 install -U free-proxy PySocks 
-```
-
-If you want to use Tor as proxy:
-```
-sudo apt-get install -y tor
-```
-
-## Requirements
-Requires [arrow](http://crsmithdev.com/arrow/), [Beautiful Soup](https://pypi.python.org/pypi/beautifulsoup4/), [bibtexparser](https://pypi.python.org/pypi/bibtexparser/), and [requests[security]](https://pypi.python.org/pypi/requests/).
-Also [pysocks](https://pypi.org/project/PySocks/) for using a proxy.
-
-
 
 
 ## Usage
@@ -47,8 +27,31 @@ from scholarly import scholarly
 print(next(scholarly.search_author('Steven A. Cholewiak')))
 ```
 
-### Methods
-* `search_author` -- Search for an author by name and return a generator of Author objects.
+### Example
+Here's a quick example demonstrating how to retrieve an author's profile then retrieve the titles of the papers that cite his most popular (cited) paper.
+
+```python
+from scholarly import scholarly
+
+# Retrieve the author's data, fill-in, and print
+search_query = scholarly.search_author('Steven A Cholewiak')
+author = next(search_query).fill()
+print(author)
+
+# Print the titles of the author's publications
+print([pub.bib['title'] for pub in author.publications])
+
+# Take a closer look at the first publication
+pub = author.publications[0].fill()
+print(pub)
+
+# Which papers cited that publication?
+print([citation.bib['title'] for citation in pub.get_citedby()])
+```
+
+## Methods for `scholar`
+
+#### `search_author` -- Search for an author by name and return a generator of Author objects.
 
 ```python
 >>> search_query = scholarly.search_author('Marty Banks, Berkeley')
@@ -63,7 +66,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'}
 ```
 
-* `search_keyword` -- Search by keyword and return a generator of Author objects.
+####  `search_keyword` -- Search by keyword and return a generator of Author objects.
 
 ```python
 >>> search_query = scholarly.search_keyword('Haptics')
@@ -81,7 +84,7 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
 ```
 
-* `search_pubs` -- Search for articles/publications and return generator of Publication objects.
+#### `search_pubs` -- Search for articles/publications and return generator of Publication objects.
 
 ```python
 >>> search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
@@ -111,7 +114,20 @@ print(next(scholarly.search_author('Steven A. Cholewiak')))
  'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisdr=CgXsOAkeGAA:AAGBfm0AAAAAXsLLJNxa7vzefAEwz6a3tLCEoMsli6vj&scisig=AAGBfm0AAAAAXsLLJNK0I3FleN-7_r_TxUF8m5JDa9W5&scisf=4&ct=citation&cd=0&hl=en'}
 ```
 
-* You can export a publication to Bibtex by using the `bibtex` property.
+### Methods for `Publication` objects
+
+#### `fill`
+
+By default, scholarly returns only a lightly filled object for publication, to avoid overloading Google Scholar. 
+If necessary to get more information for the publication object, we call the `.fill()` method.
+
+#### `get_citedby`
+
+Searches GScholar for other articles that cite this Publication and returns a Publication generator.
+
+#### `bibtex`
+
+ You can export a publication to Bibtex by using the `bibtex` property.
 Here's a quick example:
 
 ```python
@@ -140,11 +156,11 @@ by running the code above you should get the following bibtext entry:
 }
 ```
 
+### Methods for `Author` objects
 
+#### `Author.fill(sections=[])` -- Populate the Author object with information from their profile. 
 
-
-* `Author.fill(sections=[])` -- Populate the Author object with
-  information from their profile. The optional `sections` parameter takes a
+The optional `sections` parameter takes a
   list of the portions of author information to fill, as follows:
   - `'basics'` = name, affiliation, and interests;
   - `'indices'` = h-index, i10-index, and 5-year analogues;
@@ -156,7 +172,7 @@ by running the code above you should get the following bibtext entry:
 ```python
 >>> search_query = scholarly.search_author('Steven A Cholewiak')
 >>> author = next(search_query)
->>> print(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
+>>> print(author.fill(sections=['basics', 'indices', 'coauthors']))
 {'affiliation': 'Vision Scientist',
  'citedby': 262,
  'citedby5y': 186,
@@ -195,31 +211,20 @@ by running the code above you should get the following bibtext entry:
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
 ```
 
-### Example
-Here's a quick example demonstrating how to retrieve an author's profile then retrieve the titles of the papers that cite his most popular (cited) paper.
 
-```python
-# Retrieve the author's data, fill-in, and print
-search_query = scholarly.search_author('Steven A Cholewiak')
-author = next(search_query).fill()
-print(author)
 
-# Print the titles of the author's publications
-print([pub.bib['title'] for pub in author.publications])
+## Using proxies
 
-# Take a closer look at the first publication
-pub = author.publications[0].fill()
-print(pub)
+In general, Google Scholar does not like bots, and can often block scholarly. We are actively
+working towards making scholarly more robust towards that front.
 
-# Which papers cited that publication?
-print([citation.bib['title'] for citation in pub.get_citedby()])
-```
+The most common solution for avoiding network issues is to use proxies and Tor. 
 
-### Using a proxy
-Just run `scholarly.use_proxy()`. Parameters are an http and an https proxy.
-*Note: this is a completely optional - opt-in feature'
+The following options are available:
 
-Example using FreeProxy:
+#### `scholarly.use_proxy`
+
+Here is an example using the [FreeProxy](https://pypi.org/project/free-proxy/) library
 
 ```python
 from fp.fp import FreeProxy
@@ -232,17 +237,60 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-Example using Tor:
+Or, if you have a Tor proxy available (say, running at port `9050` locally), then
 
 ```python
 from scholarly import scholarly
-# default values are shown below
-proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
-scholarly.use_proxy(**proxies)
-# If proxy is correctly set up, the following runs through it
+
+proxy = 'socks5://127.0.0.1:9050'
+scholarly.use_proxy(http=proxy, https=proxy)
+
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
+
+#### `scholarly.use_tor()`
+
+
+This option assumes that you have access to a Tor server and a `torrc` file configuring the Tor server
+to have a control port configured with a password; this setup allows scholarly to refresh the Tor ID, 
+if scholarly runs into problems accessing Google Scholar. 
+
+If you want to install and use Tor, then instal it using the command 
+```
+sudo apt-get install -y tor
+```
+See [setup_tor.sh](https://github.com/scholarly-python-package/scholarly/blob/master/setup_tor.sh) 
+on how to setup a minimal, working `torrc` and set the password for the control server. (Note:
+the script uses `scholarly_password` as the default password, but you may want to change it for your 
+installation.)
+
+
+```python
+from scholarly import scholarly
+
+scholarly.use_tor(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+#### `scholarly.launch_tor()`
+
+If you have Tor installed locally, this option allows scholarly to launch its own Tor process.
+You need to pass a pointer to the Tor executable in your syste,
+
+```python
+from scholarly import scholarly
+
+scholarly.launch_tor('/usr/bin/tor')
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+
+
 
 ## Tests
 

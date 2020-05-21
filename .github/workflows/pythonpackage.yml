@@ -4,6 +4,8 @@
 name: Python package
 
 on:
+  schedule:
+    - cron: "0 0 * * *"
   push:
     branches: [ master, develop ]
   pull_request:
@@ -28,13 +30,15 @@ jobs:
         sudo apt-get install -y tor
         python3 -m pip install --upgrade pip
         pip3 install flake8 pytest
-        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi   
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    #- name: Typilus, Suggest Python Type Annotations
+    #  uses: typilus/typilus-action@v0.9      
     - name: Setup Tor to allow for password-based refresh of ID
       run: ./setup_tor.sh
     - name: Test with unittest
