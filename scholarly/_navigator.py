@@ -109,7 +109,7 @@ class Navigator(object, metaclass=Singleton):
                     self._refresh_tor_id(self._tor_control_port, self._tor_password)
 
 
-    def _proxy_works(self, proxies) -> bool:
+    def _check_proxy(self, proxies) -> bool:
         """Checks if a proxy is working.
         
         :param proxies: A dictionary {'http': url1, 'https': url1} 
@@ -122,7 +122,7 @@ class Navigator(object, metaclass=Singleton):
             session.proxies = proxies
             try:
                 # Changed to twitter so we dont ping google twice every time
-                resp = session.get("http://www.twitter.com")
+                resp = session.get("http://www.twitter.com", timeout=self._TIMEOUT)
                 self.logger.info("Proxy Works!")
                 return resp.status_code == 200
             except Exception as e:
@@ -130,7 +130,7 @@ class Navigator(object, metaclass=Singleton):
                 return False
 
 
-    def _refresh_tor_id(self, tor_control_port: int, password=None: str) -> bool:
+    def _refresh_tor_id(self, tor_control_port: int, password: str) -> bool:
         """Refreshes the id by using a new ToR node.
 
         :returns: Whether or not the refresh was succesful
@@ -160,9 +160,10 @@ class Navigator(object, metaclass=Singleton):
         """
         self.logger.info("Enabling proxies: http=%r https=%r", http, https)
         
-        self._proxy_works = self._proxy_works()
+        proxies = {'http': http, 'https': https}
+        self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
-            self.proxies = {'http': http, 'https': https}
+            self.proxies = proxies
 
     def _setup_tor(self, tor_sock_port: int , tor_control_port: int, tor_password: str):
         """
@@ -177,7 +178,7 @@ class Navigator(object, metaclass=Singleton):
         """
         
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
-        self._use_proxy(http: proxy, https: proxy)
+        self._use_proxy(http=proxy, https=proxy)
         
         self._can_refresh_tor = self._refresh_tor_id(tor_control_port, tor_password)
         if self._can_refresh_tor:
@@ -208,7 +209,7 @@ class Navigator(object, metaclass=Singleton):
             return {
                 "proxy_works": False,
                 "refresh_works": False,
-                "proxies": {'http': None, 'https': None}
+                "proxies": {'http': None, 'https': None},
                 "tor_control_port": None,
                 "tor_sock_port": None
             }
@@ -225,8 +226,8 @@ class Navigator(object, metaclass=Singleton):
         tor_process = stem.process.launch_tor_with_config(
             tor_cmd=tor_cmd,
             config={
-                'ControlPort': str(tor_sock_port),
-                'SocksPort': str(tor_control_port),
+                'ControlPort': str(tor_control_port),
+                'SocksPort': str(tor_sock_port),
                 'DataDirectory': tempfile.mkdtemp()
             },
             take_ownership = True

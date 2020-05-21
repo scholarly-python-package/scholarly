@@ -1,7 +1,7 @@
 import unittest
 import sys
 from scholarly import scholarly
-
+import random
 
 class TestScholarly(unittest.TestCase):
 
@@ -18,7 +18,25 @@ class TestScholarly(unittest.TestCase):
         tor_password = "scholarly_password"
         
         scholarly.nav._setup_tor(tor_sock_port, tor_control_port, tor_password)
-    
+  
+
+    def test_launch_tor(self):
+        """
+        Test that we can launch a Tor process
+        """
+        if sys.platform.startswith("linux"):
+            tor_cmd='/usr/bin/tor'
+        elif sys.platform.startswith("win"):
+            tor_cmd='C:\\Tor\\tor.exe' 
+        
+        tor_sock_port = random.randrange(9000,9500)
+        tor_control_port = random.randrange(9500,9999)
+
+        result = scholarly.nav._launch_tor(tor_cmd, tor_sock_port, tor_control_port)
+        self.assertTrue(result["proxy_works"])
+        self.assertTrue(result["refresh_works"])
+        self.assertEqual(result["tor_control_port"],tor_control_port)
+        self.assertEqual(result["tor_sock_port"],tor_sock_port)
     
     def test_empty_author(self):
         """
