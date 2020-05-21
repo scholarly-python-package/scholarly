@@ -1,24 +1,9 @@
-scholarly module
-----------------------------
+scholarly Package
+=================
 
-.. automodule:: scholarly._scholarly
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
+.. toctree::
+   :maxdepth: 2
 
-Author module
------------------------
-
-.. automodule:: scholarly.author
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Publication module
-----------------------------
-
-.. automodule:: scholarly.publication
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   scholarly_user
+   Author.rst
+   Publication.rst

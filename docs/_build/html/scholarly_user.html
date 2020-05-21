@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>scholarly module &mdash; scholarlyORG 0.3.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Author module" href="Author.html" />
+    <link rel="prev" title="scholarly Package" href="scholarly.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> scholarlyORG
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Index</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="scholarly.html">scholarly Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">scholarly module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Author.html">Author module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html">Publication module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">scholarlyORG</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="scholarly.html">scholarly Package</a> &raquo;</li>
+        
+      <li>scholarly module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/scholarly_user.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-scholarly._scholarly">
+<span id="scholarly-module"></span><h1>scholarly module<a class="headerlink" href="#module-scholarly._scholarly" title="Permalink to this headline">¶</a></h1>
+<p>scholarly.py</p>
+<dl class="py class">
+<dt id="scholarly._scholarly._Scholarly">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly._scholarly.</code><code class="sig-name descname">_Scholarly</code><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that manages the API for scholarly</p>
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.search_author">
+<code class="sig-name descname">search_author</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.search_author"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.search_author" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by author name and return a generator of Author objects</p>
+<dl class="field-list">
+<dt class="field-odd">Example:</dt>
+<dd class="field-odd"><div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_author</span><span class="p">(</span><span class="s1">&#39;Marty Banks, Berkeley&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Output:</dt>
+<dd class="field-even"><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
+    &#39;affiliation&#39;: &#39;Professor of Vision Science, UC Berkeley&#39;,
+    &#39;citedby&#39;: 20160,
+    &#39;email&#39;: &#39;@berkeley.edu&#39;,
+    &#39;filled&#39;: False,
+    &#39;id&#39;: &#39;Smr99uEAAAAJ&#39;,
+    &#39;interests&#39;: [&#39;vision science&#39;, &#39;psychology&#39;, &#39;human factors&#39;, &#39;neuroscience&#39;],
+    &#39;name&#39;: &#39;Martin Banks&#39;,
+    &#39;url_picture&#39;: &#39;https://scholar.google.com/citations?view_op=medium_photo&amp;user=Smr99uEAAAAJ&#39;
+}
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.search_author_custom_url">
+<code class="sig-name descname">search_author_custom_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.search_author_custom_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.search_author_custom_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by custom URL and return a generator of Author objects
+URL should be of the form ‘/citation?q=…’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.search_keyword">
+<code class="sig-name descname">search_keyword</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keyword</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.search_keyword"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.search_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by keyword and return a generator of Author objects</p>
+<dl class="field-list">
+<dt class="field-odd">Example:</dt>
+<dd class="field-odd"><div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_keyword</span><span class="p">(</span><span class="s1">&#39;Haptics&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Output:</dt>
+<dd class="field-even"><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
+    &#39;affiliation&#39;: &#39;Postdoctoral research assistant, University of Bremen&#39;,
+    &#39;citedby&#39;: 55943,
+    &#39;email&#39;: &#39;@collision-detection.com&#39;,
+    &#39;filled&#39;: False,
+    &#39;id&#39;: &#39;lHrs3Y4AAAAJ&#39;,
+    &#39;interests&#39;: [&#39;Computer Graphics&#39;,
+               &#39;Collision Detection&#39;,
+               &#39;Haptics&#39;,
+               &#39;Geometric Data Structures&#39;],
+    &#39;name&#39;: &#39;Rene Weller&#39;,
+    &#39;url_picture&#39;: &#39;https://scholar.google.com/citations?view_op=medium_photo&amp;user=lHrs3Y4AAAAJ&#39;
+}
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.search_pubs">
+<code class="sig-name descname">search_pubs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.search_pubs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.search_pubs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by query and returns a generator of Publication objects</p>
+<dl class="field-list">
+<dt class="field-odd">Example:</dt>
+<dd class="field-odd"><div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_pubs</span><span class="p">(</span><span class="s1">&#39;Perception of physical stability and center of mass of 3D objects&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-even">Output:</dt>
+<dd class="field-even"><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{
+    &#39;bib&#39;:{
+            &#39;abstract&#39;:&#39;Humans can judge from vision alone whether an object is &#39;
+                        &#39;physically stable or not. Such judgments allow observers &#39;
+                        &#39;to predict the physical behavior of objects, and hence &#39;
+                        &#39;to guide their motor actions. We investigated the visual &#39;
+                        &#39;estimation of physical stability of 3-D objects (shown &#39;
+                        &#39;in stereoscopically viewed rendered scenes) and how it &#39;
+                        &#39;relates to visual estimates of their center of mass &#39;
+                        &#39;(COM). In Experiment 1, observers viewed an object near &#39;
+                        &#39;the edge of a table and adjusted its tilt to the &#39;
+                        &#39;perceived critical angle, ie, the tilt angle at which &#39;
+                        &#39;the object …&#39;,
+            &#39;author&#39;: &#39;SA Cholewiak and RW Fleming and M Singh&#39;,
+            &#39;eprint&#39;: &#39;https://jov.arvojournals.org/article.aspx?articleID=2213254&#39;,
+            &#39;title&#39;: &#39;Perception of physical stability and center of mass of 3-D &#39;
+                  &#39;objects&#39;,
+            &#39;url&#39;: &#39;https://jov.arvojournals.org/article.aspx?articleID=2213254&#39;,
+            &#39;venue&#39;: &#39;Journal of vision&#39;,
+            &#39;year&#39;: &#39; 2015&#39;
+    },
+    &#39;citedby&#39;: 19,
+    &#39;filled&#39;: False,
+    &#39;id_scholarcitedby&#39;: &#39;15736880631888070187&#39;,
+    &#39;source&#39;: &#39;scholar&#39;,
+    &#39;url_scholarbib&#39;: &#39;https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&amp;output=citation&amp;scisdr=CgXsOAkeGAA:AAGBfm0AAAAAXsLLJNxa7vzefAEwz6a3tLCEoMsli6vj&amp;scisig=AAGBfm0AAAAAXsLLJNK0I3FleN-7_r_TxUF8m5JDa9W5&amp;scisf=4&amp;ct=citation&amp;cd=0&amp;hl=en&#39;
+}
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.search_pubs_custom_url">
+<code class="sig-name descname">search_pubs_custom_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.search_pubs_custom_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.search_pubs_custom_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by custom URL and return a generator of Publication objects
+URL should be of the form ‘/scholar?q=…’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.search_single_pub">
+<code class="sig-name descname">search_single_pub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pub_title</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">filled</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.search_single_pub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.search_single_pub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by scholar query and return a single Publication object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._scholarly._Scholarly.use_proxy">
+<code class="sig-name descname">use_proxy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">http</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">https</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_scholarly.html#_Scholarly.use_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._scholarly._Scholarly.use_proxy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Author.html" class="btn btn-neutral float-right" title="Author module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="scholarly.html" class="btn btn-neutral float-left" title="scholarly Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Steven A. Cholewiak, Panos Ipeirotis, Victor Silva
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

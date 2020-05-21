@@ -22,7 +22,7 @@ copyright = '2020, Steven A. Cholewiak, Panos Ipeirotis, Victor Silva'
 author = 'Steven A. Cholewiak, Panos Ipeirotis, Victor Silva'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.0'
+release = '0.3.1'
 master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
@@ -35,7 +35,8 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.doctest',
+    #'sphinx.ext.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

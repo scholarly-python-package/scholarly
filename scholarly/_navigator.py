@@ -154,6 +154,7 @@ class Navigator(object, metaclass=Singleton):
 
         By using this function the user will be using their own proxy and not
         ToR. The proxy must be running. ToR will be disabled.
+
         :param http: the http proxy
         :type http: str
         :param https: the https proxy

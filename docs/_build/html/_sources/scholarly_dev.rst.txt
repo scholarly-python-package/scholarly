@@ -30,13 +30,3 @@ scholarly.publication module
    :undoc-members:
    :show-inheritance:
    :private-members:
-
-
-Module contents
----------------
-
-.. automodule:: scholarly
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:

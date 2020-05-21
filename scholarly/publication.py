@@ -10,7 +10,8 @@ _SCHOLARPUBRE = r'cites=([\w-]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
 _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
-_BIBCITE = '/scholar?q=info:{0}:scholar.google.com/&output=cite&scirp={1}&hl=en'
+_BIBCITE = '/scholar?q=info:{0}:scholar.google.com/\
+&output=cite&scirp={1}&hl=en'
 
 
 class _SearchScholarIterator(object):
@@ -160,7 +161,14 @@ class Publication(object):
                 'div', class_='gs_ggs gs_fl').a['href']
 
     @property
-    def filled(self):
+    def filled(self) -> bool:
+        """Indicates whether a publication has been filled
+
+        :getter: `True` if publication is filled, `False` otherwise.
+        :type: bool
+
+        #TODO: Example
+        """
         return self._filled
 
     def fill(self):
@@ -223,9 +231,13 @@ class Publication(object):
             self._filled = True
         return self
 
+    @property
     def get_citedby(self) -> _SearchScholarIterator or list:
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
+
+        :getter: Returns a Generator of Publications that cited the current.
+        :type: Generator<Publication>
         """
         if not self.filled:
             self.fill()
@@ -234,8 +246,9 @@ class Publication(object):
     @property
     def bibtex(self) -> str:
         """Returns the publication as a bibtex entry
-        Returns:
-            str -- a bibtex entry
+
+        :getter: Returns a bibtex entry in text format
+        :type: str
         """
         if not self._filled:
             self.fill()

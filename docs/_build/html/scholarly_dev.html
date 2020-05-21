@@ -34,8 +34,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="scholarly module" href="scholarly.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,22 +78,10 @@
               
             
             
-              <p class="caption"><span class="caption-text">For Users:</span></p>
+              <p class="caption"><span class="caption-text">Index</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scholarly.html">scholarly module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scholarly.html#module-scholarly.author">Author module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scholarly.html#module-scholarly.publication">Publication module</a></li>
-</ul>
-<p class="caption"><span class="caption-text">For Contributors:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">scholarly developer modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-scholarly._navigator">scholarly._navigator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-scholarly.author">scholarly.author module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-scholarly.publication">scholarly.publication module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-scholarly">Module contents</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="scholarly.html">scholarly Package</a></li>
 </ul>
 
             
@@ -250,11 +237,15 @@
 <code class="sig-name descname">_use_proxy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">http</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">https</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._use_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._use_proxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allows user to use their own proxy</p>
 <p>By using this function the user will be using their own proxy and not
-ToR. The proxy must be running. ToR will be disabled.
-:param http: the http proxy
-:type http: str
-:param https: the https proxy
-:type https: str</p>
+ToR. The proxy must be running. ToR will be disabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>http</strong> (<em>str</em>) – the http proxy</p></li>
+<li><p><strong>https</strong> (<em>str</em>) – the https proxy</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -359,13 +350,13 @@ ToR. The proxy must be running. ToR will be disabled.
 information to be pulled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sections</strong> (<em>list</em><em>, </em><em>optional</em>) – The sections of author information that will be filled. They are broken down as follows
-‘basics’ = [name, affiliation, and interests],
-‘citations’ = [h-index, i10-index, and 5-year analogues],
-‘counts’ = number of citations per year,
-‘coauthors’ = co-authors,
-‘publications’ = publications,
-[] = all of the above, defaults to [‘all’]</p>
+<dd class="field-odd"><p><strong>sections</strong> (<em>list</em><em>, </em><em>optional</em>) – sections of author profile to be filled
+* ‘basics’ = [name, affiliation, and interests],
+* ‘citations’ = [h-index, i10-index, and 5-year analogues],
+* ‘counts’ = number of citations per year,
+* ‘coauthors’ = co-authors,
+* ‘publications’ = publications,
+* [] = all of the above, defaults to [‘all’]</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>[description]</p>
@@ -473,13 +464,31 @@ information to be pulled.</p>
 <dl class="py method">
 <dt id="scholarly.publication.Publication.filled">
 <em class="property">property </em><code class="sig-name descname">filled</code><a class="headerlink" href="#scholarly.publication.Publication.filled" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Indicates whether a publication has been filled</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter</dt>
+<dd class="field-odd"><p><cite>True</cite> if publication is filled, <cite>False</cite> otherwise.</p>
+</dd>
+<dt class="field-even">Type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<p>#TODO: Example</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="scholarly.publication.Publication.get_citedby">
-<code class="sig-name descname">get_citedby</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#scholarly.publication._SearchScholarIterator" title="scholarly.publication._SearchScholarIterator">scholarly.publication._SearchScholarIterator</a><a class="reference internal" href="_modules/scholarly/publication.html#Publication.get_citedby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication.get_citedby" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">get_citedby</code><a class="headerlink" href="#scholarly.publication.Publication.get_citedby" title="Permalink to this definition">¶</a></dt>
 <dd><p>Searches GScholar for other articles that cite this Publication and
 returns a Publication generator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter</dt>
+<dd class="field-odd"><p>Returns a Generator of Publications that cited the current.</p>
+</dd>
+<dt class="field-even">Type</dt>
+<dd class="field-even"><p>Generator&lt;Publication&gt;</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -498,9 +507,6 @@ I have removed all logging from here for simplicity. -V</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-scholarly">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-scholarly" title="Permalink to this headline">¶</a></h2>
-</div>
 </div>
 
 
@@ -508,13 +514,6 @@ I have removed all logging from here for simplicity. -V</p>
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-      
-        <a href="scholarly.html" class="btn btn-neutral float-left" title="scholarly module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
