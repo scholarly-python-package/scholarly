@@ -1,0 +1,553 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>scholarly developer modules &mdash; scholarlyORG 0.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="scholarly module" href="scholarly.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> scholarlyORG
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">For Users:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scholarly.html">scholarly module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scholarly.html#module-scholarly.author">Author module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scholarly.html#module-scholarly.publication">Publication module</a></li>
+</ul>
+<p class="caption"><span class="caption-text">For Contributors:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">scholarly developer modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-scholarly._navigator">scholarly._navigator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scholarly.author">scholarly.author module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scholarly.publication">scholarly.publication module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scholarly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">scholarlyORG</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>scholarly developer modules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/scholarly_dev.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scholarly-developer-modules">
+<h1>scholarly developer modules<a class="headerlink" href="#scholarly-developer-modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-scholarly._navigator">
+<span id="scholarly-navigator-module"></span><h2>scholarly._navigator module<a class="headerlink" href="#module-scholarly._navigator" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="scholarly._navigator.Navigator">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly._navigator.</code><code class="sig-name descname">Navigator</code><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class used to navigate pages on google scholar.</p>
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._get_page">
+<code class="sig-name descname">_get_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pagerequest</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._get_page"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._get_page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the data from a webpage</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pagerequest</strong> (<em>str</em>) – the page url</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the text from a webpage</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>{str}</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p>Exception</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._get_soup">
+<code class="sig-name descname">_get_soup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; bs4.BeautifulSoup<a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._get_soup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._get_soup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the BeautifulSoup for a page on scholar.google.com</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._has_captcha">
+<code class="sig-name descname">_has_captcha</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._has_captcha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._has_captcha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests whether an error or captcha was shown.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – the webpage text</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>whether or not an error occurred</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>{bool}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._proxy_works">
+<code class="sig-name descname">_proxy_works</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._proxy_works"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._proxy_works" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a proxy is working</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>whether the proxy is working or not</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>{bool}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._refresh_tor_id">
+<code class="sig-name descname">_refresh_tor_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._refresh_tor_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._refresh_tor_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refreshes the id by using a new ToR node</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Whether or not the refresh was succesfull</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>{bool}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._setup_tor">
+<code class="sig-name descname">_setup_tor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._setup_tor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._setup_tor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialized ToR Proxy</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator._use_proxy">
+<code class="sig-name descname">_use_proxy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">http</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">https</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator._use_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator._use_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows user to use their own proxy</p>
+<p>By using this function the user will be using their own proxy and not
+ToR. The proxy must be running. ToR will be disabled.
+:param http: the http proxy
+:type http: str
+:param https: the https proxy
+:type https: str</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator.search_authors">
+<code class="sig-name descname">search_authors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator.search_authors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator.search_authors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator that returns Author objects from the author search page</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator.search_publication">
+<code class="sig-name descname">search_publication</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">filled</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#scholarly.publication.Publication" title="scholarly.publication.Publication">scholarly.publication.Publication</a><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator.search_publication"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator.search_publication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search by scholar query and return a single Publication object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> (<em>str</em>) – the url to be searched at</p></li>
+<li><p><strong>filled</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether publication should be filled, defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a publication object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>{Publication}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly._navigator.Navigator.search_publications">
+<code class="sig-name descname">search_publications</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#scholarly.publication._SearchScholarIterator" title="scholarly.publication._SearchScholarIterator">scholarly.publication._SearchScholarIterator</a><a class="reference internal" href="_modules/scholarly/_navigator.html#Navigator.search_publications"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Navigator.search_publications" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Publication Generator given a url</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>url</strong> (<em>str</em>) – the url where publications can be found.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An iterator of Publications</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>{_SearchScholarIterator}</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="scholarly._navigator.Singleton">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly._navigator.</code><code class="sig-name descname">Singleton</code><a class="reference internal" href="_modules/scholarly/_navigator.html#Singleton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly._navigator.Singleton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></p>
+<dl class="py attribute">
+<dt id="scholarly._navigator.Singleton._instances">
+<code class="sig-name descname">_instances</code><em class="property"> = {&lt;class 'scholarly._navigator.Navigator'&gt;: &lt;scholarly._navigator.Navigator object&gt;}</em><a class="headerlink" href="#scholarly._navigator.Singleton._instances" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scholarly.author">
+<span id="scholarly-author-module"></span><h2>scholarly.author module<a class="headerlink" href="#module-scholarly.author" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="scholarly.author.Author">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly.author.</code><code class="sig-name descname">Author</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nav</span></em>, <em class="sig-param"><span class="n">_Author__data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Returns an object for a single author</p>
+<dl class="py method">
+<dt id="scholarly.author.Author._fill_basics">
+<code class="sig-name descname">_fill_basics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">soup</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author._fill_basics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author._fill_basics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author._fill_coauthors">
+<code class="sig-name descname">_fill_coauthors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">soup</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author._fill_coauthors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author._fill_coauthors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author._fill_counts">
+<code class="sig-name descname">_fill_counts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">soup</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author._fill_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author._fill_counts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author._fill_indices">
+<code class="sig-name descname">_fill_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">soup</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author._fill_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author._fill_indices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author._fill_publications">
+<code class="sig-name descname">_fill_publications</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">soup</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author._fill_publications"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author._fill_publications" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author._find_tag_class_name">
+<code class="sig-name descname">_find_tag_class_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Author__data</span></em>, <em class="sig-param"><span class="n">tag</span></em>, <em class="sig-param"><span class="n">text</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author._find_tag_class_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author._find_tag_class_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author.fill">
+<code class="sig-name descname">fill</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sections</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/author.html#Author.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.author.Author.fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the Author with information from their profile</p>
+<p>The <cite>sections</cite> argument allows for finer granularity of the profile
+information to be pulled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sections</strong> (<em>list</em><em>, </em><em>optional</em>) – The sections of author information that will be filled. They are broken down as follows
+‘basics’ = [name, affiliation, and interests],
+‘citations’ = [h-index, i10-index, and 5-year analogues],
+‘counts’ = number of citations per year,
+‘coauthors’ = co-authors,
+‘publications’ = publications,
+[] = all of the above, defaults to [‘all’]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>{Author}</p>
+</dd>
+<dt class="field-even">Example:</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_author</span><span class="p">(</span><span class="s1">&#39;Steven A Cholewiak&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">author</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">author</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">sections</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;basic&#39;</span><span class="p">,</span> <span class="s1">&#39;citation_indices&#39;</span><span class="p">,</span> <span class="s1">&#39;co-authors&#39;</span><span class="p">]))</span>
+<span class="go">{&#39;affiliation&#39;: &#39;Vision Scientist&#39;,</span>
+<span class="go"> &#39;citedby&#39;: 262,</span>
+<span class="go"> &#39;citedby5y&#39;: 186,</span>
+<span class="go"> &#39;coauthors&#39;: [{&#39;affiliation&#39;: &#39;Kurt Koffka Professor of Experimental Psychology, University &#39;</span>
+<span class="go">                &#39;of Giessen&#39;,</span>
+<span class="go">                &#39;filled&#39;: False,</span>
+<span class="go">                &#39;id&#39;: &#39;ruUKktgAAAAJ&#39;,</span>
+<span class="go">                &#39;name&#39;: &#39;Roland Fleming&#39;},</span>
+<span class="go">               {&#39;affiliation&#39;: &#39;Professor of Vision Science, UC Berkeley&#39;,</span>
+<span class="go">                &#39;filled&#39;: False,</span>
+<span class="go">                &#39;id&#39;: &#39;Smr99uEAAAAJ&#39;,</span>
+<span class="go">                &#39;name&#39;: &#39;Martin Banks&#39;},</span>
+<span class="go">               ...</span>
+<span class="go">               {&#39;affiliation&#39;: &#39;Professor and Dean, School of Engineering, University of &#39;</span>
+<span class="go">                &#39;California, Merced&#39;,</span>
+<span class="go">                &#39;filled&#39;: False,</span>
+<span class="go">                &#39;id&#39;: &#39;r6MrFYoAAAAJ&#39;,</span>
+<span class="go">                &#39;name&#39;: &#39;Edwin D. Hirleman Jr.&#39;},</span>
+<span class="go">               {&#39;affiliation&#39;: &#39;Vice President of Research, NVIDIA Corporation&#39;,</span>
+<span class="go">                &#39;filled&#39;: False,</span>
+<span class="go">                &#39;id&#39;: &#39;AE7Xvl0AAAAJ&#39;,</span>
+<span class="go">                &#39;name&#39;: &#39;David Luebke&#39;}],</span>
+<span class="go"> &#39;email&#39;: &#39;@berkeley.edu&#39;,</span>
+<span class="go"> &#39;filled&#39;: False,</span>
+<span class="go"> &#39;hindex&#39;: 8,</span>
+<span class="go"> &#39;hindex5y&#39;: 8,</span>
+<span class="go"> &#39;i10index&#39;: 7,</span>
+<span class="go"> &#39;i10index5y&#39;: 7,</span>
+<span class="go"> &#39;id&#39;: &#39;4bahYMkAAAAJ&#39;,</span>
+<span class="go"> &#39;interests&#39;: [&#39;Depth Cues&#39;,</span>
+<span class="go">               &#39;3D Shape&#39;,</span>
+<span class="go">               &#39;Shape from Texture &amp; Shading&#39;,</span>
+<span class="go">               &#39;Naive Physics&#39;,</span>
+<span class="go">               &#39;Haptics&#39;],</span>
+<span class="go"> &#39;name&#39;: &#39;Steven A. Cholewiak, PhD&#39;,</span>
+<span class="go"> &#39;url_picture&#39;: &#39;https://scholar.google.com/citations?view_op=medium_photo&amp;user=4bahYMkAAAAJ&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.author.Author.filled">
+<em class="property">property </em><code class="sig-name descname">filled</code><a class="headerlink" href="#scholarly.author.Author.filled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether or not the author characteristics are filled
+:returns: Whether Author object is filled
+:rtype: {bool}</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scholarly.publication">
+<span id="scholarly-publication-module"></span><h2>scholarly.publication module<a class="headerlink" href="#module-scholarly.publication" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="scholarly.publication.Publication">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly.publication.</code><code class="sig-name descname">Publication</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nav</span></em>, <em class="sig-param"><span class="n">_Publication__data</span></em>, <em class="sig-param"><span class="n">pubtype</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#Publication"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Returns an object for a single publication</p>
+<dl class="py method">
+<dt id="scholarly.publication.Publication._citation_pub">
+<code class="sig-name descname">_citation_pub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Publication__data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#Publication._citation_pub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication._citation_pub" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication._get_authorlist">
+<code class="sig-name descname">_get_authorlist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">authorinfo</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#Publication._get_authorlist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication._get_authorlist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication._get_bibtex">
+<code class="sig-name descname">_get_bibtex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cid</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pos</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/scholarly/publication.html#Publication._get_bibtex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication._get_bibtex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication._scholar_pub">
+<code class="sig-name descname">_scholar_pub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Publication__data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#Publication._scholar_pub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication._scholar_pub" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication.bibtex">
+<em class="property">property </em><code class="sig-name descname">bibtex</code><a class="headerlink" href="#scholarly.publication.Publication.bibtex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the publication as a bibtex entry
+:returns: str – a bibtex entry</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication.fill">
+<code class="sig-name descname">fill</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#Publication.fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication.fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the Publication with information from its profile</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication.filled">
+<em class="property">property </em><code class="sig-name descname">filled</code><a class="headerlink" href="#scholarly.publication.Publication.filled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="scholarly.publication.Publication.get_citedby">
+<code class="sig-name descname">get_citedby</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#scholarly.publication._SearchScholarIterator" title="scholarly.publication._SearchScholarIterator">scholarly.publication._SearchScholarIterator</a><a class="reference internal" href="_modules/scholarly/publication.html#Publication.get_citedby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication.Publication.get_citedby" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches GScholar for other articles that cite this Publication and
+returns a Publication generator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="scholarly.publication._SearchScholarIterator">
+<em class="property">class </em><code class="sig-prename descclassname">scholarly.publication.</code><code class="sig-name descname">_SearchScholarIterator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nav</span></em>, <em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#_SearchScholarIterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication._SearchScholarIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Iterator that returns Publication objects from the search page
+I have removed all logging from here for simplicity. -V</p>
+<dl class="py method">
+<dt id="scholarly.publication._SearchScholarIterator._load_url">
+<code class="sig-name descname">_load_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scholarly/publication.html#_SearchScholarIterator._load_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scholarly.publication._SearchScholarIterator._load_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scholarly">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-scholarly" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="scholarly.html" class="btn btn-neutral float-left" title="scholarly module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Steven A. Cholewiak, Panos Ipeirotis, Victor Silva
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
