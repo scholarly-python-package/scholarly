@@ -133,52 +133,52 @@ class Author:
 
         :Example::
 
-        .. testcode::
+            .. testcode::
 
-            search_query = scholarly.search_author('Steven A Cholewiak')
-            author = next(search_query)
-            print(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
+                search_query = scholarly.search_author('Steven A Cholewiak')
+                author = next(search_query)
+                print(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
 
         :Output::
 
-        .. testoutput::
+            .. testoutput::
 
-            {'affiliation': 'Vision Scientist',
-             'citedby': 262,
-             'citedby5y': 186,
-             'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental Psychology, University '
-                            'of Giessen',
-                            'filled': False,
-                            'id': 'ruUKktgAAAAJ',
-                            'name': 'Roland Fleming'},
-                           {'affiliation': 'Professor of Vision Science, UC Berkeley',
-                            'filled': False,
-                            'id': 'Smr99uEAAAAJ',
-                            'name': 'Martin Banks'},
-                           ...
-                           {'affiliation': 'Professor and Dean, School of Engineering, University of '
-                            'California, Merced',
-                            'filled': False,
-                            'id': 'r6MrFYoAAAAJ',
-                            'name': 'Edwin D. Hirleman Jr.'},
-                           {'affiliation': 'Vice President of Research, NVIDIA Corporation',
-                            'filled': False,
-                            'id': 'AE7Xvl0AAAAJ',
-                            'name': 'David Luebke'}],
-             'email': '@berkeley.edu',
-             'filled': False,
-             'hindex': 8,
-             'hindex5y': 8,
-             'i10index': 7,
-             'i10index5y': 7,
-             'id': '4bahYMkAAAAJ',
-             'interests': ['Depth Cues',
-                           '3D Shape',
-                           'Shape from Texture & Shading',
-                           'Naive Physics',
-                           'Haptics'],
-             'name': 'Steven A. Cholewiak, PhD',
-             'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
+                {'affiliation': 'Vision Scientist',
+                 'citedby': 262,
+                 'citedby5y': 186,
+                 'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental Psychology, University '
+                                'of Giessen',
+                                'filled': False,
+                                'id': 'ruUKktgAAAAJ',
+                                'name': 'Roland Fleming'},
+                               {'affiliation': 'Professor of Vision Science, UC Berkeley',
+                                'filled': False,
+                                'id': 'Smr99uEAAAAJ',
+                                'name': 'Martin Banks'},
+                               ...
+                               {'affiliation': 'Professor and Dean, School of Engineering, University of '
+                                'California, Merced',
+                                'filled': False,
+                                'id': 'r6MrFYoAAAAJ',
+                                'name': 'Edwin D. Hirleman Jr.'},
+                               {'affiliation': 'Vice President of Research, NVIDIA Corporation',
+                                'filled': False,
+                                'id': 'AE7Xvl0AAAAJ',
+                                'name': 'David Luebke'}],
+                 'email': '@berkeley.edu',
+                 'filled': False,
+                 'hindex': 8,
+                 'hindex5y': 8,
+                 'i10index': 7,
+                 'i10index5y': 7,
+                 'id': '4bahYMkAAAAJ',
+                 'interests': ['Depth Cues',
+                               '3D Shape',
+                               'Shape from Texture & Shading',
+                               'Naive Physics',
+                               'Haptics'],
+                 'name': 'Steven A. Cholewiak, PhD',
+                 'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
         """
         try:
             sections = [section.lower() for section in sections]
