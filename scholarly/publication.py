@@ -76,9 +76,9 @@ class Publication(object):
             'a', class_='gsc_a_at')['data-href'])[0]
         citedby = __data.find(class_='gsc_a_ac')
 
-        self.citedby = "0"
+        self.bib["cites"] = "0"
         if citedby and not (citedby.text.isspace() or citedby.text == ''):
-            self.citedby = citedby.text.strip()
+            self.bib["cites"] = citedby.text.strip()
 
         year = __data.find(class_='gsc_a_h')
         if (year and year.text
@@ -141,7 +141,7 @@ class Publication(object):
 
         lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
 
-        self.bib["cites"] = 0
+        self.bib["cites"] = "0"
 
         for link in lowerlinks:
             if (link is not None and
@@ -153,7 +153,7 @@ class Publication(object):
 
             if 'Cited by' in link.text:
                 self.bib['cites'] = re.findall(r'\d+', link.text)[0].strip()
-                self.citedby = link['href']
+                self.citations_link = link['href']
 
         if __data.find('div', class_='gs_ggs gs_fl'):
             self.bib['eprint'] = __data.find(
@@ -212,7 +212,7 @@ class Publication(object):
                         abstract = val.find(class_='gsh_small')
                     self.bib['abstract'] = abstract.text
                 elif key == 'Total citations':
-                    self.citedby = re.findall(
+                    self.bib['cites'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
 
             # number of citation per year
@@ -231,7 +231,7 @@ class Publication(object):
         return self
 
     @property
-    def get_citedby(self) -> _SearchScholarIterator or list:
+    def citedby(self) -> _SearchScholarIterator or list:
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
 
@@ -240,7 +240,7 @@ class Publication(object):
         """
         if not self.filled:
             self.fill()
-        return _SearchScholarIterator(self.nav, self.citedby)
+        return _SearchScholarIterator(self.nav, self.citations_link)
 
     @property
     def bibtex(self) -> str:
