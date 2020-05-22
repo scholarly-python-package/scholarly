@@ -157,13 +157,16 @@ class Navigator(object, metaclass=Singleton):
             self.logger.info(err)
             return False
 
-    def _use_proxy(self, http: str, https: str):
-        """Allows user to set their own proxy for the connection session
+    def _use_proxy(self, http: str, https: str) -> bool:
+        """Allows user to set their own proxy for the connection session.
+        Sets the proxy, and checks if it woks,
 
         :param http: the http proxy
         :type http: str
         :param https: the https proxy
         :type https: str
+        :returns: if the proxy works
+        :rtype: {bool}
         """
         self.logger.info("Enabling proxies: http=%r https=%r", http, https)
 
@@ -171,11 +174,10 @@ class Navigator(object, metaclass=Singleton):
         self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
             self.proxies = proxies
+        else:
+            self.proxies = {'http': None, 'https': None}
 
-        return {
-            "proxy_works": self._proxy_works,
-            "proxies": self.proxies,
-        }
+        return self._proxy_works
 
     def _setup_tor(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
         """
@@ -226,12 +228,14 @@ class Navigator(object, metaclass=Singleton):
             }
 
         if tor_sock_port is None:
-            # TODO: pick a random port
-            tor_sock_port = 9960
+            # Picking a random port to avoid conflicts
+            # with simultaneous runs of scholarly
+            tor_sock_port = random.randrange(9000, 9500)
 
         if tor_control_port is None:
-            # TODO: pick a random port
-            tor_control_port = 9961
+            # Picking a random port to avoid conflicts
+            # with simultaneous runs of scholarly
+            tor_control_port = random.randrange(9500, 9999)
 
         # TODO: Check that the launched Tor process stops after scholar is done
         self._tor_process = stem.process.launch_tor_with_config(
@@ -268,9 +272,6 @@ class Navigator(object, metaclass=Singleton):
         html = html.replace(u'\xa0', u' ')
         res = BeautifulSoup(html, 'html.parser')
         try:
-            # @ipeirotis: I do not understand the usage of publib
-            # as a class variable. I see it is used, but I do not understand
-            # what it does and whether the navigator is the right class
             self.publib = res.find('div', id='gs_res_glb').get('data-sva')
         except Exception:
             pass
