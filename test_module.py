@@ -7,6 +7,10 @@ import random
 class TestScholarly(unittest.TestCase):
 
     def setUp(self):
+        tor_sock_port = None
+        tor_control_port = None
+        tor_password = "scholarly_password"
+        
         # Tor uses the 9050 port as the default socks port
         # on windows 9150 for socks and 9151 for control
         if sys.platform.startswith("linux"):
@@ -15,26 +19,7 @@ class TestScholarly(unittest.TestCase):
         elif sys.platform.startswith("win"):
             tor_sock_port = 9150
             tor_control_port = 9151
-        tor_password = "scholarly_password"
-        scholarly.nav._setup_tor(tor_sock_port, tor_control_port, tor_password)
-
-    def test_launch_tor(self):
-        """
-        Test that we can launch a Tor process
-        """
-        if sys.platform.startswith("linux"):
-            tor_cmd = '/usr/bin/tor'
-        elif sys.platform.startswith("win"):
-            tor_cmd = 'C:\\Tor\\tor.exe'
-
-        tor_sock_port = random.randrange(9000, 9500)
-        tor_control_port = random.randrange(9500, 9999)
-
-        result = scholarly.nav._launch_tor(tor_cmd, tor_sock_port, tor_control_port)
-        self.assertTrue(result["proxy_works"])
-        self.assertTrue(result["refresh_works"])
-        self.assertEqual(result["tor_control_port"], tor_control_port)
-        self.assertEqual(result["tor_sock_port"], tor_sock_port)
+        scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
     def test_empty_author(self):
         """
@@ -70,7 +55,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
-        cites = [c for c in filled.get_citedby()]
+        cites = [c for c in filled.citedby]
         self.assertEqual(str(len(cites)), filled.bib['cites'])
 
     def test_keyword(self):
