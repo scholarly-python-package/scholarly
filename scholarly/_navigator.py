@@ -9,6 +9,7 @@ import codecs
 import hashlib
 import logging
 import random
+import time
 import requests
 import tempfile
 import stem.process
@@ -51,12 +52,18 @@ class Navigator(object, metaclass=Singleton):
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         # If we have a Tor server that we can refresh, we set this to True
+        self._tor_process = None
         self._can_refresh_tor = False
         self._tor_control_port = None
         self._tor_password = None
         # Setting requests timeout to be reasonably long
         # to accomodate slowness of the Tor network
         self._TIMEOUT = 10
+        self._MAX_RETRIES = 5
+
+    def __del__(self):
+        if self._tor_process:
+            self._tor_process.kill()
 
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
@@ -68,9 +75,12 @@ class Navigator(object, metaclass=Singleton):
         :raises: Exception
         """
         self.logger.info("Getting %s", pagerequest)
+        # Space a bit the requests to avoid overloading the servers
+        time.sleep(random.uniform(1,5))
         resp = None
-        while True:
-            # Use ToR by default. If proxy was setup, use it.
+        tries = 0
+        while tries < self._MAX_RETRIES:
+            # If proxy/Tor was setup, use it.
             # Otherwise the local IP is used
             session = requests.Session()
             if self._proxy_works:
@@ -103,6 +113,12 @@ class Navigator(object, metaclass=Singleton):
                 session.close()
                 if self._can_refresh_tor:
                     self._refresh_tor_id(self._tor_control_port, self._tor_password)
+                    time.sleep(5) # wait for the refresh to happen
+                else:
+                    # we only increase the tries when we cannot refresh id
+                    # to avod an infinite loop
+                    tries += 1
+        raise Exception("Cannot fetch the page from Google Scholar.")
 
     def _check_proxy(self, proxies) -> bool:
         """Checks if a proxy is working.
@@ -155,6 +171,11 @@ class Navigator(object, metaclass=Singleton):
         self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
             self.proxies = proxies
+
+        return {
+            "proxy_works": self._proxy_works,
+            "proxies": self.proxies,
+        }
 
     def _setup_tor(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
         """
@@ -213,14 +234,15 @@ class Navigator(object, metaclass=Singleton):
             tor_control_port = 9961
 
         # TODO: Check that the launched Tor process stops after scholar is done
-        _ = stem.process.launch_tor_with_config(
+        self._tor_process = stem.process.launch_tor_with_config(
             tor_cmd=tor_cmd,
             config={
                 'ControlPort': str(tor_control_port),
                 'SocksPort': str(tor_sock_port),
                 'DataDirectory': tempfile.mkdtemp()
+                # TODO Perhaps we want to also set a password here
             },
-            take_ownership=True
+            # take_ownership=True # Taking this out for now, as it seems to cause trouble
         )
         return self._setup_tor(tor_sock_port, tor_control_port, tor_password=None)
 
@@ -246,6 +268,9 @@ class Navigator(object, metaclass=Singleton):
         html = html.replace(u'\xa0', u' ')
         res = BeautifulSoup(html, 'html.parser')
         try:
+            # @ipeirotis: I do not understand the usage of publib
+            # as a class variable. I see it is used, but I do not understand
+            # what it does and whether the navigator is the right class
             self.publib = res.find('div', id='gs_res_glb').get('data-sva')
         except Exception:
             pass
