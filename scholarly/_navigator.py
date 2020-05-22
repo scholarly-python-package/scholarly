@@ -277,7 +277,7 @@ class Navigator(object, metaclass=Singleton):
             pass
         return res
 
-    def search_authors(self, url: str):
+    def _search_authors(self, url: str):
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
 
@@ -298,7 +298,7 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("No more author pages")
                 break
 
-    def search_publication(self, url: str,
+    def _search_publication(self, url: str,
                            filled: bool = False) -> Publication:
         """Search by scholar query and return a single Publication object
 
@@ -315,7 +315,7 @@ class Navigator(object, metaclass=Singleton):
             res.fill()
         return res
 
-    def search_publications(self, url: str) -> _SearchScholarIterator:
+    def _search_publications(self, url: str) -> _SearchScholarIterator:
         """Returns a Publication Generator given a url
 
         :param url: the url where publications can be found.
