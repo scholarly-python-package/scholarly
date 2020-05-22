@@ -63,10 +63,10 @@ class TestScholarly(unittest.TestCase):
     #     abstracts_populated = ['abstract' in p.bib.keys() for p in publications]
     #     # Check that all publications have the abstract field populated
     #     self.assertTrue(all(abstracts_populated))
-        # Check that the abstracts have reasonable lengths
-        abstracts_length = [len(p.bib['abstract']) for p in publications]
-        abstracts_check = [1000 > n > 500 for n in abstracts_length]
-        self.assertTrue(all(abstracts_check))
+    # # Check that the abstracts have reasonable lengths
+    # abstracts_length = [len(p.bib['abstract']) for p in publications]
+    # abstracts_check = [1000 > n > 500 for n in abstracts_length]
+    # self.assertTrue(all(abstracts_check))
 
     def test_get_cited_by(self):
         """
