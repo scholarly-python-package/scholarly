@@ -10,7 +10,7 @@ class TestScholarly(unittest.TestCase):
         tor_sock_port = None
         tor_control_port = None
         tor_password = "scholarly_password"
-        
+
         # Tor uses the 9050 port as the default socks port
         # on windows 9150 for socks and 9151 for control
         if sys.platform.startswith("linux"):
@@ -121,8 +121,12 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
         author = authors[0].fill()
-        # Check that we can fill without problem the first ten publications
-        publications = [p.fill() for p in author.publications[:5]]
+        # Check that we can fill without problem the first five publications\
+        publications = author.publications[:5]
+        #print(publications)
+        for i in publications:
+            i.fill()
+        #print(publications)
         self.assertEqual(len(publications), 5)
         abstracts_populated = ['abstract' in p.bib for p in publications]
         # Check that all publications have the abstract field populated
