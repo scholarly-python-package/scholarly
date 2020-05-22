@@ -1,0 +1,430 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>scholarly._navigator &mdash; scholarlyORG 0.3.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> scholarlyORG
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Index</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scholarly.html">scholarly Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">scholarlyORG</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>scholarly._navigator</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for scholarly._navigator</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">stem</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">stem.control</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">fake_useragent</span> <span class="kn">import</span> <span class="n">UserAgent</span>
+<span class="kn">from</span> <span class="nn">.publication</span> <span class="kn">import</span> <span class="n">_SearchScholarIterator</span>
+<span class="kn">from</span> <span class="nn">.author</span> <span class="kn">import</span> <span class="n">Author</span>
+<span class="kn">from</span> <span class="nn">.publication</span> <span class="kn">import</span> <span class="n">Publication</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">_GOOGLEID</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">16</span><span class="p">]</span>
+<span class="n">_COOKIES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;GSP&#39;</span><span class="p">:</span> <span class="s1">&#39;ID=</span><span class="si">{0}</span><span class="s1">:CF=4&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_GOOGLEID</span><span class="p">)}</span>
+<span class="n">_HEADERS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;accept-language&#39;</span><span class="p">:</span> <span class="s1">&#39;en-US,en&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;accept&#39;</span><span class="p">:</span> <span class="s1">&#39;text/html,application/xhtml+xml,application/xml&#39;</span>
+<span class="p">}</span>
+<span class="n">_HOST</span> <span class="o">=</span> <span class="s1">&#39;https://scholar.google.com</span><span class="si">{0}</span><span class="s1">&#39;</span>
+
+<span class="n">_SCHOLARCITERE</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;gs_ocit\(event,</span><span class="se">\&#39;</span><span class="s1">([\w-]*)</span><span class="se">\&#39;</span><span class="s1">&#39;</span>
+<span class="n">_PUBSEARCH</span> <span class="o">=</span> <span class="s1">&#39;&quot;/scholar?hl=en&amp;q=</span><span class="si">{0}</span><span class="s1">&quot;&#39;</span>
+
+
+<div class="viewcode-block" id="Singleton"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Singleton">[docs]</a><span class="k">class</span> <span class="nc">Singleton</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="n">_instances</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Singleton</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                                                                 <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Navigator"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator">[docs]</a><span class="k">class</span> <span class="nc">Navigator</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">Singleton</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class used to navigate pages on google scholar.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Navigator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;scholar.log&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;scholarly&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tor</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_tor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>
+
+<div class="viewcode-block" id="Navigator._setup_tor"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._setup_tor">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_tor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialized ToR Proxy&quot;&quot;&quot;</span>
+
+        <span class="c1"># Tor uses the 9050 port as the default socks port</span>
+        <span class="c1"># on windows 9150 for socks and 9151 for control</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;linux&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_TOR_SOCK</span> <span class="o">=</span> <span class="s2">&quot;socks5://127.0.0.1:9050&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_TOR_CONTROL</span> <span class="o">=</span> <span class="mi">9051</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;win&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_TOR_SOCK</span> <span class="o">=</span> <span class="s2">&quot;socks5://127.0.0.1:9150&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_TOR_CONTROL</span> <span class="o">=</span> <span class="mi">9151</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;http&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TOR_SOCK</span><span class="p">,</span>
+                        <span class="s1">&#39;https&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TOR_SOCK</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_works</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Navigator._get_page"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._get_page">[docs]</a>    <span class="k">def</span> <span class="nf">_get_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pagerequest</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the data from a webpage</span>
+
+<span class="sd">        :param pagerequest: the page url</span>
+<span class="sd">        :type pagerequest: str</span>
+<span class="sd">        :returns: the text from a webpage</span>
+<span class="sd">        :rtype: {str}</span>
+<span class="sd">        :raises: Exception</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Getting </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pagerequest</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Use ToR by default. If proxy was setup, use it.</span>
+            <span class="c1"># Otherwise the local IP is used</span>
+            <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tor</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="p">:</span>
+
+                <span class="n">session</span><span class="o">.</span><span class="n">proxies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_HEADERS</span><span class="p">[</span><span class="s1">&#39;User-Agent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">UserAgent</span><span class="p">()</span><span class="o">.</span><span class="n">random</span>
+
+                <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pagerequest</span><span class="p">,</span>
+                                   <span class="n">headers</span><span class="o">=</span><span class="n">_HEADERS</span><span class="p">,</span>
+                                   <span class="n">cookies</span><span class="o">=</span><span class="n">_COOKIES</span><span class="p">,</span>
+                                   <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMEOUT</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_captcha</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Got a CAPTCHA. Retrying.&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">text</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;Response code </span><span class="si">{resp.status_code}</span><span class="s2">.</span>
+<span class="s2">                                    Retrying...&quot;&quot;&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status code </span><span class="si">{resp.status_code}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{e}</span><span class="s2"> while fetching page. Retrying.&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                <span class="c1"># Check if Tor is running and refresh it</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Refreshing Tor ID...&quot;</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tor</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_tor_id</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Navigator._proxy_works"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._proxy_works">[docs]</a>    <span class="k">def</span> <span class="nf">_proxy_works</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Checks if a proxy is working</span>
+
+<span class="sd">        :returns: whether the proxy is working or not</span>
+<span class="sd">        :rtype: {bool}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">proxies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Changed to twitter so we dont ping google twice every time</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://www.twitter.com&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Proxy Works!&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Proxy not working: Exception </span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Navigator._refresh_tor_id"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._refresh_tor_id">[docs]</a>    <span class="k">def</span> <span class="nf">_refresh_tor_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Refreshes the id by using a new ToR node</span>
+
+<span class="sd">        :returns: Whether or not the refresh was succesfull</span>
+<span class="sd">        :rtype: {bool}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Controller</span><span class="o">.</span><span class="n">from_port</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TOR_CONTROL</span><span class="p">)</span> <span class="k">as</span> <span class="n">controller</span><span class="p">:</span>
+                <span class="n">controller</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">password</span><span class="o">=</span><span class="s2">&quot;scholarly_password&quot;</span><span class="p">)</span>
+                <span class="n">controller</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">Signal</span><span class="o">.</span><span class="n">NEWNYM</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{e}</span><span class="s2"> while refreshing TOR. Retrying...&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Navigator._use_proxy"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._use_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">_use_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">http</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">https</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allows user to use their own proxy</span>
+
+<span class="sd">        By using this function the user will be using their own proxy and not</span>
+<span class="sd">        ToR. The proxy must be running. ToR will be disabled.</span>
+
+<span class="sd">        :param http: the http proxy</span>
+<span class="sd">        :type http: str</span>
+<span class="sd">        :param https: the https proxy</span>
+<span class="sd">        :type https: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Enabling proxies: http=</span><span class="si">%r</span><span class="s2"> https=</span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">http</span><span class="p">,</span> <span class="n">https</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;http&#39;</span><span class="p">:</span> <span class="n">http</span><span class="p">,</span> <span class="s1">&#39;https&#39;</span><span class="p">:</span> <span class="n">https</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tor</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy_works</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Navigator._has_captcha"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._has_captcha">[docs]</a>    <span class="k">def</span> <span class="nf">_has_captcha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Tests whether an error or captcha was shown.</span>
+
+<span class="sd">        :param text: the webpage text</span>
+<span class="sd">        :type text: str</span>
+<span class="sd">        :returns: whether or not an error occurred</span>
+<span class="sd">        :rtype: {bool}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Please show you&#39;re not a robot&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;network may be sending automated queries&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;have detected unusual traffic from your computer&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;scholarly_captcha&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;/sorry/image&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;enable JavaScript&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Navigator._get_soup"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator._get_soup">[docs]</a>    <span class="k">def</span> <span class="nf">_get_soup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeautifulSoup</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the BeautifulSoup for a page on scholar.google.com&quot;&quot;&quot;</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_page</span><span class="p">(</span><span class="n">_HOST</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">u</span><span class="s1">&#39;</span><span class="se">\xa0</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">publib</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;gs_res_glb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data-sva&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Navigator.search_authors"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator.search_authors">[docs]</a>    <span class="k">def</span> <span class="nf">search_authors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generator that returns Author objects from the author search page&quot;&quot;&quot;</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;gsc_1usr&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%d</span><span class="s2"> authors&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Author</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+            <span class="n">cls1</span> <span class="o">=</span> <span class="s1">&#39;gs_btnPR gs_in_ib gs_btn_half &#39;</span>
+            <span class="n">cls2</span> <span class="o">=</span> <span class="s1">&#39;gs_btn_lsb gs_btn_srt gsc_pgn_pnx&#39;</span>
+            <span class="n">next_button</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="n">cls1</span><span class="o">+</span><span class="n">cls2</span><span class="p">)</span>  <span class="c1"># Can be improved</span>
+            <span class="k">if</span> <span class="n">next_button</span> <span class="ow">and</span> <span class="s1">&#39;disabled&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">next_button</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading next page of authors&quot;</span><span class="p">)</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">next_button</span><span class="p">[</span><span class="s1">&#39;onclick&#39;</span><span class="p">][</span><span class="mi">17</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">getdecoder</span><span class="p">(</span><span class="s2">&quot;unicode_escape&quot;</span><span class="p">)(</span><span class="n">url</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No more author pages&quot;</span><span class="p">)</span>
+                <span class="k">break</span></div>
+
+<div class="viewcode-block" id="Navigator.search_publication"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator.search_publication">[docs]</a>    <span class="k">def</span> <span class="nf">search_publication</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">filled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Publication</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Search by scholar query and return a single Publication object</span>
+
+<span class="sd">        :param url: the url to be searched at</span>
+<span class="sd">        :type url: str</span>
+<span class="sd">        :param filled: Whether publication should be filled, defaults to False</span>
+<span class="sd">        :type filled: bool, optional</span>
+<span class="sd">        :returns: a publication object</span>
+<span class="sd">        :rtype: {Publication}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_soup</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">Publication</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">,</span> <span class="s1">&#39;gs_or&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;scholar&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filled</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Navigator.search_publications"><a class="viewcode-back" href="../../scholarly_dev.html#scholarly._navigator.Navigator.search_publications">[docs]</a>    <span class="k">def</span> <span class="nf">search_publications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SearchScholarIterator</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns a Publication Generator given a url</span>
+
+<span class="sd">        :param url: the url where publications can be found.</span>
+<span class="sd">        :type url: str</span>
+<span class="sd">        :returns: An iterator of Publications</span>
+<span class="sd">        :rtype: {_SearchScholarIterator}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_SearchScholarIterator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Steven A. Cholewiak, Panos Ipeirotis, Victor Silva
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

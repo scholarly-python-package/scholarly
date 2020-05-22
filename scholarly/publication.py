@@ -9,7 +9,8 @@ _SCHOLARPUBRE = r'cites=([\w-]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
 _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
-_BIBCITE = '/scholar?q=info:{0}:scholar.google.com/&output=cite&scirp={1}&hl=en'
+_BIBCITE = '/scholar?q=info:{0}:scholar.google.com/\
+&output=cite&scirp={1}&hl=en'
 
 
 class _SearchScholarIterator(object):
@@ -75,9 +76,9 @@ class Publication(object):
             'a', class_='gsc_a_at')['data-href'])[0]
         citedby = __data.find(class_='gsc_a_ac')
 
-        self.citedby = "0"
+        self.bib["cites"] = "0"
         if citedby and not (citedby.text.isspace() or citedby.text == ''):
-            self.citedby = citedby.text.strip()
+            self.bib["cites"] = citedby.text.strip()
 
         year = __data.find(class_='gsc_a_h')
         if (year and year.text
@@ -140,7 +141,7 @@ class Publication(object):
 
         lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
 
-        self.bib["cites"] = 0
+        self.bib["cites"] = "0"
 
         for link in lowerlinks:
             if (link is not None and
@@ -152,14 +153,21 @@ class Publication(object):
 
             if 'Cited by' in link.text:
                 self.bib['cites'] = re.findall(r'\d+', link.text)[0].strip()
-                self.citedby = link['href']
+                self.citations_link = link['href']
 
         if __data.find('div', class_='gs_ggs gs_fl'):
             self.bib['eprint'] = __data.find(
                 'div', class_='gs_ggs gs_fl').a['href']
 
     @property
-    def filled(self):
+    def filled(self) -> bool:
+        """Indicates whether a publication has been filled
+
+        :getter: `True` if publication is filled, `False` otherwise.
+        :type: bool
+
+        # TODO: Example
+        """
         return self._filled
 
     def fill(self):
@@ -172,20 +180,20 @@ class Publication(object):
                 self.bib['url'] = soup.find(
                     'a', class_='gsc_vcd_title_link')['href']
             for item in soup.find_all('div', class_='gs_scl'):
-                key = item.find(class_='gsc_vcd_field').text
+                key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
-                if key == 'Authors':
+                if key == 'authors':
                     self.bib['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])
-                elif key == 'Journal':
+                elif key == 'journal':
                     self.bib['journal'] = val.text
-                elif key == 'Volume':
+                elif key == 'volume':
                     self.bib['volume'] = val.text
-                elif key == 'Issue':
+                elif key == 'issue':
                     self.bib['number'] = val.text
-                elif key == 'Pages':
+                elif key == 'pages':
                     self.bib['pages'] = val.text
-                elif key == 'Publisher':
+                elif key == 'publisher':
                     self.bib['publisher'] = val.text
                 elif key == 'Publication date':
 
@@ -196,15 +204,15 @@ class Publication(object):
                                 'YYYY/M/D',
                                 'YYYY/MM/D']
                     self.bib['year'] = arrow.get(val.text, patterns).year
-                elif key == 'Description':
+                elif key == 'description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
                     abstract = val.find(class_='gsh_csp')
                     if abstract is None:
                         abstract = val.find(class_='gsh_small')
                     self.bib['abstract'] = abstract.text
-                elif key == 'Total citations':
-                    self.citedby = re.findall(
+                elif key == 'total citations':
+                    self.bib['cites'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
 
             # number of citation per year
@@ -222,19 +230,24 @@ class Publication(object):
             self._filled = True
         return self
 
-    def get_citedby(self) -> _SearchScholarIterator or list:
+    @property
+    def citedby(self) -> _SearchScholarIterator or list:
         """Searches GScholar for other articles that cite this Publication and
         returns a Publication generator.
+
+        :getter: Returns a Generator of Publications that cited the current.
+        :type: Iterator[:class:`Publication`]
         """
         if not self.filled:
             self.fill()
-        return _SearchScholarIterator(self.nav, self.citedby)
+        return _SearchScholarIterator(self.nav, self.citations_link)
 
     @property
     def bibtex(self) -> str:
         """Returns the publication as a bibtex entry
-        Returns:
-            str -- a bibtex entry
+
+        :getter: Returns a bibtex entry in text format
+        :type: str
         """
         if not self._filled:
             self.fill()
