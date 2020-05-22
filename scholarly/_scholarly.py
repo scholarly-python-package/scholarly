@@ -131,7 +131,7 @@ class _Scholarly:
         patents = '&as_sdt={0},33'.format(1 - int(patents))
         # improve str below
         url = url + yr_lo + yr_hi + citations + patents
-        return self.nav.search_publications(url)
+        return self.__nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False):
         """Search by scholar query and return a single Publication object"""
