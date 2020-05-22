@@ -167,7 +167,7 @@ class Publication(object):
         :getter: `True` if publication is filled, `False` otherwise.
         :type: bool
 
-        #TODO: Example
+        # TODO: Example
         """
         return self._filled
 
@@ -237,7 +237,7 @@ class Publication(object):
         returns a Publication generator.
 
         :getter: Returns a Generator of Publications that cited the current.
-        :type: Generator<Publication>
+        :type: Iterator[:class:`Publication`]
         """
         if not self.filled:
             self.fill()

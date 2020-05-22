@@ -314,7 +314,7 @@
 <span class="sd">        :getter: `True` if publication is filled, `False` otherwise.</span>
 <span class="sd">        :type: bool</span>
 
-<span class="sd">        #TODO: Example</span>
+<span class="sd">        # TODO: Example</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filled</span>
 
@@ -384,7 +384,7 @@
 <span class="sd">        returns a Publication generator.</span>
 
 <span class="sd">        :getter: Returns a Generator of Publications that cited the current.</span>
-<span class="sd">        :type: Generator&lt;Publication&gt;</span>
+<span class="sd">        :type: Iterator[:class:`Publication`]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">filled</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>

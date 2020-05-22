@@ -189,45 +189,51 @@ information to be pulled.</p>
 <dt class="field-even">Example:</dt>
 <dd class="field-even"><p></p></dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_author</span><span class="p">(</span><span class="s1">&#39;Steven A Cholewiak&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">author</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">author</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">sections</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;basic&#39;</span><span class="p">,</span> <span class="s1">&#39;citation_indices&#39;</span><span class="p">,</span> <span class="s1">&#39;co-authors&#39;</span><span class="p">]))</span>
-<span class="go">{&#39;affiliation&#39;: &#39;Vision Scientist&#39;,</span>
-<span class="go"> &#39;citedby&#39;: 262,</span>
-<span class="go"> &#39;citedby5y&#39;: 186,</span>
-<span class="go"> &#39;coauthors&#39;: [{&#39;affiliation&#39;: &#39;Kurt Koffka Professor of Experimental Psychology, University &#39;</span>
-<span class="go">                &#39;of Giessen&#39;,</span>
-<span class="go">                &#39;filled&#39;: False,</span>
-<span class="go">                &#39;id&#39;: &#39;ruUKktgAAAAJ&#39;,</span>
-<span class="go">                &#39;name&#39;: &#39;Roland Fleming&#39;},</span>
-<span class="go">               {&#39;affiliation&#39;: &#39;Professor of Vision Science, UC Berkeley&#39;,</span>
-<span class="go">                &#39;filled&#39;: False,</span>
-<span class="go">                &#39;id&#39;: &#39;Smr99uEAAAAJ&#39;,</span>
-<span class="go">                &#39;name&#39;: &#39;Martin Banks&#39;},</span>
-<span class="go">               ...</span>
-<span class="go">               {&#39;affiliation&#39;: &#39;Professor and Dean, School of Engineering, University of &#39;</span>
-<span class="go">                &#39;California, Merced&#39;,</span>
-<span class="go">                &#39;filled&#39;: False,</span>
-<span class="go">                &#39;id&#39;: &#39;r6MrFYoAAAAJ&#39;,</span>
-<span class="go">                &#39;name&#39;: &#39;Edwin D. Hirleman Jr.&#39;},</span>
-<span class="go">               {&#39;affiliation&#39;: &#39;Vice President of Research, NVIDIA Corporation&#39;,</span>
-<span class="go">                &#39;filled&#39;: False,</span>
-<span class="go">                &#39;id&#39;: &#39;AE7Xvl0AAAAJ&#39;,</span>
-<span class="go">                &#39;name&#39;: &#39;David Luebke&#39;}],</span>
-<span class="go"> &#39;email&#39;: &#39;@berkeley.edu&#39;,</span>
-<span class="go"> &#39;filled&#39;: False,</span>
-<span class="go"> &#39;hindex&#39;: 8,</span>
-<span class="go"> &#39;hindex5y&#39;: 8,</span>
-<span class="go"> &#39;i10index&#39;: 7,</span>
-<span class="go"> &#39;i10index5y&#39;: 7,</span>
-<span class="go"> &#39;id&#39;: &#39;4bahYMkAAAAJ&#39;,</span>
-<span class="go"> &#39;interests&#39;: [&#39;Depth Cues&#39;,</span>
-<span class="go">               &#39;3D Shape&#39;,</span>
-<span class="go">               &#39;Shape from Texture &amp; Shading&#39;,</span>
-<span class="go">               &#39;Naive Physics&#39;,</span>
-<span class="go">               &#39;Haptics&#39;],</span>
-<span class="go"> &#39;name&#39;: &#39;Steven A. Cholewiak, PhD&#39;,</span>
-<span class="go"> &#39;url_picture&#39;: &#39;https://scholar.google.com/citations?view_op=medium_photo&amp;user=4bahYMkAAAAJ&#39;}</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">search_query</span> <span class="o">=</span> <span class="n">scholarly</span><span class="o">.</span><span class="n">search_author</span><span class="p">(</span><span class="s1">&#39;Steven A Cholewiak&#39;</span><span class="p">)</span>
+<span class="n">author</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">search_query</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">author</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">sections</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;basic&#39;</span><span class="p">,</span> <span class="s1">&#39;citation_indices&#39;</span><span class="p">,</span> <span class="s1">&#39;co-authors&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Output:</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;affiliation&#39;: &#39;Vision Scientist&#39;,
+ &#39;citedby&#39;: 262,
+ &#39;citedby5y&#39;: 186,
+ &#39;coauthors&#39;: [{&#39;affiliation&#39;: &#39;Kurt Koffka Professor of Experimental Psychology, University &#39;
+                &#39;of Giessen&#39;,
+                &#39;filled&#39;: False,
+                &#39;id&#39;: &#39;ruUKktgAAAAJ&#39;,
+                &#39;name&#39;: &#39;Roland Fleming&#39;},
+               {&#39;affiliation&#39;: &#39;Professor of Vision Science, UC Berkeley&#39;,
+                &#39;filled&#39;: False,
+                &#39;id&#39;: &#39;Smr99uEAAAAJ&#39;,
+                &#39;name&#39;: &#39;Martin Banks&#39;},
+               ...
+               {&#39;affiliation&#39;: &#39;Professor and Dean, School of Engineering, University of &#39;
+                &#39;California, Merced&#39;,
+                &#39;filled&#39;: False,
+                &#39;id&#39;: &#39;r6MrFYoAAAAJ&#39;,
+                &#39;name&#39;: &#39;Edwin D. Hirleman Jr.&#39;},
+               {&#39;affiliation&#39;: &#39;Vice President of Research, NVIDIA Corporation&#39;,
+                &#39;filled&#39;: False,
+                &#39;id&#39;: &#39;AE7Xvl0AAAAJ&#39;,
+                &#39;name&#39;: &#39;David Luebke&#39;}],
+ &#39;email&#39;: &#39;@berkeley.edu&#39;,
+ &#39;filled&#39;: False,
+ &#39;hindex&#39;: 8,
+ &#39;hindex5y&#39;: 8,
+ &#39;i10index&#39;: 7,
+ &#39;i10index5y&#39;: 7,
+ &#39;id&#39;: &#39;4bahYMkAAAAJ&#39;,
+ &#39;interests&#39;: [&#39;Depth Cues&#39;,
+               &#39;3D Shape&#39;,
+               &#39;Shape from Texture &amp; Shading&#39;,
+               &#39;Naive Physics&#39;,
+               &#39;Haptics&#39;],
+ &#39;name&#39;: &#39;Steven A. Cholewiak, PhD&#39;,
+ &#39;url_picture&#39;: &#39;https://scholar.google.com/citations?view_op=medium_photo&amp;user=4bahYMkAAAAJ&#39;}
 </pre></div>
 </div>
 </dd></dl>
