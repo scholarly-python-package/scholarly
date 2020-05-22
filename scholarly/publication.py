@@ -180,20 +180,20 @@ class Publication(object):
                 self.bib['url'] = soup.find(
                     'a', class_='gsc_vcd_title_link')['href']
             for item in soup.find_all('div', class_='gs_scl'):
-                key = item.find(class_='gsc_vcd_field').text
+                key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
-                if key == 'Authors':
+                if key == 'authors':
                     self.bib['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])
-                elif key == 'Journal':
+                elif key == 'journal':
                     self.bib['journal'] = val.text
-                elif key == 'Volume':
+                elif key == 'volume':
                     self.bib['volume'] = val.text
-                elif key == 'Issue':
+                elif key == 'issue':
                     self.bib['number'] = val.text
-                elif key == 'Pages':
+                elif key == 'pages':
                     self.bib['pages'] = val.text
-                elif key == 'Publisher':
+                elif key == 'publisher':
                     self.bib['publisher'] = val.text
                 elif key == 'Publication date':
 
@@ -204,14 +204,14 @@ class Publication(object):
                                 'YYYY/M/D',
                                 'YYYY/MM/D']
                     self.bib['year'] = arrow.get(val.text, patterns).year
-                elif key == 'Description':
+                elif key == 'description':
                     if val.text[0:8].lower() == 'abstract':
                         val = val.text[9:].strip()
                     abstract = val.find(class_='gsh_csp')
                     if abstract is None:
                         abstract = val.find(class_='gsh_small')
                     self.bib['abstract'] = abstract.text
-                elif key == 'Total citations':
+                elif key == 'total citations':
                     self.bib['cites'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
 
