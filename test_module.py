@@ -21,6 +21,30 @@ class TestScholarly(unittest.TestCase):
             tor_control_port = 9151
         scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
+
+    def test_launch_tor(self):
+        """
+        Test that we can launch a Tor process
+        """
+        if sys.platform.startswith("linux"):
+            tor_cmd = 'tor'
+        elif sys.platform.startswith("win"):
+            tor_cmd = 'tor.exe'
+
+        tor_sock_port = random.randrange(9000, 9500)
+        tor_control_port = random.randrange(9500, 9999)
+
+        result = scholarly.launch_tor(tor_cmd, tor_sock_port, tor_control_port)
+        self.assertTrue(result["proxy_works"])
+        self.assertTrue(result["refresh_works"])
+        self.assertEqual(result["tor_control_port"], tor_control_port)
+        self.assertEqual(result["tor_sock_port"], tor_sock_port)
+        # Check that we can issue a query as well
+        query = 'Ipeirotis'
+        authors = [a for a in scholarly.search_author(query)]
+        self.assertGreaterEqual(len(authors), 1)
+
+
     def test_empty_author(self):
         """
         Test that sholarly.search_author('') returns no authors
@@ -45,28 +69,28 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-    # TEST IS HIGHLY UNSTABLE
-    # def test_filling_multiple_publications(self):
-    #     """
-    #     Download a few publications for author and check that abstracts are
-    #     populated with lengths within the expected limits
-    #     """
-    #     query = 'Ipeirotis'
-    #     authors = [a for a in scholarly.search_author(query)]
-    #     self.assertGreaterEqual(len(authors), 1)
-    #     author = authors[0].fill()
-    #     # Check that we can fill without problem the first five publications
-    #     publications = author.publications[:5]
-    #     for i in publications:
-    #         i.fill()
-    #     self.assertEqual(len(publications), 5)
-    #     abstracts_populated = ['abstract' in p.bib.keys() for p in publications]
-    #     # Check that all publications have the abstract field populated
-    #     self.assertTrue(all(abstracts_populated))
-    # # Check that the abstracts have reasonable lengths
-    # abstracts_length = [len(p.bib['abstract']) for p in publications]
-    # abstracts_check = [1000 > n > 500 for n in abstracts_length]
-    # self.assertTrue(all(abstracts_check))
+    
+    def test_filling_multiple_publications(self):
+         """
+         Download a few publications for author and check that abstracts are
+         populated with lengths within the expected limits
+         """
+         query = 'Ipeirotis'
+         authors = [a for a in scholarly.search_author(query)]
+         self.assertGreaterEqual(len(authors), 1)
+         author = authors[0].fill()
+         # Check that we can fill without problem the first two publications
+         publications = author.publications[:2]
+         for i in publications:
+             i.fill()
+         self.assertEqual(len(publications), 2)
+         abstracts_populated = ['abstract' in p.bib.keys() for p in publications]
+         # Check that all publications have the abstract field populated
+         self.assertTrue(all(abstracts_populated))
+         # Check that the abstracts have reasonable lengths
+         abstracts_length = [len(p.bib['abstract']) for p in publications]
+         abstracts_check = [1000 > n > 500 for n in abstracts_length]
+         self.assertTrue(all(abstracts_check))
 
     def test_get_cited_by(self):
         """

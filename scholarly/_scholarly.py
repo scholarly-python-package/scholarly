@@ -22,7 +22,7 @@ class _Scholarly:
         :type https: str
         """
 
-        self.__nav._use_proxy(http, https)
+        return self.__nav._use_proxy(http, https)
 
     def use_tor(self, tor_sock_port: int, tor_control_port: int, tor_pw: str):
         """[summary]
@@ -40,14 +40,15 @@ class _Scholarly:
             scholarly.use_tor(9050, 9051, "scholarly_password")
 
         """
-        self.__nav._setup_tor(tor_sock_port, tor_control_port, tor_pw)
+        return self.__nav._setup_tor(tor_sock_port, tor_control_port, tor_pw)
 
     def launch_tor(self,
                    tor_path: str, tor_sock_port: int, tor_control_port: int):
-        """Launches a temporary Tor connector
-
+        """
         Launches a temporary Tor connector to be used by scholarly.
-        This method requires the absolute path to a Tor executable file.
+
+        This method requires the absolute path to a Tor executable file,
+        or that the executable is in the PATH.
 
         :param tor_path: Absolute path to the local Tor binary
         :type tor_path: str
@@ -60,7 +61,7 @@ class _Scholarly:
 
             scholarly.launch_tor('/usr/bin/tor')
         """
-        self.__nav._launch_tor(tor_path, tor_sock_port, tor_control_port)
+        return self.__nav._launch_tor(tor_path, tor_sock_port, tor_control_port)
 
     def search_pubs(self,
                     query: str, patents: bool = True,
@@ -125,8 +126,7 @@ class _Scholarly:
         url = _PUBSEARCH.format(requests.utils.quote(query))
 
         yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
-        yr_hi = '&as_yhi={0}'.format(
-            year_high) if year_high is not None else ''
+        yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
         citations = '&as_vis={0}'.format(1 - int(citations))
         patents = '&as_sdt={0},33'.format(1 - int(patents))
         # improve str below
