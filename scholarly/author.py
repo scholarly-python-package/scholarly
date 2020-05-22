@@ -10,7 +10,7 @@ _EMAILAUTHORRE = r'Verified email at '
 _CITATIONAUTH = '/citations?hl=en&user={0}'
 
 
-class Author(object):
+class Author:
     """Returns an object for a single author"""
 
     def __init__(self, nav, __data):
@@ -119,39 +119,94 @@ class Author(object):
         The `sections` argument allows for finer granularity of the profile
         information to be pulled.
 
-        :param sections:
-        The sections of author information that will be filled
-        They are broken down as follows:
-            'basics' = [name, affiliation, and interests],
-            'citations' = [h-index, i10-index, and 5-year analogues],
-            'counts' = number of citations per year,
-            'coauthors' = co-authors,
-            'publications' = publications,
-            [] = all of the above, defaults to ['all']
-        :type sections: list, optional
-        :returns: [description]
-        :rtype: {Author}
+        :param sections: Sections of author profile to be filled, defaults to ``[]``.
+
+            * ``basics``: fills name, affiliation, and interests;
+            * ``citations``: fills h-index, i10-index, and 5-year analogues;
+            * ``counts``: fills number of citations per year;
+            * ``coauthors``: fills co-authors;
+            * ``publications``: fills publications;
+            * ``[]``: fills all of the above
+        :type sections: ['basics','citations','counts','coauthors','publications',[]] list, optional
+        :returns: The filled object if fill was successfull, False otherwise.
+        :rtype: Author or bool
+
+        :Example::
+
+        .. testcode::
+
+            search_query = scholarly.search_author('Steven A Cholewiak')
+            author = next(search_query)
+            print(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
+
+        :Output::
+
+        .. testoutput::
+
+            {'affiliation': 'Vision Scientist',
+             'citedby': 262,
+             'citedby5y': 186,
+             'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental Psychology, University '
+                            'of Giessen',
+                            'filled': False,
+                            'id': 'ruUKktgAAAAJ',
+                            'name': 'Roland Fleming'},
+                           {'affiliation': 'Professor of Vision Science, UC Berkeley',
+                            'filled': False,
+                            'id': 'Smr99uEAAAAJ',
+                            'name': 'Martin Banks'},
+                           ...
+                           {'affiliation': 'Professor and Dean, School of Engineering, University of '
+                            'California, Merced',
+                            'filled': False,
+                            'id': 'r6MrFYoAAAAJ',
+                            'name': 'Edwin D. Hirleman Jr.'},
+                           {'affiliation': 'Vice President of Research, NVIDIA Corporation',
+                            'filled': False,
+                            'id': 'AE7Xvl0AAAAJ',
+                            'name': 'David Luebke'}],
+             'email': '@berkeley.edu',
+             'filled': False,
+             'hindex': 8,
+             'hindex5y': 8,
+             'i10index': 7,
+             'i10index5y': 7,
+             'id': '4bahYMkAAAAJ',
+             'interests': ['Depth Cues',
+                           '3D Shape',
+                           'Shape from Texture & Shading',
+                           'Naive Physics',
+                           'Haptics'],
+             'name': 'Steven A. Cholewiak, PhD',
+             'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
         """
+        try:
+            sections = [section.lower() for section in sections]
+            url_citations = _CITATIONAUTH.format(self.id)
+            url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
+            soup = self.nav._get_soup(url)
 
-        sections = [section.lower() for section in sections]
-        url_citations = _CITATIONAUTH.format(self.id)
-        url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
-        soup = self.nav._get_soup(url)
-
-        if sections == []:
-            for i in self._sections:
-                if i not in self._filled:
-                    getattr(self, f'_fill_{i}')(soup)
-        else:
-            for i in sections:
-                if i in self._sections and i not in self._filled:
-                    getattr(self, f'_fill_{i}')(soup)
-                    self._filled.add(i)
+            if sections == []:
+                for i in self._sections:
+                    if i not in self._filled:
+                        getattr(self, f'_fill_{i}')(soup)
+            else:
+                for i in sections:
+                    if i in self._sections and i not in self._filled:
+                        getattr(self, f'_fill_{i}')(soup)
+                        self._filled.add(i)
+        except Exception:
+            return False
 
         return self
 
     @property
-    def filled(self):
+    def filled(self) -> bool:
+        """Returns whether or not the author characteristics are filled
+
+        :getter: True if Author object is filled, False otherwise
+        :type: bool
+        """
         return self._filled == self._sections
 
     def __str__(self):

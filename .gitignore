@@ -1,10 +1,13 @@
 # Byte-compiled / optimized / DLL files
 *.py[cod]
 __pycache__/
+*.doctree
+*.pickle
 
 # Distribution / packaging
 .Python
 build/
+_build/
 dist/
 *.egg-info/
 setup.cfg
@@ -17,6 +20,7 @@ setup_notes.md
 
 #logging
 *.log
+
 
 #dev testing
 vic.py
