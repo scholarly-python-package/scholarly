@@ -4,10 +4,10 @@ __pycache__/
 *.doctree
 *.pickle
 
-
 # Distribution / packaging
 .Python
 build/
+_build/
 dist/
 *.egg-info/
 setup.cfg
