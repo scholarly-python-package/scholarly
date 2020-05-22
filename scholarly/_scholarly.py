@@ -44,9 +44,9 @@ class _Scholarly(object):
 
     def launch_tor(self,
                    tor_path: str, tor_sock_port: int, tor_control_port: int):
-        """Launches a temporary Tor connection
+        """Launches a temporary Tor connector
 
-        Launches a temporary Tor connection to be used by scholarly. 
+        Launches a temporary Tor connector to be used by scholarly.
         This method requires the absolute path to a Tor executable file.
 
         :param tor_path: Absolute path to the local Tor binary
