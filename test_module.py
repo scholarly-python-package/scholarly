@@ -45,6 +45,28 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
+    def test_filling_multiple_publications(self):
+        """
+        Download a few publications for author and check that abstracts are
+        populated with lengths within the expected limits
+        """
+        query = 'Ipeirotis'
+        authors = [a for a in scholarly.search_author(query)]
+        self.assertGreaterEqual(len(authors), 1)
+        author = authors[0].fill()
+        # Check that we can fill without problem the first five publications
+        publications = author.publications[:5]
+        for i in publications:
+            i.fill()
+        self.assertEqual(len(publications), 5)
+        abstracts_populated = ['abstract' in p.bib for p in publications]
+        # Check that all publications have the abstract field populated
+        self.assertTrue(all(abstracts_populated))
+        # Check that the abstracts have reasonable lengths
+        abstracts_length = [len(p.bib['abstract']) for p in publications]
+        abstracts_check = [1000 > n > 500 for n in abstracts_length]
+        self.assertTrue(all(abstracts_check))
+
     def test_get_cited_by(self):
         """
         Testing that when we retrieve the list of publications that cite
@@ -84,23 +106,29 @@ class TestScholarly(unittest.TestCase):
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
-        pubs = [p.bib['title'] for p in scholarly.search_pubs('"naive physics" stability "3d shape"')]
+        pubs = [p.bib['title'] for p in scholarly.search_pubs(
+            '"naive physics" stability "3d shape"')]
         self.assertGreaterEqual(len(pubs), 29)
 
-        self.assertIn(u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
+        self.assertIn(
+            u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
     def test_publication_contents(self):
         query = 'Creating correct blur and its effect on accommodation'
         pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
-        self.assertTrue(filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(
+            filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
         self.assertTrue(filled.bib['journal'] == u'Journal of vision')
         self.assertTrue(filled.bib['number'] == u'9')
         self.assertTrue(filled.bib['pages'] == u'1--1')
-        self.assertTrue(filled.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
-        self.assertTrue(filled.bib['title'] == u'Creating correct blur and its effect on accommodation')
-        self.assertTrue(filled.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(
+            filled.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
+        self.assertTrue(
+            filled.bib['title'] == u'Creating correct blur and its effect on accommodation')
+        self.assertTrue(
+            filled.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(filled.bib['volume'] == u'18')
         self.assertTrue(filled.bib['year'] == u'2018')
 
@@ -111,28 +139,6 @@ class TestScholarly(unittest.TestCase):
         author = authors[0].fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')
-
-    def test_filling_multiple_publications(self):
-        """
-        Download a few publications for author and check that abstracts are
-        populated with lengths within the expected limits
-        """
-        query = 'Ipeirotis'
-        authors = [a for a in scholarly.search_author(query)]
-        self.assertGreaterEqual(len(authors), 1)
-        author = authors[0].fill()
-        # Check that we can fill without problem the first five publications
-        publications = author.publications[:5]
-        for i in publications:
-            i.fill()
-        self.assertEqual(len(publications), 5)
-        abstracts_populated = ['abstract' in p.bib for p in publications]
-        # Check that all publications have the abstract field populated
-        self.assertTrue(all(abstracts_populated))
-        # Check that the abstracts have reasonable lengths
-        abstracts_length = [len(p.bib['abstract']) for p in publications]
-        abstracts_check = [1000 > n > 500 for n in abstracts_length]
-        self.assertTrue(all(abstracts_check))
 
 
 if __name__ == '__main__':
