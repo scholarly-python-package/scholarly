@@ -6,7 +6,9 @@
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
-Check the [documentation]() for a complete reference!
+## Documentation
+
+Check the [documentation](https://scholarly.readthedocs.io/en/latest/?badge=latest) for a complete reference!
 
 ## Installation
 Use `pip` to install from pypi:
