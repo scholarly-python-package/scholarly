@@ -121,12 +121,10 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
         author = authors[0].fill()
-        # Check that we can fill without problem the first five publications\
+        # Check that we can fill without problem the first five publications
         publications = author.publications[:5]
-        #print(publications)
         for i in publications:
             i.fill()
-        #print(publications)
         self.assertEqual(len(publications), 5)
         abstracts_populated = ['abstract' in p.bib for p in publications]
         # Check that all publications have the abstract field populated
