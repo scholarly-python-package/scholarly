@@ -1,4 +1,4 @@
-[![Python package](https://https://github.com/scholarly-python-package/scholarly/workflows/Python%20package/badge.svg?branch=master)](https://https://github.com/scholarly-python-package/scholarly/actions?query=branch%3Amaster)
+[![Python package](https://github.com/scholarly-python-package/scholarly/workflows/Python%20package/badge.svg?branch=master)](https://https://github.com/scholarly-python-package/scholarly/actions?query=branch%3Amaster)
 
 [![Documentation Status](https://readthedocs.org/projects/scholarly/badge/?version=latest)](https://scholarly.readthedocs.io/en/latest/?badge=latest)
 
@@ -6,7 +6,9 @@
 # scholarly
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
-Check the [documentation]() for a complete reference!
+## Documentation
+
+Check the [documentation](https://scholarly.readthedocs.io/en/latest/?badge=latest) for a complete reference!
 
 ## Installation
 Use `pip` to install from pypi:
