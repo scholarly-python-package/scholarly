@@ -3,6 +3,7 @@
 __pycache__/
 *.doctree
 *.pickle
+*.pkl
 
 # Distribution / packaging
 .Python

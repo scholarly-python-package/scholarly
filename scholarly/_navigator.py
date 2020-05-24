@@ -53,7 +53,7 @@ class Navigator(object, metaclass=Singleton):
         self._proxy_works = False
         # If we have a Tor server that we can refresh, we set this to True
         self._tor_process = None
-        self._can_refresh_tor = False
+        self._can_refresh_tor = True
         self._tor_control_port = None
         self._tor_password = None
         # Setting requests timeout to be reasonably long
@@ -74,9 +74,12 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {str}
         :raises: Exception
         """
+        protocol = pagerequest[:4]
+        assert protocol == "http", "Invalid url, user http or https. Aborting."
+
         self.logger.info("Getting %s", pagerequest)
         # Space a bit the requests to avoid overloading the servers
-        time.sleep(random.uniform(1,5))
+        #time.sleep(random.uniform(1, 5))
         resp = None
         tries = 0
         while tries < self._MAX_RETRIES:
@@ -112,8 +115,9 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Refreshing Tor ID...")
                 session.close()
                 if self._can_refresh_tor:
-                    self._refresh_tor_id(self._tor_control_port, self._tor_password)
-                    time.sleep(5) # wait for the refresh to happen
+                    self._refresh_tor_id(
+                        self._tor_control_port, self._tor_password)
+                    #time.sleep(5)  # wait for the refresh to happen
                 else:
                     # we only increase the tries when we cannot refresh id
                     # to avod an infinite loop
@@ -131,7 +135,8 @@ class Navigator(object, metaclass=Singleton):
             session.proxies = proxies
             try:
                 # Changed to twitter so we dont ping google twice every time
-                resp = session.get("http://www.twitter.com", timeout=self._TIMEOUT)
+                resp = session.get("http://www.twitter.com",
+                                   timeout=self._TIMEOUT)
                 self.logger.info("Proxy Works!")
                 return resp.status_code == 200
             except Exception as e:
@@ -194,7 +199,7 @@ class Navigator(object, metaclass=Singleton):
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
         self._use_proxy(http=proxy, https=proxy)
 
-        self._can_refresh_tor = self._refresh_tor_id(tor_control_port, tor_password)
+        #self._can_refresh_tor = self._refresh_tor_id(tor_control_port, tor_password)
         if self._can_refresh_tor:
             self._tor_control_port = tor_control_port
             self._tor_password = tor_password
@@ -218,7 +223,8 @@ class Navigator(object, metaclass=Singleton):
         self.logger.info("Attempting to start owned Tor as the proxy")
 
         if tor_cmd is None:
-            self.logger.info("No tor_cmd argument passed. This should point to the location of tor executable")
+            self.logger.info(
+                "No tor_cmd argument passed. This should point to the location of tor executable")
             return {
                 "proxy_works": False,
                 "refresh_works": False,
@@ -266,9 +272,11 @@ class Navigator(object, metaclass=Singleton):
                  "enable JavaScript"]
         return any([i in text for i in flags])
 
-    def _get_soup(self, url: str) -> BeautifulSoup:
+    def _get_soup(self, url: str, use_host: bool = True) -> BeautifulSoup:
         """Return the BeautifulSoup for a page on scholar.google.com"""
-        html = self._get_page(_HOST.format(url))
+        if use_host:
+            url = _HOST.format(url)
+        html = self._get_page(url)
         html = html.replace(u'\xa0', u' ')
         res = BeautifulSoup(html, 'html.parser')
         try:
@@ -299,7 +307,7 @@ class Navigator(object, metaclass=Singleton):
                 break
 
     def _search_publication(self, url: str,
-                           filled: bool = False) -> Publication:
+                            filled: bool = False) -> Publication:
         """Search by scholar query and return a single Publication object
 
         :param url: the url to be searched at
@@ -323,4 +331,4 @@ class Navigator(object, metaclass=Singleton):
         :returns: An iterator of Publications
         :rtype: {_SearchScholarIterator}
         """
-        return _SearchScholarIterator(self, url)
+        return _SearchScholarIterator(self, _HOST.format(url))

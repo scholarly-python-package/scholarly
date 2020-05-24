@@ -1,6 +1,7 @@
 from .publication import Publication
 import re
 import pprint
+import inspect
 
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
@@ -14,7 +15,7 @@ class Author:
     """Returns an object for a single author"""
 
     def __init__(self, nav, __data):
-        self.nav = nav
+        self.__nav = nav
         self._filled = set()
         self._sections = {'basics',
                           'indices',
@@ -93,20 +94,20 @@ class Author:
 
         while True:
             for row in soup.find_all('tr', class_='gsc_a_tr'):
-                new_pub = Publication(self.nav, row, 'citations')
+                new_pub = Publication(self.__nav, row, 'citations')
                 self.publications.append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
                 url = '{0}&cstart={1}&pagesize={2}'.format(
                     url_citations, pubstart, _PAGESIZE)
-                soup = self.nav._get_soup(url)
+                soup = self.__nav._get_soup(url)
             else:
                 break
 
     def _fill_coauthors(self, soup):
         self.coauthors = []
         for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
-            new_coauthor = Author(self.nav, re.findall(
+            new_coauthor = Author(self.__nav, re.findall(
                 _CITATIONAUTHRE, row('a')[0]['href'])[0])
             new_coauthor.name = row.find(tabindex="-1").text
             new_coauthor.affiliation = row.find(
@@ -180,23 +181,20 @@ class Author:
                  'name': 'Steven A. Cholewiak, PhD',
                  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
         """
-        try:
-            sections = [section.lower() for section in sections]
-            url_citations = _CITATIONAUTH.format(self.id)
-            url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
-            soup = self.nav._get_soup(url)
+        sections = [section.lower() for section in sections]
+        url_citations = _CITATIONAUTH.format(self.id)
+        url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
+        soup = self.__nav._get_soup(url)
 
-            if sections == []:
-                for i in self._sections:
-                    if i not in self._filled:
-                        getattr(self, f'_fill_{i}')(soup)
-            else:
-                for i in sections:
-                    if i in self._sections and i not in self._filled:
-                        getattr(self, f'_fill_{i}')(soup)
-                        self._filled.add(i)
-        except Exception:
-            return False
+        if sections == []:
+            for i in self._sections:
+                if i not in self._filled:
+                    getattr(self, f'_fill_{i}')(soup)
+        else:
+            for i in sections:
+                if i in self._sections and i not in self._filled:
+                    getattr(self, f'_fill_{i}')(soup)
+                    self._filled.add(i)
 
         return self
 
@@ -209,17 +207,17 @@ class Author:
         """
         return self._filled == self._sections
 
-    def __str__(self):
-        pdict = dict(self.__dict__)
-        try:
-            pdict["filled"] = self.filled
-            del pdict['nav']
-            del pdict['_sections']
-            del pdict['_filled']
-        except Exception:
-            raise
+    def _get_public_attrs(self):
+        res = {}
+        for i in dir(self):
+            if not i.startswith("_"):
+                att = getattr(self, i)
+                if not inspect.ismethod(att):
+                    res[i] = att
+        return res
 
-        return pprint.pformat(pdict)
+    def __str__(self):
+        return pprint.pformat(self._get_public_attrs())
 
     def __repr__(self):
-        return self.__str__()
+        return pprint.pformat(self._get_public_attrs())
