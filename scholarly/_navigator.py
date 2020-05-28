@@ -75,7 +75,9 @@ class Navigator(object, metaclass=Singleton):
         :raises: Exception
         """
         protocol = pagerequest[:4]
-        assert protocol == "http", "Invalid url, user http or https. Aborting."
+        assert protocol == "http", f"Invalid url '{pagerequest}', \
+user http or https. Aborting."
+
 
         self.logger.info("Getting %s", pagerequest)
         # Space a bit the requests to avoid overloading the servers

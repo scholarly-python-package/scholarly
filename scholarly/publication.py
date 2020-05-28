@@ -27,7 +27,6 @@ class _SearchScholarIterator(object):
 
     def _load_url(self, url: str):
         # this is temporary until setup json file
-
         self._soup = self.__nav._get_soup(url, False)
         self._pos = 0
         self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
@@ -85,7 +84,7 @@ class Publication(object):
 
         if citedby and not (citedby.text.isspace() or citedby.text == ''):
             self.citation_count = int(citedby.text.strip())
-            self.citations_link = citedby.get('href')
+            self.citations_link = _HOST.format(citedby.get('href'))
 
         year = __data.find(class_='gsc_a_y')
         if (year and year.text
@@ -156,12 +155,12 @@ class Publication(object):
                     'cite' == link.get('title').lower()):
                 self.url_scholarbib = self._get_bibtex(cid, pos)
                 sclib = self.__nav.publib.format(id=cid)
-                self.url_add_sclib = sclib
+                self.url_add_sclib = _HOST.format(sclib)
 
             if 'cited by' in link.text.lower():
                 self.citation_count = int(
                     re.findall(r'\d+', link.text)[0].strip())
-                self.citations_link = link.get("href")
+                self.citations_link = _HOST.format(link.get("href"))
 
         eprint = __data.find('div', class_='gs_ggs gs_fl')
         if eprint:
@@ -183,7 +182,7 @@ class Publication(object):
         if self._source == 'citations':
             url = _CITATIONPUB.format(self.id_citations)
             soup = self.__nav._get_soup(url)
-            #print(soup)
+            # print(soup)
             self._bib['title'] = soup.find('div', id='gsc_vcd_title').text
             if soup.find('a', class_='gsc_vcd_title_link'):
                 self._bib['url'] = soup.find(
@@ -224,6 +223,7 @@ class Publication(object):
                         _SCHOLARPUBRE, val.a['href'])[0])
 
             # number of citation per year
+            
             years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
             self.cites_per_year = dict(zip(years, cites))
@@ -235,8 +235,8 @@ class Publication(object):
             self._bib.update(bibtexparser.loads(bibtex).entries[0])
 
         if self._citedby is None:
-            self._citedby = _SearchScholarIterator(self.__nav,
-                                                   self.citations_link)
+            self._citedby = _SearchScholarIterator(self.__nav, 
+                self.citations_link)
 
         self._filled = True
         return self
@@ -253,7 +253,7 @@ class Publication(object):
             return "Run fill() to get citedby"
 
         return self._citedby
-    
+
     @property
     def bibtex(self) -> str:
         """Returns the publication as a bibtex entry
