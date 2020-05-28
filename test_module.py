@@ -26,7 +26,7 @@ class TestScholarly(unittest.TestCase):
         """
         Test that we can launch a Tor process
         """
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):
             tor_cmd = 'tor.exe'
