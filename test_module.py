@@ -13,7 +13,7 @@ class TestScholarly(unittest.TestCase):
 
         # Tor uses the 9050 port as the default socks port
         # on windows 9150 for socks and 9151 for control
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
             tor_sock_port = 9050
             tor_control_port = 9051
         elif sys.platform.startswith("win"):
@@ -69,7 +69,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-    
+
     def test_filling_multiple_publications(self):
          """
          Download a few publications for author and check that abstracts are
