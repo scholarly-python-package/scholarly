@@ -1,5 +1,6 @@
 """scholarly.py"""
 import requests
+from .author import _CITATIONAUTH
 from ._navigator import Navigator
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
@@ -206,3 +207,9 @@ class _Scholarly:
         """Search by custom URL and return a generator of Author objects
         URL should be of the form '/citation?q=...'"""
         return self.__nav.search_authors(url)
+
+    def search_author_custom_id(self, id):
+        """Search by author ID and return a single Author object
+        URL should be of the form '/citation?user=...'"""
+        url = _CITATIONAUTH.format(requests.utils.quote(id))
+        return self.__nav.search_author(url)

@@ -324,3 +324,22 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {_SearchScholarIterator}
         """
         return _SearchScholarIterator(self, url)
+
+    def search_author(self, url:str) -> Author:
+        """Returns an Author object given a url
+
+        :param url: the url where author can be found.
+        :type url: str
+        :returns: an author object
+        :rtype: {Author}
+        """
+        soup = self._get_soup(url)
+        if isinstance(soup.find('div', id='gsc_prf_in'), type(None)):
+            raise Exception('Error: ID {0} is unknown'.format(id))
+        return Author(
+            self,
+            soup.find(
+                "input",
+                type="hidden",
+                attrs={"name":"user"}
+            ).get('value'))
