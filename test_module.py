@@ -21,7 +21,6 @@ class TestScholarly(unittest.TestCase):
             tor_control_port = 9151
         scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
-
     def test_launch_tor(self):
         """
         Test that we can launch a Tor process
@@ -43,7 +42,6 @@ class TestScholarly(unittest.TestCase):
         query = 'Ipeirotis'
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
-
 
     def test_empty_author(self):
         """
@@ -69,28 +67,28 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-
     def test_filling_multiple_publications(self):
-         """
-         Download a few publications for author and check that abstracts are
-         populated with lengths within the expected limits
-         """
-         query = 'Ipeirotis'
-         authors = [a for a in scholarly.search_author(query)]
-         self.assertGreaterEqual(len(authors), 1)
-         author = authors[0].fill()
-         # Check that we can fill without problem the first two publications
-         publications = author.publications[:2]
-         for i in publications:
-             i.fill()
-         self.assertEqual(len(publications), 2)
-         abstracts_populated = ['abstract' in p.bib.keys() for p in publications]
-         # Check that all publications have the abstract field populated
-         self.assertTrue(all(abstracts_populated))
-         # Check that the abstracts have reasonable lengths
-         abstracts_length = [len(p.bib['abstract']) for p in publications]
-         abstracts_check = [1000 > n > 500 for n in abstracts_length]
-         self.assertTrue(all(abstracts_check))
+        """
+        Download a few publications for author and check that abstracts are
+        populated with lengths within the expected limits
+        """
+        query = 'Ipeirotis'
+        authors = [a for a in scholarly.search_author(query)]
+        self.assertGreaterEqual(len(authors), 1)
+        author = authors[0].fill(['publications'])
+        # Check that we can fill without problem the first two publications
+        publications = author.publications[:2]
+        for i in publications:
+            i.fill()
+        self.assertEqual(len(publications), 2)
+        abstracts_populated = ['abstract' in p.bib.keys()
+                               for p in publications]
+        # Check that all publications have the abstract field populated
+        self.assertTrue(all(abstracts_populated))
+        # Check that the abstracts have reasonable lengths
+        abstracts_length = [len(p.bib['abstract']) for p in publications]
+        abstracts_check = [1000 > n > 500 for n in abstracts_length]
+        self.assertTrue(all(abstracts_check))
 
     def test_get_cited_by(self):
         """
@@ -128,8 +126,8 @@ class TestScholarly(unittest.TestCase):
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
         ["naive physics" stability "3d shape"].
 
-        Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
-        is among them
+        Check that the paper "Visual perception of the physical stability of \
+        asymmetric three-dimensional objects" is among them
         """
         pubs = [p.bib['title'] for p in scholarly.search_pubs(
             '"naive physics" stability "3d shape"')]

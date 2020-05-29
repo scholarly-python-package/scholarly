@@ -132,12 +132,12 @@ class _Scholarly:
         patents = '&as_sdt={0},33'.format(1 - int(patents))
         # improve str below
         url = url + yr_lo + yr_hi + citations + patents
-        return self.__nav.search_publications(url)
+        return self.__nav._search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False):
         """Search by scholar query and return a single Publication object"""
         url = _PUBSEARCH.format(requests.utils.quote(pub_title))
-        return self.__nav.search_publication(url, filled)
+        return self.__nav._search_publication(url, filled)
 
     def search_author(self, name: str):
         """Search by author name and return a generator of Author objects
@@ -165,7 +165,7 @@ class _Scholarly:
                 }
         """
         url = _AUTHSEARCH.format(requests.utils.quote(name))
-        return self.__nav.search_authors(url)
+        return self.__nav._search_authors(url)
 
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
@@ -196,12 +196,12 @@ class _Scholarly:
                 }
         """
         url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
-        return self.__nav.search_authors(url)
+        return self.__nav._search_authors(url)
 
     def search_pubs_custom_url(self, url: str):
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'"""
-        return self.__nav.search_publications(url)
+        return self.__nav._search_publications(url)
 
     def search_author_custom_url(self, url: str):
         """Search by custom URL and return a generator of Author objects
@@ -213,3 +213,4 @@ class _Scholarly:
         URL should be of the form '/citation?user=...'"""
         url = _CITATIONAUTH.format(requests.utils.quote(id))
         return self.__nav.search_author(url)
+
