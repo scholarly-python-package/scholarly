@@ -13,6 +13,15 @@ class _Scholarly:
     def __init__(self):
         self.__nav = Navigator()
 
+    def set_retries(self, num_retries: int):
+        """Sets the number of retries in case of errors
+
+        :param num_retries: the number of retries
+        :type num_retries: int
+        """
+
+        return self.__nav._set_retries(num_retries)
+
     def use_proxy(self, http: str, https: str):
         """Setups a proxy without refreshing capabilities.
 

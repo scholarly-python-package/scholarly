@@ -59,7 +59,7 @@ class Navigator(object, metaclass=Singleton):
         # Setting requests timeout to be reasonably long
         # to accomodate slowness of the Tor network
         self._TIMEOUT = 10
-        self._MAX_RETRIES = 5
+        self._max_retries = 5
 
     def __del__(self):
         if self._tor_process:
@@ -79,7 +79,7 @@ class Navigator(object, metaclass=Singleton):
         time.sleep(random.uniform(1,5))
         resp = None
         tries = 0
-        while tries < self._MAX_RETRIES:
+        while tries < self._max_retries:
             # If proxy/Tor was setup, use it.
             # Otherwise the local IP is used
             session = requests.Session()
@@ -156,6 +156,11 @@ class Navigator(object, metaclass=Singleton):
             err = f"Exception {e} while refreshing TOR. Retrying..."
             self.logger.info(err)
             return False
+
+    def _set_retries(self, num_retries: int) -> None:
+        if (num_retries < 0):
+            raise ValueError("num_retries must not be negative")
+        self._max_retries = num_retries
 
     def _use_proxy(self, http: str, https: str) -> bool:
         """Allows user to set their own proxy for the connection session.
