@@ -95,29 +95,28 @@ class Navigator(object, metaclass=Singleton):
                                    timeout=self._TIMEOUT)
 
                 if resp.status_code == 200:
-                    if self._has_captcha(resp.text):
-                        raise Exception("Got a CAPTCHA. Retrying.")
-                    else:
-                        session.close()
+                    if not self._has_captcha(resp.text):
                         return resp.text
+                    self.logger.info("Got a CAPTCHA. Retrying.")
                 else:
                     self.logger.info(f"""Response code {resp.status_code}.
                                     Retrying...""")
-                    raise Exception(f"Status code {resp.status_code}")
 
             except Exception as e:
                 err = f"Exception {e} while fetching page. Retrying."
                 self.logger.info(err)
-                # Check if Tor is running and refresh it
-                self.logger.info("Refreshing Tor ID...")
+            finally:
                 session.close()
-                if self._can_refresh_tor:
-                    self._refresh_tor_id(self._tor_control_port, self._tor_password)
-                    time.sleep(5) # wait for the refresh to happen
-                else:
-                    # we only increase the tries when we cannot refresh id
-                    # to avod an infinite loop
-                    tries += 1
+
+            # Check if Tor is running and refresh it
+            if self._can_refresh_tor:
+                self.logger.info("Refreshing Tor ID...")
+                self._refresh_tor_id(self._tor_control_port, self._tor_password)
+                time.sleep(5) # wait for the refresh to happen
+            else:
+                # we only increase the tries when we cannot refresh id
+                # to avoid an infinite loop
+                tries += 1
         raise Exception("Cannot fetch the page from Google Scholar.")
 
     def _check_proxy(self, proxies) -> bool:
