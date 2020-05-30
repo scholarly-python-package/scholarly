@@ -175,15 +175,14 @@ class Navigator(object, metaclass=Singleton):
         :returns: if the proxy works
         :rtype: {bool}
         """
-        self.logger.info("Enabling proxies: http=%r https=%r", http, https)
 
         proxies = {'http': http, 'https': https}
         self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
+            self.logger.info(f"Enabling proxies: http={http} https={https}")
             self.proxies = proxies
         else:
-            self.proxies = {'http': None, 'https': None}
-
+            self.logger.info(f"Proxy {http} does not seem to work.")
         return self._proxy_works
 
     def _setup_tor(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
