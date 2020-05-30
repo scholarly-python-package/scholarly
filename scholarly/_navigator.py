@@ -166,7 +166,7 @@ class Navigator(object, metaclass=Singleton):
 
     def _use_proxy(self, http: str, https: str) -> bool:
         """Allows user to set their own proxy for the connection session.
-        Sets the proxy, and checks if it woks,
+        Sets the proxy, and checks if it works.
 
         :param http: the http proxy
         :type http: str
