@@ -20,8 +20,6 @@ from .publication import _SearchScholarIterator
 from .author import Author
 from .publication import Publication
 
-_GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
-_COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
 _HEADERS = {
     'accept-language': 'en-US,en',
     'accept': 'text/html,application/xhtml+xml,application/xml'
@@ -88,6 +86,8 @@ class Navigator(object, metaclass=Singleton):
 
             try:
                 _HEADERS['User-Agent'] = UserAgent().random
+                _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
+                _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
 
                 resp = session.get(pagerequest,
                                    headers=_HEADERS,
