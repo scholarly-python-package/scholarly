@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from typing import Callable
 from bs4 import BeautifulSoup
 
 import codecs
@@ -47,6 +48,7 @@ class Navigator(object, metaclass=Singleton):
         super(Navigator, self).__init__()
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
+        self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         # If we have a Tor server that we can refresh, we set this to True
@@ -113,6 +115,13 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Refreshing Tor ID...")
                 self._refresh_tor_id(self._tor_control_port, self._tor_password)
                 time.sleep(5) # wait for the refresh to happen
+            elif self._proxy_gen:
+                tries += 1
+                self.logger.info(f"Try #{tries} failed. Switching proxy.")
+                # Try to get another proxy
+                new_proxy = self._proxy_gen()
+                while (not self._use_proxy(new_proxy)):
+                    new_proxy = self._proxy_gen()
             else:
                 # we only increase the tries when we cannot refresh id
                 # to avoid an infinite loop
@@ -162,6 +171,10 @@ class Navigator(object, metaclass=Singleton):
         if (num_retries < 0):
             raise ValueError("num_retries must not be negative")
         self._max_retries = num_retries
+
+    def _set_proxy_generator(self, gen: Callable[..., str]) -> bool:
+        self._proxy_gen = gen
+        return True
 
     def _use_proxy(self, http: str, https: str = None) -> bool:
         """Allows user to set their own proxy for the connection session.

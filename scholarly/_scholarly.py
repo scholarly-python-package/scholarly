@@ -1,5 +1,6 @@
 """scholarly.py"""
 import requests
+from typing import Callable
 from ._navigator import Navigator
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
@@ -32,6 +33,14 @@ class _Scholarly:
         """
 
         return self.__nav._use_proxy(http, https)
+
+    def set_proxy_generator(self, gen: Callable[..., str]):
+        """Setups a function that generates new proxies on demand.
+
+        :param gen: the function to call to obtain a new proxy
+        """
+
+        return self.__nav._set_proxy_generator(gen)
 
     def use_tor(self, tor_sock_port: int, tor_control_port: int, tor_pw: str):
         """[summary]
