@@ -31,6 +31,8 @@ setuptools.setup(
                       'requests[socks]',
                       'stem',
                       'fake_useragent',
-                      'PySocks'],
+                      'PySocks',
+                      'selenium',
+                     ],
     test_suite="test_module.py"
 )

@@ -14,22 +14,20 @@ import time
 import requests
 import tempfile
 import stem.process
+from requests.exceptions import Timeout
+from selenium import webdriver
+from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from urllib.parse import urlparse
 from stem import Signal
 from stem.control import Controller
 from fake_useragent import UserAgent
 from .publication import _SearchScholarIterator
 from .author import Author
 from .publication import Publication
-
-_HEADERS = {
-    'accept-language': 'en-US,en',
-    'accept': 'text/html,application/xhtml+xml,application/xml'
-}
-_HOST = 'https://scholar.google.com{0}'
-
-_PUBSEARCH = '"/scholar?hl=en&q={0}"'
-_SCHOLARCITERE = r'gs_ocit\(event,\'([\w-]*)\''
-
 
 class Singleton(type):
     _instances = {}
@@ -57,13 +55,113 @@ class Navigator(object, metaclass=Singleton):
         self._tor_control_port = None
         self._tor_password = None
         # Setting requests timeout to be reasonably long
-        # to accomodate slowness of the Tor network
+        # to accommodate slowness of the Tor network
         self._TIMEOUT = 10
         self._max_retries = 5
+        self._session = None
+        self._new_session()
 
     def __del__(self):
         if self._tor_process:
             self._tor_process.kill()
+        self._close_session()
+
+    def _get_webdriver(self):
+        if self._webdriver:
+            return self._webdriver
+
+        if self._proxy_works:
+            # Redirect webdriver through proxy
+            caps = DesiredCapabilities.FIREFOX.copy()
+            caps['proxy'] = {
+                "httpProxy": self._session.proxies['http'],
+                "ftpProxy": self._session.proxies['http'],
+                "sslProxy": self._session.proxies['https'],
+                "proxyType":"MANUAL",
+            }
+            self._webdriver = webdriver.Firefox(desired_capabilities = caps)
+        else:
+            self._webdriver = webdriver.Firefox()
+        self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
+
+        # It might make sense to (pre)set cookies as well, e.g., to set a GSP ID.
+        # However, a limitation of webdriver makes it impossible to set cookies for
+        # domains other than the current active one, cf. https://github.com/w3c/webdriver/issues/1238
+        # Therefore setting cookies in the session instance for other domains than the on set above
+        # (e.g., via self._session.cookies.set) will create problems when transferring them to the
+        # webdriver when handling captchas.
+
+        return self._webdriver
+
+
+    def _new_session(self):
+        proxies = {}
+        if self._session:
+            proxies = self._session.proxies
+            self._close_session()
+        self._session = requests.Session()
+        self.got_403 = False
+
+        _HEADERS = {
+            'accept-language': 'en-US,en',
+            'accept': 'text/html,application/xhtml+xml,application/xml'
+        }
+        _HEADERS['User-Agent'] = UserAgent().random
+        self._session.headers.update(_HEADERS)
+
+        if self._proxy_works:
+            self._session.proxies = proxies
+        self._webdriver = None
+
+    def _close_session(self):
+        if self._session:
+            self._session.close()
+        if self._webdriver:
+            self._webdriver.quit()
+
+    def _handle_captcha2(self, url, session):
+        cur_host = urlparse(self._get_webdriver().current_url).hostname
+        for cookie in self._session.cookies:
+            # Only set cookies matching the current domain, cf. https://github.com/w3c/webdriver/issues/1238
+            if cur_host is cookie.domain.lstrip('.'):
+                self._get_webdriver().add_cookie({
+                    'name': cookie.name,
+                    'value': cookie.value,
+                    'path': cookie.path,
+                    'domain':cookie.domain,
+                })
+        self._get_webdriver().get(url)
+
+        log_interval = 10
+        cur = 0
+        timeout = 60*60*24*7 # 1 week
+        while cur < timeout:
+            try:
+                cur = cur + log_interval # Update before exceptions can happen
+                WebDriverWait(self._get_webdriver(), log_interval).until_not(lambda drv : self._webdriver_has_captcha())
+                break
+            except TimeoutException:
+                self.logger.info(f"Solving the captcha took already {cur} seconds (of maximum {timeout} s).")
+            except UnexpectedAlertPresentException as e:
+                # This can apparently happen when reCAPTCHA has hiccups:
+                # "Cannot contact reCAPTCHA. Check your connection and try again."
+                self.logger.info(f"Unexpected alert while waiting for captcha completion: {e.args}")
+                time.sleep(15)
+            except (WebDriverException) as e:
+                self.logger.info(f"Browser seems to be disfunctional - closed by user?")
+                raise e
+            except Exception as e:
+                # TODO: This exception handler should eventually be removed when
+                # we know the "typical" (non-error) exceptions that can occur.
+                self.logger.info(f"Unhandled {type(e).__name__} while waiting for captcha completion: {e.args}")
+        else:
+            raise TimeoutException(f"Could not solve captcha in time (within {timeout} s).")
+        self.logger.info(f"Solved captcha in less than {cur} seconds.")
+
+        for cookie in self._get_webdriver().get_cookies():
+            cookie.pop("httpOnly", None)
+            cookie.pop("expiry", None)
+            self._session.cookies.set(**cookie)
 
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
@@ -80,52 +178,56 @@ class Navigator(object, metaclass=Singleton):
         resp = None
         tries = 0
         while tries < self._max_retries:
-            # If proxy/Tor was setup, use it.
-            # Otherwise the local IP is used
-            session = requests.Session()
-            if self._proxy_works:
-                session.proxies = self.proxies
-
             try:
-                _HEADERS['User-Agent'] = UserAgent().random
-                _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
-                _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
+                resp = self._session.get(pagerequest, timeout=self._TIMEOUT)
+                has_captcha = self._requests_has_captcha(resp.text)
 
-                resp = session.get(pagerequest,
-                                   headers=_HEADERS,
-                                   cookies=_COOKIES,
-                                   timeout=self._TIMEOUT)
-
-                if resp.status_code == 200:
-                    if not self._has_captcha(resp.text):
-                        return resp.text
-                    self.logger.info("Got a CAPTCHA. Retrying.")
+                if resp.status_code == 200 and not has_captcha:
+                    return resp.text
+                elif has_captcha:
+                    self.logger.info("Got a captcha request.")
+                    self._handle_captcha2(pagerequest, self._session)
+                    continue # Retry request within same session
+                elif resp.status_code == 403:
+                    self.logger.info(f"Got an access denied error (403).")
+                    if not self._can_refresh_tor and not self._proxy_gen:
+                        self.logger.info("No other connections possible.")
+                        if not self.got_403:
+                            self.logger.info("Retrying immediately with another session.")
+                        else:
+                            w = random.uniform(60, 5*60)
+                            self.logger.info("Will retry after {w} seconds (with another session).")
+                            time.sleep(w)
+                        self._new_session()
+                        self.got_403 = True
+                        
+                        continue # Retry request within same session
+                    else:
+                        self.logger.info("We can use another connection... let's try that.")
                 else:
                     self.logger.info(f"""Response code {resp.status_code}.
                                     Retrying...""")
 
             except Exception as e:
-                err = f"Exception {e} while fetching page. Retrying."
+                err = f"Exception %s while fetching page: %s" % (type(e).__name__, e.args)
                 self.logger.info(err)
-            finally:
-                session.close()
+                self.logger.info("Retrying with a new session.")
 
-            # Check if Tor is running and refresh it
+            tries += 1
             if self._can_refresh_tor:
+                # Check if Tor is running and refresh it
                 self.logger.info("Refreshing Tor ID...")
                 self._refresh_tor_id(self._tor_control_port, self._tor_password)
                 time.sleep(5) # wait for the refresh to happen
             elif self._proxy_gen:
-                tries += 1
                 self.logger.info(f"Try #{tries} failed. Switching proxy.")
                 # Try to get another proxy
                 new_proxy = self._proxy_gen()
                 while (not self._use_proxy(new_proxy)):
                     new_proxy = self._proxy_gen()
             else:
-                # we only increase the tries when we cannot refresh id
-                # to avoid an infinite loop
-                tries += 1
+                self._new_session()
+
         raise Exception("Cannot fetch the page from Google Scholar.")
 
     def _check_proxy(self, proxies) -> bool:
@@ -161,6 +263,7 @@ class Navigator(object, metaclass=Singleton):
                 else:
                     controller.authenticate()
                 controller.signal(Signal.NEWNYM)
+                self._new_session()
             return True
         except Exception as e:
             err = f"Exception {e} while refreshing TOR. Retrying..."
@@ -195,7 +298,8 @@ class Navigator(object, metaclass=Singleton):
         self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
             self.logger.info(f"Enabling proxies: http={http} https={https}")
-            self.proxies = proxies
+            self._session.proxies = proxies
+            self._new_session()
         else:
             self.logger.info(f"Proxy {http} does not seem to work.")
         return self._proxy_works
@@ -226,7 +330,6 @@ class Navigator(object, metaclass=Singleton):
         return {
             "proxy_works": self._proxy_works,
             "refresh_works": self._can_refresh_tor,
-            "proxies": self.proxies,
             "tor_control_port": tor_control_port,
             "tor_sock_port": tor_sock_port
         }
@@ -243,7 +346,6 @@ class Navigator(object, metaclass=Singleton):
             return {
                 "proxy_works": False,
                 "refresh_works": False,
-                "proxies": {'http': None, 'https': None},
                 "tor_control_port": None,
                 "tor_sock_port": None
             }
@@ -271,25 +373,35 @@ class Navigator(object, metaclass=Singleton):
         )
         return self._setup_tor(tor_sock_port, tor_control_port, tor_password=None)
 
-    def _has_captcha(self, text: str) -> bool:
-        """Tests whether an error or captcha was shown.
+    def _requests_has_captcha(self, text) -> bool:
+        """Tests whether some html text contains a captcha.
 
         :param text: the webpage text
         :type text: str
-        :returns: whether or not an error occurred
+        :returns: whether or not the site contains a captcha
         :rtype: {bool}
         """
-        flags = ["Please show you're not a robot",
-                 "network may be sending automated queries",
-                 "have detected unusual traffic from your computer",
-                 "scholarly_captcha",
-                 "/sorry/image",
-                 "enable JavaScript"]
-        return any([i in text for i in flags])
+        return self._has_captcha(lambda i : f'id="{i}"' in text)
+
+    def _webdriver_has_captcha(self) -> bool:
+        """Tests whether the current webdriver page contains a captcha.
+
+        :returns: whether or not the site contains a captcha
+        :rtype: {bool}
+        """
+        return self._has_captcha(lambda i : len(self._get_webdriver().find_elements(By.ID, i)) > 0)
+
+    def _has_captcha(self, got_id) -> bool:
+        _CAPTCHA_IDS = [
+            "gs_captcha_ccl", # the normal captcha div
+            "recaptcha", # the form used on full-page captchas
+            "captcha-form", # another form used on full-page captchas
+        ]
+        return any([got_id(i) for i in _CAPTCHA_IDS])
 
     def _get_soup(self, url: str) -> BeautifulSoup:
         """Return the BeautifulSoup for a page on scholar.google.com"""
-        html = self._get_page(_HOST.format(url))
+        html = self._get_page('https://scholar.google.com{0}'.format(url))
         html = html.replace(u'\xa0', u' ')
         res = BeautifulSoup(html, 'html.parser')
         try:
