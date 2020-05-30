@@ -132,11 +132,13 @@ class Navigator(object, metaclass=Singleton):
             try:
                 # Changed to twitter so we dont ping google twice every time
                 resp = session.get("http://www.twitter.com", timeout=self._TIMEOUT)
-                self.logger.info("Proxy Works!")
-                return resp.status_code == 200
+                if resp.status_code == 200:
+                    self.logger.info("Proxy works!")
+                    return True
             except Exception as e:
-                self.logger.info(f"Proxy not working: Exception {e}")
-                return False
+                self.logger.info(f"Exception while testing proxy: {e}")
+
+            return False
 
     def _refresh_tor_id(self, tor_control_port: int, password: str) -> bool:
         """Refreshes the id by using a new ToR node.
