@@ -164,17 +164,20 @@ class Navigator(object, metaclass=Singleton):
             raise ValueError("num_retries must not be negative")
         self._max_retries = num_retries
 
-    def _use_proxy(self, http: str, https: str) -> bool:
+    def _use_proxy(self, http: str, https: str = None) -> bool:
         """Allows user to set their own proxy for the connection session.
         Sets the proxy, and checks if it works.
 
         :param http: the http proxy
         :type http: str
-        :param https: the https proxy
+        :param https: the https proxy (default to the same as http)
         :type https: str
         :returns: if the proxy works
         :rtype: {bool}
         """
+
+        if https is None:
+            https = http
 
         proxies = {'http': http, 'https': https}
         self._proxy_works = self._check_proxy(proxies)
