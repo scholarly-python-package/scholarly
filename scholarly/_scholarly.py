@@ -1,5 +1,6 @@
 """scholarly.py"""
 import requests
+from typing import Callable
 from ._navigator import Navigator
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
@@ -13,6 +14,15 @@ class _Scholarly:
     def __init__(self):
         self.__nav = Navigator()
 
+    def set_retries(self, num_retries: int):
+        """Sets the number of retries in case of errors
+
+        :param num_retries: the number of retries
+        :type num_retries: int
+        """
+
+        return self.__nav._set_retries(num_retries)
+
     def use_proxy(self, http: str, https: str):
         """Setups a proxy without refreshing capabilities.
 
@@ -23,6 +33,14 @@ class _Scholarly:
         """
 
         return self.__nav._use_proxy(http, https)
+
+    def set_proxy_generator(self, gen: Callable[..., str]):
+        """Setups a function that generates new proxies on demand.
+
+        :param gen: the function to call to obtain a new proxy
+        """
+
+        return self.__nav._set_proxy_generator(gen)
 
     def use_tor(self, tor_sock_port: int, tor_control_port: int, tor_pw: str):
         """[summary]
