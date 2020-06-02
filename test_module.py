@@ -13,7 +13,7 @@ class TestScholarly(unittest.TestCase):
 
         # Tor uses the 9050 port as the default socks port
         # on windows 9150 for socks and 9151 for control
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
             tor_sock_port = 9050
             tor_control_port = 9051
         elif sys.platform.startswith("win"):
@@ -22,7 +22,7 @@ class TestScholarly(unittest.TestCase):
         scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
 
-    def test_launch_tor(self):
+    def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
         """
@@ -45,14 +45,14 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 1)
 
 
-    def test_empty_author(self):
+    def test_search_author_empty_author(self):
         """
         Test that sholarly.search_author('') returns no authors
         """
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
-    def test_empty_keyword(self):
+    def test_search_keyword_empty_keyword(self):
         """
         As of 2020-04-30, there are  6 individuals that match the name 'label'
         """
@@ -62,7 +62,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_keyword('')]
         self.assertEqual(len(authors), 6)
 
-    def test_empty_publication(self):
+    def test_search_pubs_empty_publication(self):
         """
         Test that searching for an empty publication returns zero results
         """
@@ -70,10 +70,12 @@ class TestScholarly(unittest.TestCase):
         self.assertIs(len(pubs), 0)
 
     
-    def test_filling_multiple_publications(self):
+    def test_search_author_filling_author_publications(self):
          """
          Download a few publications for author and check that abstracts are
-         populated with lengths within the expected limits
+         populated with lengths within the expected limits. This process
+         checks the process of filling a publication that is derived
+         from the author profile page.
          """
          query = 'Ipeirotis'
          authors = [a for a in scholarly.search_author(query)]
@@ -92,20 +94,23 @@ class TestScholarly(unittest.TestCase):
          abstracts_check = [1000 > n > 500 for n in abstracts_length]
          self.assertTrue(all(abstracts_check))
 
-    def test_get_cited_by(self):
+    def test_search_pubs_citedby(self):
         """
         Testing that when we retrieve the list of publications that cite
         a publication, the number of citing publication is the same as
-        the number of papers that are returned
+        the number of papers that are returned. We use a publication
+        with a small number of citations, so that the test runs quickly.
+        The 'Machine-learned epidemiology' paper had 11 citations as of
+        June 1, 2020.
         """
-        query = 'frequency-domain analysis of haptic gratings cholewiak'
+        query = 'Machine-learned epidemiology: real-time detection of foodborne illness at scale'
         pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
         cites = [c for c in filled.citedby]
         self.assertEqual(str(len(cites)), filled.bib['cites'])
 
-    def test_keyword(self):
+    def test_search_keyword(self):
         """
         When we search for the keyword "3d_shape" the author
         Steven A. Cholewiak should be among those listed
@@ -114,7 +119,15 @@ class TestScholarly(unittest.TestCase):
         self.assertIsNot(len(authors), 0)
         self.assertIn(u'Steven A. Cholewiak, PhD', authors)
 
-    def test_multiple_authors(self):
+    def test_search_author_single_author(self):
+        query = 'Steven A. Cholewiak'
+        authors = [a for a in scholarly.search_author(query)]
+        self.assertGreaterEqual(len(authors), 1)
+        author = authors[0].fill()
+        self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
+        self.assertEqual(author.id, u'4bahYMkAAAAJ')        
+        
+    def test_search_author_multiple_authors(self):
         """
         As of May 12, 2020 there are at least 24 'Cattanis's listed as authors
         and Giordano Cattani is one of them
@@ -123,7 +136,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 24)
         self.assertIn(u'Giordano Cattani', authors)
 
-    def test_multiple_publications(self):
+    def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
         ["naive physics" stability "3d shape"].
@@ -131,39 +144,31 @@ class TestScholarly(unittest.TestCase):
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
-        pubs = [p.bib['title'] for p in scholarly.search_pubs(
-            '"naive physics" stability "3d shape"')]
+        pubs = [p.bib['title'] for p in scholarly.search_pubs('"naive physics" stability "3d shape"')]
         self.assertGreaterEqual(len(pubs), 29)
 
-        self.assertIn(
-            u'Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
+        self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
-    def test_publication_contents(self):
+    def test_search_pubs_filling_publication_contents(self):
+        '''
+        This process  checks the process of filling a publication that is derived
+         from the search publication snippets.
+        '''
         query = 'Creating correct blur and its effect on accommodation'
         pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
         filled = pubs[0].fill()
-        self.assertTrue(
-            filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
         self.assertTrue(filled.bib['journal'] == u'Journal of vision')
         self.assertTrue(filled.bib['number'] == u'9')
         self.assertTrue(filled.bib['pages'] == u'1--1')
-        self.assertTrue(
-            filled.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
-        self.assertTrue(
-            filled.bib['title'] == u'Creating correct blur and its effect on accommodation')
-        self.assertTrue(
-            filled.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(filled.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
+        self.assertTrue(filled.bib['title'] == u'Creating correct blur and its effect on accommodation')
+        self.assertTrue(filled.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(filled.bib['volume'] == u'18')
         self.assertTrue(filled.bib['year'] == u'2018')
 
-    def test_single_author(self):
-        query = 'Steven A. Cholewiak'
-        authors = [a for a in scholarly.search_author(query)]
-        self.assertGreaterEqual(len(authors), 1)
-        author = authors[0].fill()
-        self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
-        self.assertEqual(author.id, u'4bahYMkAAAAJ')
+
 
 
 if __name__ == '__main__':
