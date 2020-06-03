@@ -54,9 +54,7 @@ class Navigator(object, metaclass=Singleton):
         self._can_refresh_tor = False
         self._tor_control_port = None
         self._tor_password = None
-        # Setting requests timeout to be reasonably long
-        # to accommodate slowness of the Tor network
-        self._TIMEOUT = 10
+        self._TIMEOUT = 3
         self._max_retries = 5
         self._session = None
         self._new_session()
@@ -326,6 +324,10 @@ class Navigator(object, metaclass=Singleton):
         else:
             self._tor_control_port = None
             self._tor_password = None
+
+        # Setting requests timeout to be reasonably long
+        # to accommodate slowness of the Tor network
+        self._TIMEOUT = 10
 
         return {
             "proxy_works": self._proxy_works,
