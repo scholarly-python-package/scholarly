@@ -138,8 +138,8 @@ class Navigator(object, metaclass=Singleton):
         with requests.Session() as session:
             session.proxies = proxies
             try:
-                # Changed to twitter so we dont ping google twice every time
-                resp = session.get("http://www.twitter.com", timeout=self._TIMEOUT)
+                # Netflix assets CDN should have very low latency for about everybody
+                resp = session.get("http://assets.nflxext.com", timeout=self._TIMEOUT)
                 if resp.status_code == 200:
                     self.logger.info("Proxy works!")
                     return True
