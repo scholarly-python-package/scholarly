@@ -29,6 +29,10 @@ from .publication import _SearchScholarIterator
 from .author import Author
 from .publication import Publication
 
+class DOSException(Exception):
+    """DOS attack was detected."""
+
+
 class Singleton(type):
     _instances = {}
 
@@ -145,6 +149,9 @@ class Navigator(object, metaclass=Singleton):
                 # "Cannot contact reCAPTCHA. Check your connection and try again."
                 self.logger.info(f"Unexpected alert while waiting for captcha completion: {e.args}")
                 time.sleep(15)
+            except DOSException as e:
+                self.logger.info(f"Google thinks we are DOSing the captcha.")
+                raise e
             except (WebDriverException) as e:
                 self.logger.info(f"Browser seems to be disfunctional - closed by user?")
                 raise e
@@ -207,6 +214,13 @@ class Navigator(object, metaclass=Singleton):
                     self.logger.info(f"""Response code {resp.status_code}.
                                     Retrying...""")
 
+            except DOSException:
+                if not self._can_refresh_tor and not self._proxy_gen:
+                    self.logger.info("No other connections possible.")
+                    w = random.uniform(60, 5*60)
+                    self.logger.info("Will retry after {w} seconds (with the same session).")
+                    time.sleep(w)
+                    continue
             except Timeout as e:
                 err = f"Timeout Exception %s while fetching page: %s" % (type(e).__name__, e.args)
                 self.logger.info(err)
@@ -394,7 +408,10 @@ class Navigator(object, metaclass=Singleton):
         :returns: whether or not the site contains a captcha
         :rtype: {bool}
         """
-        return self._has_captcha(lambda i : f'id="{i}"' in text)
+        return self._has_captcha(
+            lambda i : f'id="{i}"' in text,
+            lambda c : f'class="{c}"' in text,
+        )
 
     def _webdriver_has_captcha(self) -> bool:
         """Tests whether the current webdriver page contains a captcha.
@@ -402,14 +419,22 @@ class Navigator(object, metaclass=Singleton):
         :returns: whether or not the site contains a captcha
         :rtype: {bool}
         """
-        return self._has_captcha(lambda i : len(self._get_webdriver().find_elements(By.ID, i)) > 0)
+        return self._has_captcha(
+            lambda i : len(self._get_webdriver().find_elements(By.ID, i)) > 0,
+            lambda c : len(self._get_webdriver().find_elements(By.CLASS_NAME, c)) > 0,
+        )
 
-    def _has_captcha(self, got_id) -> bool:
+    def _has_captcha(self, got_id, got_class) -> bool:
         _CAPTCHA_IDS = [
             "gs_captcha_ccl", # the normal captcha div
             "recaptcha", # the form used on full-page captchas
             "captcha-form", # another form used on full-page captchas
         ]
+        _DOS_CLASSES = [
+            "rc-doscaptcha-body",
+        ]
+        if any([got_class(c) for c in _DOS_CLASSES]):
+            raise DOSException()
         return any([got_id(i) for i in _CAPTCHA_IDS])
 
     def _get_soup(self, url: str) -> BeautifulSoup:
