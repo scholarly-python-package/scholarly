@@ -175,9 +175,10 @@ class Navigator(object, metaclass=Singleton):
         time.sleep(random.uniform(1,5))
         resp = None
         tries = 0
+        timeout=self._TIMEOUT
         while tries < self._max_retries:
             try:
-                resp = self._session.get(pagerequest, timeout=self._TIMEOUT)
+                resp = self._session.get(pagerequest, timeout=timeout)
                 has_captcha = self._requests_has_captcha(resp.text)
 
                 if resp.status_code == 200 and not has_captcha:
@@ -206,6 +207,14 @@ class Navigator(object, metaclass=Singleton):
                     self.logger.info(f"""Response code {resp.status_code}.
                                     Retrying...""")
 
+            except Timeout as e:
+                err = f"Timeout Exception %s while fetching page: %s" % (type(e).__name__, e.args)
+                self.logger.info(err)
+                if timeout < 3*self._TIMEOUT:
+                    self.logger.info("Increasing timeout and retrying within same session.")
+                    timeout = timeout + self._TIMEOUT
+                    continue
+                self.logger.info("Giving up this session.")
             except Exception as e:
                 err = f"Exception %s while fetching page: %s" % (type(e).__name__, e.args)
                 self.logger.info(err)
@@ -217,12 +226,14 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Refreshing Tor ID...")
                 self._refresh_tor_id(self._tor_control_port, self._tor_password)
                 time.sleep(5) # wait for the refresh to happen
+                timeout=self._TIMEOUT # Reset timeout to default
             elif self._proxy_gen:
                 self.logger.info(f"Try #{tries} failed. Switching proxy.")
                 # Try to get another proxy
                 new_proxy = self._proxy_gen()
                 while (not self._use_proxy(new_proxy)):
                     new_proxy = self._proxy_gen()
+                timeout=self._TIMEOUT # Reset timeout to default
             else:
                 self._new_session()
 
