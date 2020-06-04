@@ -150,7 +150,7 @@ class Publication(object):
             if (link is not None and
                     link.get('title') is not None and
                     'Cite' == link.get('title')):
-                self.url_scholarbib = self._get_bibtex(cid, pos)
+                self.url_scholarbib = _BIBCITE.format(cid, pos)
                 sclib = self.nav.publib.format(id=cid)
                 self.url_add_sclib = sclib
 
@@ -228,7 +228,8 @@ class Publication(object):
                     'div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
         elif self.source == 'scholar':
-            bibtex = self.nav._get_page(self.url_scholarbib)
+            bibtex_url = self._get_bibtex(self.url_scholarbib)
+            bibtex = self.nav._get_page(bibtex_url)
             self.bib.update(bibtexparser.loads(bibtex).entries[0])
             self._filled = True
         return self
@@ -258,8 +259,7 @@ class Publication(object):
         a.entries = [self.bib]
         return bibtexparser.dumps(a)
 
-    def _get_bibtex(self, cid: str, pos: str) -> str:
-        bib_url = _BIBCITE.format(cid, pos)
+    def _get_bibtex(self, bib_url) -> str:
         soup = self.nav._get_soup(bib_url)
         styles = soup.find_all('a', class_='gs_citi')
 
