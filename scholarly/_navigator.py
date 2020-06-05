@@ -272,7 +272,7 @@ class Navigator(object, metaclass=Singleton):
             return False
 
     def _refresh_tor_id(self, tor_control_port: int, password: str) -> bool:
-        """Refreshes the id by using a new ToR node.
+        """Refreshes the id by using a new Tor node.
 
         :returns: Whether or not the refresh was succesful
         :rtype: {bool}
@@ -361,13 +361,13 @@ class Navigator(object, metaclass=Singleton):
 
     def _launch_tor(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
         '''
-        Starts a Tor client running in a schoar-specific port,
-        together with a scholar-specific control port.
+        Starts a Tor client running in a scholarly-specific port,
+        together with a scholarly-specific control port.
         '''
         self.logger.info("Attempting to start owned Tor as the proxy")
 
         if tor_cmd is None:
-            self.logger.info("No tor_cmd argument passed. This should point to the location of tor executable")
+            self.logger.info("No tor_cmd argument passed. This should point to the location of Tor executable.")
             return {
                 "proxy_works": False,
                 "refresh_works": False,

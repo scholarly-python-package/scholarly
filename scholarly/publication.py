@@ -254,7 +254,7 @@ class Publication(object):
 
     @property
     def citedby(self) -> _SearchScholarIterator or list:
-        """Searches GScholar for other articles that cite this Publication and
+        """Searches Google Scholar for other articles that cite this Publication and
         returns a Publication generator.
 
         :getter: Returns a Generator of Publications that cited the current.
@@ -266,9 +266,9 @@ class Publication(object):
 
     @property
     def bibtex(self) -> str:
-        """Returns the publication as a bibtex entry
+        """Returns the publication as a Bibtex entry
 
-        :getter: Returns a bibtex entry in text format
+        :getter: Returns a Bibtex entry in text format
         :type: str
         """
         if not self._filled:

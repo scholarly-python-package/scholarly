@@ -129,7 +129,7 @@ If necessary to get more information for the publication object, we call the `.f
 
 #### `get_citedby`
 
-Searches GScholar for other articles that cite this Publication and returns a Publication generator.
+Searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
 
 #### `bibtex`
 
@@ -142,7 +142,7 @@ Here's a quick example:
 >>> pub.bibtex
 ```
 
-by running the code above you should get the following bibtext entry:
+by running the code above you should get the following Bibtex entry:
 
 ```bib
 @inproceedings{ester1996density,
@@ -262,7 +262,7 @@ This option assumes that you have access to a Tor server and a `torrc` file conf
 to have a control port configured with a password; this setup allows scholarly to refresh the Tor ID, 
 if scholarly runs into problems accessing Google Scholar. 
 
-If you want to install and use Tor, then instal it using the command 
+If you want to install and use Tor, then install it using the command 
 ```
 sudo apt-get install -y tor
 ```
@@ -284,7 +284,7 @@ print(author)
 #### `scholarly.launch_tor()`
 
 If you have Tor installed locally, this option allows scholarly to launch its own Tor process.
-You need to pass a pointer to the Tor executable in your syste,
+You need to pass a pointer to the Tor executable in your system,
 
 ```python
 from scholarly import scholarly
