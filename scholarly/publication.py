@@ -125,13 +125,31 @@ class Publication(object):
         authorinfo = authorinfo.replace(u'&amp;', u'&')      # Ampersand
         self.bib["author"] = self._get_authorlist(authorinfo)
 
-        try:
-            venueyear = authorinfo.split(' - ')[1].split(',')
-            self.bib['venue'] = ''.join(venueyear[0:-1])
-            self.bib['year'] = venueyear[-1]
-            self.bib['year'] = self.bib['year'].strip()
-        except Exception:
+        # There are 4 (known) patterns in the author/venue/year/host line:
+        #  (A) authors - host
+        #  (B) authors - venue, year - host
+        #  (C) authors - venue - host
+        #  (D) authors - year - host
+        # The authors are handled above so below is only concerned with
+        # the middle venue/year part. In principle the venue is separated
+        # from the year by a comma. However, there exist venues with commas
+        # and as shown above there might not always be a venue AND a year...
+        venueyear = authorinfo.split(' - ')
+        # If there is no middle part (A) then venue and year are unknown.
+        if len(venueyear) <= 2:
             self.bib['venue'], self.bib['year'] = 'NA', 'NA'
+        else:
+            venueyear = venueyear[1].split(',')
+            venue = 'NA'
+            year = venueyear[-1].strip()
+            if year.isnumeric() and len(year) == 4:
+                self.bib['year'] = year
+                if len(venueyear) >= 2:
+                    venue = ','.join(venueyear[0:-1]) # everything but last
+            else:
+                venue = ','.join(venueyear) # everything
+                self.bib['year'] = 'NA'
+            self.bib['venue'] = venue
 
         if databox.find('div', class_='gs_rs'):
             self.bib['abstract'] = databox.find('div', class_='gs_rs').text
