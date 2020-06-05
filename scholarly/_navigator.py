@@ -178,8 +178,6 @@ class Navigator(object, metaclass=Singleton):
         :raises: Exception
         """
         self.logger.info("Getting %s", pagerequest)
-        # Space a bit the requests to avoid overloading the servers
-        time.sleep(random.uniform(1,5))
         resp = None
         tries = 0
         timeout=self._TIMEOUT
