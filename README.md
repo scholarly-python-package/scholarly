@@ -284,7 +284,7 @@ print(author)
 #### `scholarly.launch_tor()`
 
 If you have Tor installed locally, this option allows scholarly to launch its own Tor process.
-You need to pass a pointer to the Tor executable in your syste,
+You need to pass a pointer to the Tor executable in your system
 
 ```python
 from scholarly import scholarly
