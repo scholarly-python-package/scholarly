@@ -236,23 +236,39 @@ Here is an example using the [FreeProxy](https://pypi.org/project/free-proxy/) l
 from fp.fp import FreeProxy
 from scholarly import scholarly
 
-proxy = FreeProxy(rand=True, timeout=1, country_id=['US', 'CA']).get()  
-scholarly.use_proxy(http=proxy, https=proxy)
+def set_new_proxy():
+    while True:
+        proxy = FreeProxy(rand=True, timeout=1).get()
+        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
+        if proxy_works:
+            break
+    print("Working proxy:", proxy)
+    return proxy    
 
-author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
-```
+set_new_proxy()
 
-Or, if you have a Tor proxy available (say, running at port `9050` locally), then
+while True:
+    try:
+        search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
+        print("Got the results of the query")
+        break
+    except Exception as e:
+        print("Trying new proxy")
+        set_new_proxy() 
+    
+pub = next(search_query)
+print(pub)
 
-```python
-from scholarly import scholarly
-
-proxy = 'socks5://127.0.0.1:9050'
-scholarly.use_proxy(http=proxy, https=proxy)
-
-author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+while True:
+    try:
+        filled = pub.fill()
+        print("Filled the publication")
+        break
+    except Exception as e:
+        print("Trying new proxy")
+        set_new_proxy() 
+    
+print(filled)
 ```
 
 #### `scholarly.use_tor()`
