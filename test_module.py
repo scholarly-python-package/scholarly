@@ -19,7 +19,7 @@ class TestScholarly(unittest.TestCase):
         elif sys.platform.startswith("win"):
             tor_sock_port = 9150
             tor_control_port = 9151
-        scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
+        # scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
 
     def test_launch_tor(self):
