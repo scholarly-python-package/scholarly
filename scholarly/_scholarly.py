@@ -192,7 +192,7 @@ class _Scholarly:
             .. testcode::
 
                 search_query = scholarly.search_author_id('EmD_lTEAAAAJ')
-                print(next(search_query))
+                print(search_query)
 
         :Output::
 
