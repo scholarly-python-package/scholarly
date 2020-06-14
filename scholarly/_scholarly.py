@@ -184,6 +184,28 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
 
+    def search_author_id(self, id: str, filled: bool = False):
+        """Search by author id and return a single Author object
+
+        :Example::
+
+            .. testcode::
+
+                search_query = scholarly.search_author_id('EmD_lTEAAAAJ')
+                print(next(search_query))
+
+        :Output::
+
+            .. testoutput::
+
+                {'affiliation': 'Institut du radium, University of Paris',
+                 'filled': False,
+                 'id': 'EmD_lTEAAAAJ',
+                 'interests': [],
+                 'name': 'Marie Skłodowska-Curie'}
+        """
+        return self.__nav.search_author_id(id, filled)
+
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
 
