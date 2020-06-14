@@ -136,6 +136,16 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 24)
         self.assertIn(u'Giordano Cattani', authors)
 
+    def test_search_author_id(self):
+        """
+        Test the search by author ID. Marie Skłodowska-Curie's ID is
+        EmD_lTEAAAAJ and these IDs are permenant
+        """
+        author = scholarly.search_author_id('EmD_lTEAAAAJ')
+        self.assertEqual(author.name, u'Marie Skłodowska-Curie')
+        self.assertEqual(author.affiliation,
+                         u'Institut du radium, University of Paris')
+
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
