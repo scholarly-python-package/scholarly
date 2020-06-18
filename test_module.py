@@ -136,6 +136,30 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 24)
         self.assertIn(u'Giordano Cattani', authors)
 
+    def test_search_author_id(self):
+        """
+        Test the search by author ID. Marie Skłodowska-Curie's ID is
+        EmD_lTEAAAAJ and these IDs are permenant
+        """
+        author = scholarly.search_author_id('EmD_lTEAAAAJ')
+        self.assertEqual(author.name, u'Marie Skłodowska-Curie')
+        self.assertEqual(author.affiliation,
+                         u'Institut du radium, University of Paris')
+
+    def test_search_author_id_filled(self):
+        """
+        Test the search by author ID. Marie Skłodowska-Curie's ID is
+        EmD_lTEAAAAJ and these IDs are permenant.
+        As of July 2020, Marie Skłodowska-Curie has 1963 citations
+        on Google Scholar and 179 publications
+        """
+        author = scholarly.search_author_id('EmD_lTEAAAAJ', filled=True)
+        self.assertEqual(author.name, u'Marie Skłodowska-Curie')
+        self.assertEqual(author.affiliation,
+                         u'Institut du radium, University of Paris')
+        self.assertGreaterEqual(author.citedby, 1963)
+        self.assertGreaterEqual(len(author.publications), 179)
+
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:

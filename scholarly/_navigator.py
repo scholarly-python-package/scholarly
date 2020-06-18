@@ -345,3 +345,18 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {_SearchScholarIterator}
         """
         return _SearchScholarIterator(self, url)
+
+    def search_author_id(self, id: str, filled: bool = False) -> Author:
+        """Search by author ID and return a Author object
+        :param id: the Google Scholar id of a particular author
+        :type url: str
+        :param filled: If the returned Author object should be filled
+        :type filled: bool, optional
+        :returns: an Author object
+        :rtype: {Author}
+        """
+        if filled:
+            res = Author(self, id).fill()
+        else:
+            res = Author(self, id).fill(sections=['basics'])
+        return res
