@@ -23,12 +23,12 @@ class _Scholarly:
 
         return self.__nav._set_retries(num_retries)
 
-    def use_proxy(self, http: str, https: str):
+    def use_proxy(self, http: str, https: str = None):
         """Setups a proxy without refreshing capabilities.
 
         :param http: the http proxy address
         :type http: str
-        :param https: the https proxy address
+        :param https: the https proxy (default to the same as http)
         :type https: str
         """
 

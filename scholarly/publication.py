@@ -125,13 +125,31 @@ class Publication(object):
         authorinfo = authorinfo.replace(u'&amp;', u'&')      # Ampersand
         self.bib["author"] = self._get_authorlist(authorinfo)
 
-        try:
-            venueyear = authorinfo.split(' - ')[1].split(',')
-            self.bib['venue'] = ''.join(venueyear[0:-1])
-            self.bib['year'] = venueyear[-1]
-            self.bib['year'] = self.bib['year'].strip()
-        except Exception:
+        # There are 4 (known) patterns in the author/venue/year/host line:
+        #  (A) authors - host
+        #  (B) authors - venue, year - host
+        #  (C) authors - venue - host
+        #  (D) authors - year - host
+        # The authors are handled above so below is only concerned with
+        # the middle venue/year part. In principle the venue is separated
+        # from the year by a comma. However, there exist venues with commas
+        # and as shown above there might not always be a venue AND a year...
+        venueyear = authorinfo.split(' - ')
+        # If there is no middle part (A) then venue and year are unknown.
+        if len(venueyear) <= 2:
             self.bib['venue'], self.bib['year'] = 'NA', 'NA'
+        else:
+            venueyear = venueyear[1].split(',')
+            venue = 'NA'
+            year = venueyear[-1].strip()
+            if year.isnumeric() and len(year) == 4:
+                self.bib['year'] = year
+                if len(venueyear) >= 2:
+                    venue = ','.join(venueyear[0:-1]) # everything but last
+            else:
+                venue = ','.join(venueyear) # everything
+                self.bib['year'] = 'NA'
+            self.bib['venue'] = venue
 
         if databox.find('div', class_='gs_rs'):
             self.bib['abstract'] = databox.find('div', class_='gs_rs').text
@@ -150,7 +168,7 @@ class Publication(object):
             if (link is not None and
                     link.get('title') is not None and
                     'Cite' == link.get('title')):
-                self.url_scholarbib = self._get_bibtex(cid, pos)
+                self.url_scholarbib = _BIBCITE.format(cid, pos)
                 sclib = self.nav.publib.format(id=cid)
                 self.url_add_sclib = sclib
 
@@ -228,14 +246,15 @@ class Publication(object):
                     'div', class_='gsc_vcd_title_ggi').a['href']
             self._filled = True
         elif self.source == 'scholar':
-            bibtex = self.nav._get_page(self.url_scholarbib)
+            bibtex_url = self._get_bibtex(self.url_scholarbib)
+            bibtex = self.nav._get_page(bibtex_url)
             self.bib.update(bibtexparser.loads(bibtex).entries[0])
             self._filled = True
         return self
 
     @property
     def citedby(self) -> _SearchScholarIterator or list:
-        """Searches GScholar for other articles that cite this Publication and
+        """Searches Google Scholar for other articles that cite this Publication and
         returns a Publication generator.
 
         :getter: Returns a Generator of Publications that cited the current.
@@ -247,9 +266,9 @@ class Publication(object):
 
     @property
     def bibtex(self) -> str:
-        """Returns the publication as a bibtex entry
+        """Returns the publication as a Bibtex entry
 
-        :getter: Returns a bibtex entry in text format
+        :getter: Returns a Bibtex entry in text format
         :type: str
         """
         if not self._filled:
@@ -258,8 +277,7 @@ class Publication(object):
         a.entries = [self.bib]
         return bibtexparser.dumps(a)
 
-    def _get_bibtex(self, cid: str, pos: str) -> str:
-        bib_url = _BIBCITE.format(cid, pos)
+    def _get_bibtex(self, bib_url) -> str:
         soup = self.nav._get_soup(bib_url)
         styles = soup.find_all('a', class_='gs_citi')
 
