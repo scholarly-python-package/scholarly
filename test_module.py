@@ -60,7 +60,7 @@ class TestScholarly(unittest.TestCase):
         # scholarly.search_keyword() with empty string. Surely, no authors
         # should be returned. Consider modifying the method itself.
         authors = [a for a in scholarly.search_keyword('')]
-        self.assertEqual(len(authors), 6)
+        self.assertGreaterEqual(len(authors), 6)
 
     def test_search_pubs_empty_publication(self):
         """
@@ -168,8 +168,9 @@ class TestScholarly(unittest.TestCase):
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
-        pubs = [p.bib['title'] for p in scholarly.search_pubs('"naive physics" stability "3d shape"')]
-        self.assertGreaterEqual(len(pubs), 29)
+        pubs = [p.bib['title'] for p in scholarly.search_pubs(
+            '"naive physics" stability "3d shape"')]
+        self.assertGreaterEqual(len(pubs), 27)
 
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
