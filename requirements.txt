@@ -7,3 +7,4 @@ requests[socks]
 stem
 fake_useragent
 selenium
+python-dotenv

@@ -1,31 +1,59 @@
 import unittest
+import argparse
+from dotenv import find_dotenv, load_dotenv
+import os
 import sys
 from scholarly import scholarly
 import random
+from fp.fp import FreeProxy
 
+def set_new_proxy():
+    while True:
+        proxy = FreeProxy(rand=True, timeout=1).get()
+        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
+        if proxy_works:
+            break
+    print("Working proxy:", proxy)
+    return proxy    
 
 class TestScholarly(unittest.TestCase):
 
     def setUp(self):
-        tor_sock_port = None
-        tor_control_port = None
-        tor_password = "scholarly_password"
+        if self.connection_method == "tor":
+            print("Using tor")
+            tor_sock_port = None
+            tor_control_port = None
+            tor_password = "scholarly_password"
+            # Tor uses the 9050 port as the default socks port 
+            # on windows 9150 for socks and 9151 for control 
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+                tor_sock_port = 9050
+                tor_control_port = 9051
+            elif sys.platform.startswith("win"):
+                tor_sock_port = 9150
+                tor_control_port = 9151
+            scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
-        # Tor uses the 9050 port as the default socks port
-        # on windows 9150 for socks and 9151 for control
-        if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-            tor_sock_port = 9050
-            tor_control_port = 9051
-        elif sys.platform.startswith("win"):
-            tor_sock_port = 9150
-            tor_control_port = 9151
-        # scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
-
+        elif self.connection_method == "luminaty":
+            required_variables = ["USERNAME", "PASSWORD", "PORT"]
+            if all(var in self.env for var in required_variables): 
+                username = os.getenv("USERNAME") 
+                password = os.getenv("PASSWORD") 
+                port = os.getenv("PORT") 
+                session_id = random.random()
+                proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
+                scholarly.use_proxy(http=proxy, https=proxy)
+            else:
+                print("Couldn't create luminaty service. Please configure your '.env' file properly.")
+        elif self.connection_method == "freeproxy":
+            set_new_proxy()
 
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
         """
+        if self.connection_method != "tor":
+            return
         if sys.platform.startswith("linux"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):
@@ -197,4 +225,12 @@ class TestScholarly(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    load_dotenv(find_dotenv())
+    TestScholarly.env = os.environ.copy()
+
+    if "CONNECTION_METHOD" in TestScholarly.env:
+        TestScholarly.connection_method = os.getenv("CONNECTION_METHOD")
+    else:
+        TestScholarly.connection_method = "none"
+        
     unittest.main()

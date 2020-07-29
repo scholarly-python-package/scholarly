@@ -315,6 +315,36 @@ print(author)
 
 ## Tests
 
+### Setting up environment for Testing
+To run the `test_module.py` it is advised to create a `.env` file in the working directory of the `test_module.py` as:
+
+```bash
+touch .env
+```
+
+```bash
+nano .env # or any editor of your choice
+```
+
+Define the connection method for the Tests, among these options:
+- luminaty (if you have a luminaty proxy service)
+- freeproxy
+- tor
+- none (if you want a local connection, which is also the default value)
+
+ex.
+```bash
+CONNECTION_METHOD = luminaty
+```
+
+If using a luminaty proxy service please append the following to your `.env`:
+
+```bash
+USERNAME = <LUMINATY_USERNAME>
+PASSWORD = <LUMINATY_PASSWORD>
+PORT = <PORT_FOR_LUMINATY> 
+```
+### Run the tests
 To run tests execute the `test_module.py` file as:
 
 ```bash
