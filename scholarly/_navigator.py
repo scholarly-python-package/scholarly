@@ -58,7 +58,7 @@ class Navigator(object, metaclass=Singleton):
         self._can_refresh_tor = False
         self._tor_control_port = None
         self._tor_password = None
-        self._TIMEOUT = 3
+        self._TIMEOUT = 5
         self._max_retries = 5
         self._session = None
         self._new_session()
@@ -183,6 +183,8 @@ class Navigator(object, metaclass=Singleton):
         timeout=self._TIMEOUT
         while tries < self._max_retries:
             try:
+                w = random.uniform(1,2)
+                time.sleep(w)
                 resp = self._session.get(pagerequest, timeout=timeout)
                 has_captcha = self._requests_has_captcha(resp.text)
 
