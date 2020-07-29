@@ -1,6 +1,5 @@
 import unittest
 import argparse
-from dotenv import find_dotenv, load_dotenv
 import os
 import sys
 from scholarly import scholarly
@@ -13,7 +12,6 @@ def set_new_proxy():
         proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
         if proxy_works:
             break
-    print("Working proxy:", proxy)
     return proxy    
 
 class TestScholarly(unittest.TestCase):
@@ -35,16 +33,7 @@ class TestScholarly(unittest.TestCase):
             scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
 
         elif self.connection_method == "luminaty":
-            required_variables = ["USERNAME", "PASSWORD", "PORT"]
-            if all(var in self.env for var in required_variables): 
-                username = os.getenv("USERNAME") 
-                password = os.getenv("PASSWORD") 
-                port = os.getenv("PORT") 
-                session_id = random.random()
-                proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-                scholarly.use_proxy(http=proxy, https=proxy)
-            else:
-                print("Couldn't create luminaty service. Please configure your '.env' file properly.")
+            scholarly.use_lum_proxy()
         elif self.connection_method == "freeproxy":
             set_new_proxy()
 
@@ -225,10 +214,7 @@ class TestScholarly(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    load_dotenv(find_dotenv())
-    TestScholarly.env = os.environ.copy()
-
-    if "CONNECTION_METHOD" in TestScholarly.env:
+    if "CONNECTION_METHOD" in scholarly.env:
         TestScholarly.connection_method = os.getenv("CONNECTION_METHOD")
     else:
         TestScholarly.connection_method = "none"

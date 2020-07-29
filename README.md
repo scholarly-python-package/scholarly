@@ -311,11 +311,14 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
+#### `scholarly.use_lum_proxy()`
+If you have a luminaty proxy service, please refer to the environment setup for Luminaty below
+and simply call the following command before any function you want to execute.
 
-
-## Tests
-
-### Setting up environment for Testing
+```python
+scholarly.use_lum_proxy()
+```
+## Setting up environment for Luminaty and/or Testing
 To run the `test_module.py` it is advised to create a `.env` file in the working directory of the `test_module.py` as:
 
 ```bash
@@ -344,6 +347,8 @@ USERNAME = <LUMINATY_USERNAME>
 PASSWORD = <LUMINATY_PASSWORD>
 PORT = <PORT_FOR_LUMINATY> 
 ```
+## Tests
+
 ### Run the tests
 To run tests execute the `test_module.py` file as:
 

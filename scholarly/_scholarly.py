@@ -1,7 +1,10 @@
 """scholarly.py"""
 import requests
+import random
+import os
 from typing import Callable
 from ._navigator import Navigator
+from dotenv import find_dotenv, load_dotenv
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -12,6 +15,8 @@ class _Scholarly:
     """Class that manages the API for scholarly"""
 
     def __init__(self):
+        load_dotenv(find_dotenv())
+        self.env = os.environ.copy()
         self.__nav = Navigator()
 
     def set_retries(self, num_retries: int):
@@ -22,6 +27,18 @@ class _Scholarly:
         """
 
         return self.__nav._set_retries(num_retries)
+
+    def use_lum_proxy(self):
+        """Setups a luminaty proxy without refreshing capabilities
+        """
+        required_variables = ["USERNAME", "PASSWORD", "PORT"]
+        if all(var in self.env for var in required_variables): 
+            username = os.getenv("USERNAME") 
+            password = os.getenv("PASSWORD") 
+            port = os.getenv("PORT") 
+            session_id = random.random()
+            proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
+            self.use_proxy(http=proxy, https=proxy)
 
     def use_proxy(self, http: str, https: str = None):
         """Setups a proxy without refreshing capabilities.
