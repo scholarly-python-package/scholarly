@@ -28,17 +28,35 @@ class _Scholarly:
 
         return self.__nav._set_retries(num_retries)
 
-    def use_lum_proxy(self):
-        """Setups a luminaty proxy without refreshing capabilities
+    def use_lum_proxy(self, usr = None , passwd = None, proxy_port = None ):
+        """ Setups a luminaty proxy without refreshing capabilities.
+        If a configuration isn't provided by the arguments (which requires all the arguments),
+        it searches for a configuration from environment variables.
+
+        :param usr: scholarly username, optional by default None
+        :type usr: string
+        :param passwd: scholarly password, optional by default None
+        :type passwd: string
+        :param proxy_port: port for the proxy,optional by default None
+        :type proxy_port: integer
+        
+        :Example::
+            scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
         """
         required_variables = ["USERNAME", "PASSWORD", "PORT"]
-        if all(var in self.env for var in required_variables): 
+        if (usr != None and passwd != None and proxy_port != None):
+            username = usr
+            password = passwd
+            port = proxy_port 
+        elif all(var in self.env for var in required_variables): 
             username = os.getenv("USERNAME") 
             password = os.getenv("PASSWORD") 
             port = os.getenv("PORT") 
-            session_id = random.random()
-            proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-            self.use_proxy(http=proxy, https=proxy)
+        else:
+            return
+        session_id = random.random()
+        proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
+        self.use_proxy(http=proxy, https=proxy)
 
     def use_proxy(self, http: str, https: str = None):
         """Setups a proxy without refreshing capabilities.

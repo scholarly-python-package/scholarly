@@ -43,6 +43,7 @@ class TestScholarly(unittest.TestCase):
         """
         if self.connection_method != "tor":
             return
+
         if sys.platform.startswith("linux"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):

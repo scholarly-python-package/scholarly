@@ -184,10 +184,8 @@ class Navigator(object, metaclass=Singleton):
         timeout=self._TIMEOUT
         while tries < self._max_retries:
             try:
-                # this should not be required for Luminaty
-                if not self._use_luminaty:
-                    w = random.uniform(1,2)
-                    time.sleep(w)
+                w = random.uniform(1,2)
+                time.sleep(w)
                 resp = self._session.get(pagerequest, timeout=timeout)
                 has_captcha = self._requests_has_captcha(resp.text)
 
