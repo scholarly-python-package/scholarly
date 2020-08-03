@@ -8,3 +8,4 @@ stem
 fake_useragent
 selenium
 python-dotenv
+free-proxy
