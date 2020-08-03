@@ -53,12 +53,13 @@ class Navigator(object, metaclass=Singleton):
         self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
+        self._use_luminaty = False
         # If we have a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
         self._tor_control_port = None
         self._tor_password = None
-        self._TIMEOUT = 3
+        self._TIMEOUT = 5
         self._max_retries = 5
         self._session = None
         self._new_session()
@@ -183,6 +184,8 @@ class Navigator(object, metaclass=Singleton):
         timeout=self._TIMEOUT
         while tries < self._max_retries:
             try:
+                w = random.uniform(1,2)
+                time.sleep(w)
                 resp = self._session.get(pagerequest, timeout=timeout)
                 has_captcha = self._requests_has_captcha(resp.text)
 
@@ -199,9 +202,12 @@ class Navigator(object, metaclass=Singleton):
                         if not self.got_403:
                             self.logger.info("Retrying immediately with another session.")
                         else:
-                            w = random.uniform(60, 5*60)
-                            self.logger.info("Will retry after {w} seconds (with another session).")
-                            time.sleep(w)
+                            if not self._use_luminaty:
+                                w = random.uniform(60, 2*60)
+                                self.logger.info("Will retry after {} seconds (with another session).".format(w))
+                                time.sleep(w)
+                            else:
+                                self.logger.info("Using luminaty service retrying immediately")
                         self._new_session()
                         self.got_403 = True
                         
@@ -215,8 +221,8 @@ class Navigator(object, metaclass=Singleton):
             except DOSException:
                 if not self._can_refresh_tor and not self._proxy_gen:
                     self.logger.info("No other connections possible.")
-                    w = random.uniform(60, 5*60)
-                    self.logger.info("Will retry after {w} seconds (with the same session).")
+                    w = random.uniform(60, 2*60)
+                    self.logger.info("Will retry after {} seconds (with the same session).".format(w))
                     time.sleep(w)
                     continue
             except Timeout as e:
@@ -311,7 +317,8 @@ class Navigator(object, metaclass=Singleton):
         :returns: if the proxy works
         :rtype: {bool}
         """
-
+        # check if the proxy url contains luminaty
+        self._use_luminaty = (True if "lum" in http else False)
         if https is None:
             https = http
 

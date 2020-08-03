@@ -236,23 +236,39 @@ Here is an example using the [FreeProxy](https://pypi.org/project/free-proxy/) l
 from fp.fp import FreeProxy
 from scholarly import scholarly
 
-proxy = FreeProxy(rand=True, timeout=1, country_id=['US', 'CA']).get()  
-scholarly.use_proxy(http=proxy, https=proxy)
+def set_new_proxy():
+    while True:
+        proxy = FreeProxy(rand=True, timeout=1).get()
+        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
+        if proxy_works:
+            break
+    print("Working proxy:", proxy)
+    return proxy    
 
-author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
-```
+set_new_proxy()
 
-Or, if you have a Tor proxy available (say, running at port `9050` locally), then
+while True:
+    try:
+        search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
+        print("Got the results of the query")
+        break
+    except Exception as e:
+        print("Trying new proxy")
+        set_new_proxy() 
+    
+pub = next(search_query)
+print(pub)
 
-```python
-from scholarly import scholarly
-
-proxy = 'socks5://127.0.0.1:9050'
-scholarly.use_proxy(http=proxy, https=proxy)
-
-author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+while True:
+    try:
+        filled = pub.fill()
+        print("Filled the publication")
+        break
+    except Exception as e:
+        print("Trying new proxy")
+        set_new_proxy() 
+    
+print(filled)
 ```
 
 #### `scholarly.use_tor()`
@@ -295,10 +311,45 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
+#### `scholarly.use_lum_proxy()`
+If you have a luminaty proxy service, please refer to the environment setup for Luminaty below
+and simply call the following command before any function you want to execute.
 
+```python
+scholarly.use_lum_proxy()
+```
+## Setting up environment for Luminaty and/or Testing
+To run the `test_module.py` it is advised to create a `.env` file in the working directory of the `test_module.py` as:
 
+```bash
+touch .env
+```
+
+```bash
+nano .env # or any editor of your choice
+```
+
+Define the connection method for the Tests, among these options:
+- luminaty (if you have a luminaty proxy service)
+- freeproxy
+- tor
+- none (if you want a local connection, which is also the default value)
+
+ex.
+```bash
+CONNECTION_METHOD = luminaty
+```
+
+If using a luminaty proxy service please append the following to your `.env`:
+
+```bash
+USERNAME = <LUMINATY_USERNAME>
+PASSWORD = <LUMINATY_PASSWORD>
+PORT = <PORT_FOR_LUMINATY> 
+```
 ## Tests
 
+### Run the tests
 To run tests execute the `test_module.py` file as:
 
 ```bash
