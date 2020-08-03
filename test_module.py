@@ -17,6 +17,10 @@ def set_new_proxy():
 class TestScholarly(unittest.TestCase):
 
     def setUp(self):
+        if "CONNECTION_METHOD" in scholarly.env:
+            self.connection_method = os.getenv("CONNECTION_METHOD")
+        else:
+            self.connection_method = "none"
         if self.connection_method == "tor":
             print("Using tor")
             tor_sock_port = None
@@ -215,9 +219,4 @@ class TestScholarly(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    if "CONNECTION_METHOD" in scholarly.env:
-        TestScholarly.connection_method = os.getenv("CONNECTION_METHOD")
-    else:
-        TestScholarly.connection_method = "none"
-        
     unittest.main()
