@@ -33,7 +33,8 @@ setuptools.setup(
                       'fake_useragent',
                       'PySocks',
                       'selenium',
-                      'python-dotenv'
+                      'python-dotenv',
+                      'free-proxy',
                       ],
     test_suite="test_module.py"
 )
