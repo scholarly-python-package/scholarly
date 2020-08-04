@@ -43,20 +43,10 @@ class _Scholarly:
         :Example::
             scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
         """
-        required_variables = ["USERNAME", "PASSWORD", "PORT"]
-        if (usr != None and passwd != None and proxy_port != None):
-            username = usr
-            password = passwd
-            port = proxy_port 
-        elif all(var in self.env for var in required_variables): 
-            username = os.getenv("USERNAME") 
-            password = os.getenv("PASSWORD") 
-            port = os.getenv("PORT") 
-        else:
-            return
-        session_id = random.random()
-        proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-        self.use_proxy(http=proxy, https=proxy)
+        self.__nav.use_lum_proxy(usr,passwd, proxy_port)
+
+    def use_freeproxy(self):
+        self.__nav.set_new_freeproxy()
 
     def use_proxy(self, http: str, https: str = None):
         """Setups a proxy without refreshing capabilities.
@@ -93,7 +83,8 @@ class _Scholarly:
             scholarly.use_tor(9050, 9051, "scholarly_password")
 
         """
-        return self.__nav._setup_tor(tor_sock_port, tor_control_port, tor_pw)
+        return self.__nav.refresh_tor(tor_sock_port, tor_control_port, tor_pw)
+
 
     def launch_tor(self,
                    tor_path: str, tor_sock_port: int = None, tor_control_port: int = None):

@@ -35,20 +35,12 @@ class Singleton(type):
         return cls._instances[cls]
 
 class ProxyGenerator(object):
-    def __init__(self,
-                 launch_tor: bool=False, tor_cmd: str=None, tor_sock_port: str=None, tor_control_port: str=None,
-                 use_tor: bool = False, tor_password: str=None,
-                 use_freeproxy: bool=False,
-                 use_default: bool=False,
-                 use_luminaty: bool = False, lum_username: str=None, lum_password: str=None, lum_port: str=None,
-                 use_proxy: bool=False, http_proxy: str=None, https_proxy: str=None):
+    def __init__(self):
         
         # load environment variables
         load_dotenv(find_dotenv())
         self.env = os.environ.copy()
 
-        check = (launch_tor ^ use_tor ^ use_freeproxy ^ use_proxy ^ use_default ^ use_luminaty == 1)
-        assert check, "One and only one of launch_tor, use_tor, use_freeproxy, use_proxy can be True"
         # setting up logger 
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
@@ -62,24 +54,16 @@ class ProxyGenerator(object):
         self._can_refresh_tor = False
         self._tor_control_port = None
         self._tor_password = None
-
-        # set general info about the sessions
-        # self._TIMEOUT = 5
-        # self._max_retries = 5
         self._session = None
-        if (use_freeproxy):
-            self.set_new_freeproxy()
-        elif (launch_tor):
-            self._launch_tor(tor_cmd, tor_control_port, tor_control_port)
-        elif (use_luminaty):
-            self._use_lum_proxy(usr=lum_username,passwd=lum_password, proxy_port=lum_port)
-        elif (use_default): # no configuration available
-            self._new_session()
+        self._new_session()
 
     def __del__(self):
         if self._tor_process:
             self._tor_process.kill()
         self._close_session()
+
+    def get_session(self):
+        return self._session
 
     def _use_lum_proxy(self, usr = None , passwd = None, proxy_port = None ):
         """ Setups a luminaty proxy without refreshing capabilities.
@@ -145,11 +129,11 @@ class ProxyGenerator(object):
                     controller.authenticate()
                 controller.signal(Signal.NEWNYM)
                 self._new_session()
-            return True
+            return (True, self._session)
         except Exception as e:
             err = f"Exception {e} while refreshing TOR. Retrying..."
             self.logger.info(err)
-            return False
+            return (False, None)
 
     def _use_proxy(self, http: str, https: str = None) -> bool:
         """Allows user to set their own proxy for the connection session.
@@ -192,7 +176,7 @@ class ProxyGenerator(object):
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
         self._use_proxy(http=proxy, https=proxy)
 
-        self._can_refresh_tor = self._refresh_tor_id(tor_control_port, tor_password)
+        self._can_refresh_tor, _ = self._refresh_tor_id(tor_control_port, tor_password)
         if self._can_refresh_tor:
             self._tor_control_port = tor_control_port
             self._tor_password = tor_password
@@ -300,7 +284,7 @@ class ProxyGenerator(object):
 
         return self._webdriver
 
-    def _handle_captcha2(self, url, session):
+    def _handle_captcha2(self, url):
         cur_host = urlparse(self._get_webdriver().current_url).hostname
         for cookie in self._session.cookies:
             # Only set cookies matching the current domain, cf. https://github.com/w3c/webdriver/issues/1238
@@ -347,6 +331,8 @@ class ProxyGenerator(object):
             cookie.pop("expiry", None)
             self._session.cookies.set(**cookie)
 
+        return self._session
+
     def _new_session(self):
         proxies = {}
         if self._session:
@@ -366,6 +352,8 @@ class ProxyGenerator(object):
             self._session.proxies = proxies
         self._webdriver = None
 
+        return self._session
+
     def _close_session(self):
         if self._session:
             self._session.close()
@@ -378,3 +366,31 @@ class ProxyGenerator(object):
             proxy_works = self._use_proxy(http=proxy, https=proxy)
             if proxy_works:
                 break
+
+    def has_proxy(self)-> bool:
+        return self._proxy_gen or self._can_refresh_tor
+
+    def _set_proxy_generator(self, gen: Callable[..., str]) -> bool:
+        self._proxy_gen = gen
+        return True
+
+    def get_next_proxy(self, num_tries = None):
+        if self._can_refresh_tor:
+            # Check if Tor is running and refresh it
+            self.logger.info("Refreshing Tor ID...")
+            self._refresh_tor_id(self._tor_control_port, self._tor_password)
+            time.sleep(5) # wait for the refresh to happen
+            timeout=self._TIMEOUT # Reset timeout to default
+        elif self._proxy_gen:
+            if (num_tries):
+                self.logger.info(f"Try #{num_tries} failed. Switching proxy.") # TODO: add tries
+            # Try to get another proxy
+            new_proxy = self._proxy_gen()
+            while (not self._use_proxy(new_proxy)):
+                new_proxy = self._proxy_gen()
+            timeout=self._TIMEOUT # Reset timeout to default
+        else:
+            self._new_session()
+
+        return self._session
+
