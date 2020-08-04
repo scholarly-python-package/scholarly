@@ -6,3 +6,6 @@ requests[security]
 requests[socks]
 stem
 fake_useragent
+selenium
+python-dotenv
+free-proxy

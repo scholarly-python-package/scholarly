@@ -31,6 +31,10 @@ setuptools.setup(
                       'requests[socks]',
                       'stem',
                       'fake_useragent',
-                      'PySocks'],
+                      'PySocks',
+                      'selenium',
+                      'python-dotenv',
+                      'free-proxy',
+                      ],
     test_suite="test_module.py"
 )

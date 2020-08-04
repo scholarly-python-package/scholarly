@@ -58,5 +58,5 @@ then retrieve the titles of the papers that cite his most popular
     # Which papers cited that publication?
     print([citation.bib['title'] for citation in pub.get_citedby()])
 
-    # What is the bibtex of that publication?
+    # What is the Bibtex of that publication?
     print(pub.bibtex)

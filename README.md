@@ -129,7 +129,7 @@ If necessary to get more information for the publication object, we call the `.f
 
 #### `get_citedby`
 
-Searches GScholar for other articles that cite this Publication and returns a Publication generator.
+Searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
 
 #### `bibtex`
 
@@ -142,7 +142,7 @@ Here's a quick example:
 >>> pub.bibtex
 ```
 
-by running the code above you should get the following bibtext entry:
+by running the code above you should get the following Bibtex entry:
 
 ```bib
 @inproceedings{ester1996density,
@@ -278,7 +278,7 @@ This option assumes that you have access to a Tor server and a `torrc` file conf
 to have a control port configured with a password; this setup allows scholarly to refresh the Tor ID, 
 if scholarly runs into problems accessing Google Scholar. 
 
-If you want to install and use Tor, then instal it using the command 
+If you want to install and use Tor, then install it using the command 
 ```
 sudo apt-get install -y tor
 ```
@@ -300,7 +300,7 @@ print(author)
 #### `scholarly.launch_tor()`
 
 If you have Tor installed locally, this option allows scholarly to launch its own Tor process.
-You need to pass a pointer to the Tor executable in your syste,
+You need to pass a pointer to the Tor executable in your system,
 
 ```python
 from scholarly import scholarly
@@ -311,10 +311,45 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
+#### `scholarly.use_lum_proxy()`
+If you have a luminaty proxy service, please refer to the environment setup for Luminaty below
+and simply call the following command before any function you want to execute.
 
+```python
+scholarly.use_lum_proxy()
+```
+## Setting up environment for Luminaty and/or Testing
+To run the `test_module.py` it is advised to create a `.env` file in the working directory of the `test_module.py` as:
 
+```bash
+touch .env
+```
+
+```bash
+nano .env # or any editor of your choice
+```
+
+Define the connection method for the Tests, among these options:
+- luminaty (if you have a luminaty proxy service)
+- freeproxy
+- tor
+- none (if you want a local connection, which is also the default value)
+
+ex.
+```bash
+CONNECTION_METHOD = luminaty
+```
+
+If using a luminaty proxy service please append the following to your `.env`:
+
+```bash
+USERNAME = <LUMINATY_USERNAME>
+PASSWORD = <LUMINATY_PASSWORD>
+PORT = <PORT_FOR_LUMINATY> 
+```
 ## Tests
 
+### Run the tests
 To run tests execute the `test_module.py` file as:
 
 ```bash
