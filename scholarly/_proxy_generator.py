@@ -6,6 +6,7 @@ import time
 import requests
 import stem.process
 import tempfile
+import os 
 
 from requests.exceptions import Timeout
 from selenium import webdriver
@@ -18,6 +19,7 @@ from urllib.parse import urlparse
 from stem import Signal
 from stem.control import Controller
 from fake_useragent import UserAgent
+from dotenv import load_dotenv, find_dotenv
 
 class DOSException(Exception):
     """DOS attack was detected."""
@@ -37,8 +39,16 @@ class ProxyGenerator(object):
                  launch_tor: bool=False, tor_cmd: str=None, tor_sock_port: str=None, tor_control_port: str=None,
                  use_tor: bool = False, tor_password: str=None,
                  use_freeproxy: bool=False,
+                 use_default: bool=False,
+                 use_luminaty: bool = False, lum_username: str=None, lum_password: str=None, lum_port: str=None,
                  use_proxy: bool=False, http_proxy: str=None, https_proxy: str=None):
+        
+        # load environment variables
+        load_dotenv(find_dotenv())
+        self.env = os.environ.copy()
 
+        check = (launch_tor ^ use_tor ^ use_freeproxy ^ use_proxy ^ use_default ^ use_luminaty == 1)
+        assert check, "One and only one of launch_tor, use_tor, use_freeproxy, use_proxy can be True"
         # setting up logger 
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
@@ -56,15 +66,50 @@ class ProxyGenerator(object):
         # set general info about the sessions
         # self._TIMEOUT = 5
         # self._max_retries = 5
-        # self._session = None
-        # self._new_session()
+        self._session = None
         if (use_freeproxy):
             self.set_new_freeproxy()
-        # code imported by the other
+        elif (launch_tor):
+            self._launch_tor(tor_cmd, tor_control_port, tor_control_port)
+        elif (use_luminaty):
+            self._use_lum_proxy(usr=lum_username,passwd=lum_password, proxy_port=lum_port)
+        elif (use_default): # no configuration available
+            self._new_session()
+
     def __del__(self):
         if self._tor_process:
             self._tor_process.kill()
         self._close_session()
+
+    def _use_lum_proxy(self, usr = None , passwd = None, proxy_port = None ):
+        """ Setups a luminaty proxy without refreshing capabilities.
+        If a configuration isn't provided by the arguments (which requires all the arguments),
+        it searches for a configuration from environment variables.
+
+        :param usr: scholarly username, optional by default None
+        :type usr: string
+        :param passwd: scholarly password, optional by default None
+        :type passwd: string
+        :param proxy_port: port for the proxy,optional by default None
+        :type proxy_port: integer
+        
+        :Example::
+            scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
+        """
+        required_variables = ["USERNAME", "PASSWORD", "PORT"]
+        if (usr != None and passwd != None and proxy_port != None):
+            username = usr
+            password = passwd
+            port = proxy_port 
+        elif all(var in self.env for var in required_variables): 
+            username = os.getenv("USERNAME") 
+            password = os.getenv("PASSWORD") 
+            port = os.getenv("PORT") 
+        else:
+            return
+        session_id = random.random()
+        proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
+        self._use_proxy(http=proxy, https=proxy)
 
     def _check_proxy(self, proxies) -> bool:
         """Checks if a proxy is working.
