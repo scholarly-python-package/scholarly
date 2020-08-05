@@ -123,7 +123,6 @@ class ProxyGenerator(object):
         :returns: whether the proxy is working or not
         :rtype: {bool}
         """
-        self._reload()
         with requests.Session() as session:
             session.proxies = proxies
             try:
@@ -194,6 +193,7 @@ class ProxyGenerator(object):
         :param tor_password: the password for the Tor control server
         :type tor_password: str
         """
+        self._TIMEOUT = 10
 
         self._reload()
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
@@ -201,6 +201,7 @@ class ProxyGenerator(object):
 
         self._can_refresh_tor, _ = self._refresh_tor_id(tor_control_port, tor_password)
         if self._can_refresh_tor:
+            print("CAN REFRESH TOR!!!")
             self._tor_control_port = tor_control_port
             self._tor_password = tor_password
         else:
@@ -209,8 +210,6 @@ class ProxyGenerator(object):
 
         # Setting requests timeout to be reasonably long
         # to accommodate slowness of the Tor network
-        self._TIMEOUT = 10
-
         return {
             "proxy_works": self._proxy_works,
             "refresh_works": self._can_refresh_tor,
@@ -287,13 +286,15 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             # Redirect webdriver through proxy
-            webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
+            caps = DesiredCapabilities.FIREFOX.copy()
+            caps['proxy'] = {
                 "httpProxy": self._session.proxies['http'],
                 "ftpProxy": self._session.proxies['http'],
                 "sslProxy": self._session.proxies['https'],
                 "proxyType":"MANUAL",
             }
-            self._webdriver = webdriver.Firefox()
+            self._webdriver = webdriver.Firefox(desired_capabilities = caps)
+
         else:
             self._webdriver = webdriver.Firefox()
         self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
