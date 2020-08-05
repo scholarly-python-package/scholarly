@@ -55,6 +55,7 @@ class ProxyGenerator(object):
         self._tor_control_port = None
         self._tor_password = None
         self._session = None
+        self._TIMEOUT = 5
         self._new_session()
 
     def __del__(self):
@@ -65,7 +66,22 @@ class ProxyGenerator(object):
     def get_session(self):
         return self._session
 
-    def _use_lum_proxy(self, usr = None , passwd = None, proxy_port = None ):
+    def _reload(self):
+        if self._tor_process:
+            self._tor_process.kill()
+        self._close_session()
+
+        self._proxy_works = False
+        self._use_luminaty = False
+        # If we h:ve a Tor server that we can refresh, we set this to True
+        self._tor_process = None
+        self._can_refresh_tor = False
+        self._tor_control_port = None
+        self._tor_password = None
+        self._new_session()
+        self._TIMEOUT = 5
+
+    def Luminati(self, usr = None , passwd = None, proxy_port = None ):
         """ Setups a luminaty proxy without refreshing capabilities.
         If a configuration isn't provided by the arguments (which requires all the arguments),
         it searches for a configuration from environment variables.
@@ -80,6 +96,7 @@ class ProxyGenerator(object):
         :Example::
             scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
         """
+        self._reload()
         required_variables = ["USERNAME", "PASSWORD", "PORT"]
         if (usr != None and passwd != None and proxy_port != None):
             username = usr
@@ -95,6 +112,10 @@ class ProxyGenerator(object):
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
         self._use_proxy(http=proxy, https=proxy)
 
+    def SingleProxy(self, http = None, https = None):
+        self._reload()
+        self._use_proxy(http=http,https=https)
+
     def _check_proxy(self, proxies) -> bool:
         """Checks if a proxy is working.
         :param proxies: A dictionary {'http': url1, 'https': url1}
@@ -102,6 +123,7 @@ class ProxyGenerator(object):
         :returns: whether the proxy is working or not
         :rtype: {bool}
         """
+        self._reload()
         with requests.Session() as session:
             session.proxies = proxies
             try:
@@ -161,7 +183,7 @@ class ProxyGenerator(object):
             self.logger.info(f"Proxy {http} does not seem to work.")
         return self._proxy_works
 
-    def _setup_tor(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
+    def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
         """
         Setting up Tor Proxy
 
@@ -173,6 +195,7 @@ class ProxyGenerator(object):
         :type tor_password: str
         """
 
+        self._reload()
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
         self._use_proxy(http=proxy, https=proxy)
 
@@ -195,10 +218,11 @@ class ProxyGenerator(object):
             "tor_sock_port": tor_sock_port
         }
 
-    def _launch_tor(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
+    def Tor_Internal(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
         '''
         Starts a Tor client running in a scholarly-specific port, together with a scholarly-specific control port.
         '''
+        self._reload()
         self.logger.info("Attempting to start owned Tor as the proxy")
 
         if tor_cmd is None:
@@ -231,7 +255,7 @@ class ProxyGenerator(object):
             },
             # take_ownership=True # Taking this out for now, as it seems to cause trouble
         )
-        return self._setup_tor(tor_sock_port, tor_control_port, tor_password=None)
+        return self.Tor_External(tor_sock_port, tor_control_port, tor_password=None)
 
     def _has_captcha(self, got_id, got_class) -> bool:
         _CAPTCHA_IDS = [
@@ -263,14 +287,13 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             # Redirect webdriver through proxy
-            caps = DesiredCapabilities.FIREFOX.copy()
-            caps['proxy'] = {
+            webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
                 "httpProxy": self._session.proxies['http'],
                 "ftpProxy": self._session.proxies['http'],
                 "sslProxy": self._session.proxies['https'],
                 "proxyType":"MANUAL",
             }
-            self._webdriver = webdriver.Firefox(desired_capabilities = caps)
+            self._webdriver = webdriver.Firefox()
         else:
             self._webdriver = webdriver.Firefox()
         self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
@@ -360,7 +383,8 @@ class ProxyGenerator(object):
         if self._webdriver:
             self._webdriver.quit()
     
-    def set_new_freeproxy(self):
+    def FreeProxies(self):
+        self._reload()
         while True:
             proxy = FreeProxy(rand=True, timeout=1).get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)

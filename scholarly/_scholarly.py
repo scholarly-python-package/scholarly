@@ -4,6 +4,7 @@ import random
 import os
 from typing import Callable
 from ._navigator import Navigator
+from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
@@ -28,84 +29,9 @@ class _Scholarly:
 
         return self.__nav._set_retries(num_retries)
 
-    def use_lum_proxy(self, usr = None , passwd = None, proxy_port = None ):
-        """ Setups a luminaty proxy without refreshing capabilities.
-        If a configuration isn't provided by the arguments (which requires all the arguments),
-        it searches for a configuration from environment variables.
 
-        :param usr: scholarly username, optional by default None
-        :type usr: string
-        :param passwd: scholarly password, optional by default None
-        :type passwd: string
-        :param proxy_port: port for the proxy,optional by default None
-        :type proxy_port: integer
-        
-        :Example::
-            scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
-        """
-        self.__nav.use_lum_proxy(usr,passwd, proxy_port)
-
-    def use_freeproxy(self):
-        self.__nav.set_new_freeproxy()
-
-    def use_proxy(self, http: str, https: str = None):
-        """Setups a proxy without refreshing capabilities.
-
-        :param http: the http proxy address
-        :type http: str
-        :param https: the https proxy (default to the same as http)
-        :type https: str
-        """
-
-        return self.__nav._use_proxy(http, https)
-
-    def set_proxy_generator(self, gen: Callable[..., str]):
-        """Setups a function that generates new proxies on demand.
-
-        :param gen: the function to call to obtain a new proxy
-        """
-
-        return self.__nav._set_proxy_generator(gen)
-
-    def use_tor(self, tor_sock_port: int, tor_control_port: int, tor_pw: str):
-        """[summary]
-
-        [description]
-        :param tor_sock_port: Tor sock proxy port.
-        :type tor_sock_port: int
-        :param tor_control_port: Tor controller port.
-        :type tor_control_port: int
-        :param tor_pw: Tor controller password
-        :type tor_pw: str
-
-        :Example::
-
-            scholarly.use_tor(9050, 9051, "scholarly_password")
-
-        """
-        return self.__nav.refresh_tor(tor_sock_port, tor_control_port, tor_pw)
-
-
-    def launch_tor(self,
-                   tor_path: str, tor_sock_port: int = None, tor_control_port: int = None):
-        """
-        Launches a temporary Tor connector to be used by scholarly.
-
-        This method requires the absolute path to a Tor executable file,
-        or that the executable is in the PATH.
-
-        :param tor_path: Absolute path to the local Tor binary
-        :type tor_path: str
-        :param tor_sock_port: Tor sock proxy port.
-        :type tor_sock_port: int
-        :param tor_control_port: Tor controller port.
-        :type tor_control_port: int
-
-        :Example::
-
-            scholarly.launch_tor('/usr/bin/tor')
-        """
-        return self.__nav._launch_tor(tor_path, tor_sock_port, tor_control_port)
+    def use_proxy(self, proxy_generator: ProxyGenerator):
+        self.__nav.use_proxy(proxy_generator)
 
     def search_pubs(self,
                     query: str, patents: bool = True,

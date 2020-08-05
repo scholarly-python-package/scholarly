@@ -2,17 +2,17 @@ import unittest
 import argparse
 import os
 import sys
-from scholarly import scholarly
+from scholarly import scholarly, proxy_generator
 import random
 from fp.fp import FreeProxy
 
-def set_new_proxy():
-    while True:
-        proxy = FreeProxy(rand=True, timeout=1).get()
-        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
-        if proxy_works:
-            break
-    return proxy    
+# def set_new_proxy():
+#     while True:
+#         proxy = FreeProxy(rand=True, timeout=1).get()
+#         proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
+#         if proxy_works:
+#             break
+#     return proxy    
 
 class TestScholarly(unittest.TestCase):
 
@@ -22,7 +22,6 @@ class TestScholarly(unittest.TestCase):
         else:
             self.connection_method = "none"
         if self.connection_method == "tor":
-            print("Using tor")
             tor_sock_port = None
             tor_control_port = None
             tor_password = "scholarly_password"
@@ -34,12 +33,24 @@ class TestScholarly(unittest.TestCase):
             elif sys.platform.startswith("win"):
                 tor_sock_port = 9150
                 tor_control_port = 9151
-            scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
+            proxy_generator.Tor_External(tor_sock_port,tor_control_port,tor_password)
+            scholarly.use_proxy(proxy_generator)
 
+        elif self.connection_method == "tor_internal":
+            if sys.platform.startswith("linux"):
+                tor_cmd = 'tor'
+            elif sys.platform.startswith("win"):
+                tor_cmd = 'tor.exe'
+            proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
+            scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "luminaty":
-            scholarly.use_lum_proxy()
+            proxy_generator.Luminati()
+            scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "freeproxy":
-            set_new_proxy()
+            proxy_generator.FreeProxies()
+            scholarly.use_proxy(proxy_generator)
+        else:
+            scholarly.use_proxy(None)
 
     def test_tor_launch_own_process(self):
         """
@@ -56,13 +67,14 @@ class TestScholarly(unittest.TestCase):
         tor_sock_port = random.randrange(9000, 9500)
         tor_control_port = random.randrange(9500, 9999)
 
-        result = scholarly.launch_tor(tor_cmd, tor_sock_port, tor_control_port)
+        result = proxy_generator.Tor_Internal(tor_cmd, tor_sock_port, tor_control_port)
         self.assertTrue(result["proxy_works"])
         self.assertTrue(result["refresh_works"])
         self.assertEqual(result["tor_control_port"], tor_control_port)
         self.assertEqual(result["tor_sock_port"], tor_sock_port)
         # Check that we can issue a query as well
         query = 'Ipeirotis'
+        scholarly.use_proxy(proxy_generator)
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
 
