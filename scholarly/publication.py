@@ -11,6 +11,7 @@ _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
 _BIBCITE = '/scholar?q=info:{0}:scholar.google.com/\
 &output=cite&scirp={1}&hl=en'
+_CITEDBYLINK = '/scholar?cites={0}'
 
 
 class _SearchScholarIterator(object):
@@ -233,9 +234,9 @@ class Publication(object):
                         abstract = val.find(class_='gsh_small')
                     self.bib['abstract'] = abstract.text
                 elif key == 'total citations':
-                    self.bib['cites'] = re.findall(
+                    self.bib['cites_id'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
-
+                    self.citations_link = _CITEDBYLINK.format(self.bib['cites_id'])
             # number of citation per year
             years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
