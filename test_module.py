@@ -2,7 +2,7 @@ import unittest
 import argparse
 import os
 import sys
-from scholarly import scholarly, proxy_generator
+from scholarly import scholarly, ProxyGenerator 
 import random
 from fp.fp import FreeProxy
 
@@ -17,6 +17,7 @@ from fp.fp import FreeProxy
 class TestScholarly(unittest.TestCase):
 
     def setUp(self):
+        proxy_generator = ProxyGenerator()
         if "CONNECTION_METHOD" in scholarly.env:
             self.connection_method = os.getenv("CONNECTION_METHOD")
         else:
@@ -56,9 +57,7 @@ class TestScholarly(unittest.TestCase):
         """
         Test that we can launch a Tor process
         """
-        if self.connection_method != "tor":
-            return
-
+        proxy_generator = ProxyGenerator()
         if sys.platform.startswith("linux"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):

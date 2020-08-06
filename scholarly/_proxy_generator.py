@@ -61,25 +61,11 @@ class ProxyGenerator(object):
     def __del__(self):
         if self._tor_process:
             self._tor_process.kill()
+            self._tor_process.wait()
         self._close_session()
 
     def get_session(self):
         return self._session
-
-    def _reload(self):
-        if self._tor_process:
-            self._tor_process.kill()
-        self._close_session()
-
-        self._proxy_works = False
-        self._use_luminaty = False
-        # If we h:ve a Tor server that we can refresh, we set this to True
-        self._tor_process = None
-        self._can_refresh_tor = False
-        self._tor_control_port = None
-        self._tor_password = None
-        self._new_session()
-        self._TIMEOUT = 5
 
     def Luminati(self, usr = None , passwd = None, proxy_port = None ):
         """ Setups a luminaty proxy without refreshing capabilities.
@@ -96,7 +82,6 @@ class ProxyGenerator(object):
         :Example::
             scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
         """
-        self._reload()
         required_variables = ["USERNAME", "PASSWORD", "PORT"]
         if (usr != None and passwd != None and proxy_port != None):
             username = usr
@@ -113,7 +98,6 @@ class ProxyGenerator(object):
         self._use_proxy(http=proxy, https=proxy)
 
     def SingleProxy(self, http = None, https = None):
-        self._reload()
         self._use_proxy(http=http,https=https)
 
     def _check_proxy(self, proxies) -> bool:
@@ -195,13 +179,11 @@ class ProxyGenerator(object):
         """
         self._TIMEOUT = 10
 
-        self._reload()
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
         self._use_proxy(http=proxy, https=proxy)
 
         self._can_refresh_tor, _ = self._refresh_tor_id(tor_control_port, tor_password)
         if self._can_refresh_tor:
-            print("CAN REFRESH TOR!!!")
             self._tor_control_port = tor_control_port
             self._tor_password = tor_password
         else:
@@ -221,7 +203,6 @@ class ProxyGenerator(object):
         '''
         Starts a Tor client running in a scholarly-specific port, together with a scholarly-specific control port.
         '''
-        self._reload()
         self.logger.info("Attempting to start owned Tor as the proxy")
 
         if tor_cmd is None:
@@ -385,7 +366,6 @@ class ProxyGenerator(object):
             self._webdriver.quit()
     
     def FreeProxies(self):
-        self._reload()
         while True:
             proxy = FreeProxy(rand=True, timeout=1).get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)
