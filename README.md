@@ -295,52 +295,40 @@ working towards making scholarly more robust towards that front.
 
 The most common solution for avoiding network issues is to use proxies and Tor.
 
-The following options are available:
+There is a class in the scholarly library, which handles all these different types of connections for you, called `ProxyGenerator`.
 
-#### `scholarly.use_proxy`
-
-Here is an example using the [FreeProxy](https://pypi.org/project/free-proxy/) library
+To use this class simply import it from the scholarly package:
+```python
+from scholarly import ProxyGenerator
+```
+Then you need to initialize an object:
 
 ```python
-from fp.fp import FreeProxy
-from scholarly import scholarly
+pg = ProxyGenerator()
+```
+Select the desirered connection type from the following options that come from the ProxyGenerator class:
+- Tor_Internal()
+- Tor_External()
+- Luminati()
+- FreeProxies()
+- SingleProxy()
+Example: 
 
-def set_new_proxy():
-    while True:
-        proxy = FreeProxy(rand=True, timeout=1).get()
-        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
-        if proxy_works:
-            break
-    print("Working proxy:", proxy)
-    return proxy
+```python
+pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+```
+Finally set scholarly to use this proxy for your actions
 
-set_new_proxy()
-
-while True:
-    try:
-        search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
-        print("Got the results of the query")
-        break
-    except Exception as e:
-        print("Trying new proxy")
-        set_new_proxy()
-
-pub = next(search_query)
-print(pub)
-
-while True:
-    try:
-        filled = pub.fill()
-        print("Filled the publication")
-        break
-    except Exception as e:
-        print("Trying new proxy")
-        set_new_proxy()
-
-print(filled)
+if you want to use one of the above methods:
+```python
+scholarly.use_proxy(pg)
+```
+or if you want to run it without any proxy:
+```python
+scholarly.use_proxy(None)
 ```
 
-#### `scholarly.use_tor()`
+#### `pg.Tor_External(tor_sock_port: int, tor_control_port: int, tor_password: str)`
 
 This option assumes that you have access to a Tor server and a `torrc` file configuring the Tor server
 to have a control port configured with a password; this setup allows scholarly to refresh the Tor ID,
@@ -352,42 +340,85 @@ If you want to install and use Tor, then install it using the command
 sudo apt-get install -y tor
 ```
 
+
 See [setup_tor.sh](https://github.com/scholarly-python-package/scholarly/blob/master/setup_tor.sh)
 on how to setup a minimal, working `torrc` and set the password for the control server. (Note:
 the script uses `scholarly_password` as the default password, but you may want to change it for your
 installation.)
 
 ```python
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
 
-scholarly.use_tor(tor_sock_port=9050, tor_control_port=9051, tor_pw="scholarly_password")
+pg = ProxyGenerator()
+pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
+scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-#### `scholarly.launch_tor()`
+#### `pg.Tor_internal(tor_cmd=None, tor_sock_port=None, tor_control_port=None)`
 
 If you have Tor installed locally, this option allows scholarly to launch its own Tor process.
-You need to pass a pointer to the Tor executable in your system,
+You need to pass a pointer to the Tor executable in your system.
 
 ```python
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
 
-scholarly.launch_tor('/usr/bin/tor',9030,9031)
+pg = ProxyGenerator()
+pg.Tor_Intenal(tor_cmd = "tor)
+scholarly.use_proxy(pg)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+#### `pg.FreeProxy()`
+This uses the `free-proxy` pip library to add a proxy to your configuration.
+
+```python
+from scholarly import scholarly, ProxyGenerator
+
+pg = ProxyGenerator()
+pg.FreeProxy()
+scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-#### `scholarly.use_lum_proxy()`
+#### `pg.Luminaty()`
 
 If you have a luminaty proxy service, please refer to the environment setup for Luminaty below
 and simply call the following command before any function you want to execute.
 
 ```python
-scholarly.use_lum_proxy()
+from scholarly import scholarly, ProxyGenerator
+
+pg = ProxyGenerator()
+pg.Luminaty()
+scholarly.use_proxy(pg)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
 ```
+
+#### `pg.SingleProxy(http: str, https:str)`
+
+If you want to use a proxy of your choice, feel free to use this option.
+
+
+```python
+from scholarly import scholarly, ProxyGenerator
+
+pg = ProxyGenerator()
+pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+scholarly.use_proxy(pg)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+**NOTE:** Please create a new object whenever you change proxy method, as this can lead to unexpected behavior.
 
 ## Setting up environment for Luminaty and/or Testing
 
@@ -406,6 +437,7 @@ Define the connection method for the Tests, among these options:
 - luminaty (if you have a luminaty proxy service)
 - freeproxy
 - tor
+- tor_internal
 - none (if you want a local connection, which is also the default value)
 
 ex.
