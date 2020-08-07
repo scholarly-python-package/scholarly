@@ -52,7 +52,7 @@ pub = author.publications[0].fill()
 print(pub)
 
 # Which papers cited that publication?
-print([citation.bib['title'] for citation in pub.get_citedby()])
+print([citation.bib['title'] for citation in pub.citedby])
 ```
 
 ## Methods for `scholar`
