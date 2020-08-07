@@ -80,7 +80,8 @@ class ProxyGenerator(object):
         :type proxy_port: integer
         
         :Example::
-            scholarly.use_lum_proxy(usr = foo, passwd = bar, port = 1200)
+            pg = ProxyGenerator()
+            pg.Luminati(usr = foo, passwd = bar, port = 1200)
         """
         required_variables = ["USERNAME", "PASSWORD", "PORT"]
         if (usr != None and passwd != None and proxy_port != None):
@@ -98,6 +99,17 @@ class ProxyGenerator(object):
         self._use_proxy(http=proxy, https=proxy)
 
     def SingleProxy(self, http = None, https = None):
+        """
+        Use proxy of your choice
+        :param http: http proxy address
+        type http: string
+        :param https: https proxy adress 
+        :type https: string
+
+        :Example::
+            pg = ProxyGenerator()
+            pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+        """
         self._use_proxy(http=http,https=https)
 
     def _check_proxy(self, proxies) -> bool:
@@ -168,7 +180,7 @@ class ProxyGenerator(object):
 
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
         """
-        Setting up Tor Proxy
+        Setting up Tor Proxy. A tor service should be already running on the system. Otherwise you might want to use Tor_Internal
 
         :param tor_sock_port: the port where the Tor sock proxy is running
         :type tor_sock_port: int
@@ -176,6 +188,10 @@ class ProxyGenerator(object):
         :type tor_control_port: int
         :param tor_password: the password for the Tor control server
         :type tor_password: str
+    
+        :Example::
+            pg = ProxyGenerator()
+            pg.Tor_External(tor_sock_port = 9050, tor_control_port = 9051, tor_password = "scholarly_password")
         """
         self._TIMEOUT = 10
 
@@ -202,6 +218,19 @@ class ProxyGenerator(object):
     def Tor_Internal(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
         '''
         Starts a Tor client running in a scholarly-specific port, together with a scholarly-specific control port.
+        If no arguments are passed for the tor_sock_port and the tor_control_port they are automatically generated in the following ranges
+        - tor_sock_port: (9000, 9500)
+        - tor_control_port: (9500, 9999)
+        :param tor_cmd: tor executable location (absolute path if its not exported in PATH)
+        :type tor_cmd: string
+        :param tor_sock_port: tor socket port 
+        :type tor_sock_port: int
+        :param tor_control_port: tor control port
+        :type tor_control_port: int
+
+        :Example::
+            pg = ProxyGenerator()
+            pg.Tor_Internal(tor_cmd = 'tor')
         '''
         self.logger.info("Attempting to start owned Tor as the proxy")
 
@@ -366,6 +395,13 @@ class ProxyGenerator(object):
             self._webdriver.quit()
     
     def FreeProxies(self):
+        """
+        Sets up a proxy from the free-proxy library
+
+        :Example::
+            pg = ProxyGenerator()
+            pg.FreeProxies()
+        """
         while True:
             proxy = FreeProxy(rand=True, timeout=1).get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)
