@@ -206,7 +206,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in results]
         self.assertGreaterEqual(len(pubs), 1)
         f = pubs[0].fill()
-        self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S'])
+        self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
         self.assertTrue(f.bib['journal'] == u'Journal of vision')
         self.assertTrue(f.bib['number'] == u'9')
         self.assertTrue(f.bib['pages'] == u'1--1')
