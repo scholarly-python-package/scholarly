@@ -96,7 +96,7 @@ class _Scholarly:
         return self.__nav._setup_tor(tor_sock_port, tor_control_port, tor_pw)
 
     def launch_tor(self,
-                   tor_path: str, tor_sock_port: int, tor_control_port: int):
+                   tor_path: str, tor_sock_port: int = None, tor_control_port: int = None):
         """
         Launches a temporary Tor connector to be used by scholarly.
 
