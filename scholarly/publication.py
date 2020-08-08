@@ -4,6 +4,7 @@ import arrow
 import pprint
 from bibtexparser.bibdatabase import BibDatabase
 
+
 _HOST = 'https://scholar.google.com{0}'
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
@@ -249,7 +250,8 @@ class Publication(object):
         elif self.source == 'scholar':
             bibtex_url = self._get_bibtex(self.url_scholarbib)
             bibtex = self.nav._get_page(bibtex_url)
-            self.bib.update(bibtexparser.loads(bibtex).entries[0])
+            parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+            self.bib.update(bibtexparser.loads(bibtex,parser).entries[-1])
             self._filled = True
         return self
 

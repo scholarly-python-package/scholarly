@@ -202,18 +202,19 @@ class TestScholarly(unittest.TestCase):
          from the search publication snippets.
         '''
         query = 'Creating correct blur and its effect on accommodation'
-        pubs = [p for p in scholarly.search_pubs(query)]
+        results = scholarly.search_pubs(query)
+        pubs = [p for p in results]
         self.assertGreaterEqual(len(pubs), 1)
-        filled = pubs[0].fill()
-        self.assertTrue(filled.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
-        self.assertTrue(filled.bib['journal'] == u'Journal of vision')
-        self.assertTrue(filled.bib['number'] == u'9')
-        self.assertTrue(filled.bib['pages'] == u'1--1')
-        self.assertTrue(filled.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
-        self.assertTrue(filled.bib['title'] == u'Creating correct blur and its effect on accommodation')
-        self.assertTrue(filled.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
-        self.assertTrue(filled.bib['volume'] == u'18')
-        self.assertTrue(filled.bib['year'] == u'2018')
+        f = pubs[0].fill()
+        self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S'])
+        self.assertTrue(f.bib['journal'] == u'Journal of vision')
+        self.assertTrue(f.bib['number'] == u'9')
+        self.assertTrue(f.bib['pages'] == u'1--1')
+        self.assertTrue(f.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
+        self.assertTrue(f.bib['title'] == u'Creating correct blur and its effect on accommodation')
+        self.assertTrue(f.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(f.bib['volume'] == u'18')
+        self.assertTrue(f.bib['year'] == u'2018')
 
 
 
