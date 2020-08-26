@@ -286,17 +286,14 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             # Redirect webdriver through proxy
-            caps = DesiredCapabilities.FIREFOX.copy()
-            caps['proxy'] = {
+            webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
                 "httpProxy": self._session.proxies['http'],
                 "ftpProxy": self._session.proxies['http'],
                 "sslProxy": self._session.proxies['https'],
                 "proxyType":"MANUAL",
             }
-            self._webdriver = webdriver.Firefox(desired_capabilities = caps)
-
-        else:
-            self._webdriver = webdriver.Firefox()
+        
+        self._webdriver = webdriver.Firefox()
         self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
 
         # It might make sense to (pre)set cookies as well, e.g., to set a GSP ID.

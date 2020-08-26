@@ -366,7 +366,7 @@ You need to pass a pointer to the Tor executable in your system.
 from scholarly import scholarly, ProxyGenerator
 
 pg = ProxyGenerator()
-pg.Tor_Intenal(tor_cmd = "tor)
+pg.Tor_Intenal(tor_cmd = "tor")
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
