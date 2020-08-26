@@ -386,22 +386,35 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-#### `pg.Luminaty()`
+#### `pg.Luminati()`
 
-If you have a luminaty proxy service, please refer to the environment setup for Luminaty below
+If you have a luminati proxy service, please refer to the environment setup for Luminati below
 and simply call the following command before any function you want to execute.
 
 ```python
 from scholarly import scholarly, ProxyGenerator
 
 pg = ProxyGenerator()
-pg.Luminaty()
+```
+
+You can use your own configuration
+```python
+pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
+```
+
+Or alternatively you can use the environment variables set in your .env file
+
+```python
+import os
+pg.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
+```
+
+```python
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
-
 #### `pg.SingleProxy(http: str, https:str)`
 
 If you want to use a proxy of your choice, feel free to use this option.
@@ -420,7 +433,7 @@ print(author)
 
 **NOTE:** Please create a new object whenever you change proxy method, as this can lead to unexpected behavior.
 
-## Setting up environment for Luminaty and/or Testing
+## Setting up environment for Luminati and/or Testing
 
 To run the `test_module.py` it is advised to create a `.env` file in the working directory of the `test_module.py` as:
 
@@ -434,7 +447,7 @@ nano .env # or any editor of your choice
 
 Define the connection method for the Tests, among these options:
 
-- luminaty (if you have a luminaty proxy service)
+- luminati (if you have a luminati proxy service)
 - freeproxy
 - tor
 - tor_internal
@@ -443,15 +456,15 @@ Define the connection method for the Tests, among these options:
 ex.
 
 ```bash
-CONNECTION_METHOD = luminaty
+CONNECTION_METHOD = luminati
 ```
 
-If using a luminaty proxy service please append the following to your `.env`:
+If using a luminati proxy service please append the following to your `.env`:
 
 ```bash
-USERNAME = <LUMINATY_USERNAME>
-PASSWORD = <LUMINATY_PASSWORD>
-PORT = <PORT_FOR_LUMINATY>
+USERNAME = <LUMINATI_USERNAME>
+PASSWORD = <LUMINATI_PASSWORD>
+PORT = <PORT_FOR_LUMINATI>
 ```
 
 ## Tests

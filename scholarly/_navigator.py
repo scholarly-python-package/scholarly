@@ -140,8 +140,7 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Retrying with a new session.")
 
             tries += 1
-            # TODO: extract this to a proxy_generator method
-            self._session = self.pm.get_next_proxy(num_tries = tries)
+            self._session, timeout = self.pm.get_next_proxy(num_tries = tries, old_timeout = timeout)
         raise Exception("Cannot fetch the page from Google Scholar.")
 
 

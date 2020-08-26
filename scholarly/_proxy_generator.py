@@ -36,10 +36,6 @@ class Singleton(type):
 
 class ProxyGenerator(object):
     def __init__(self):
-        
-        # load environment variables
-        load_dotenv(find_dotenv())
-        self.env = os.environ.copy()
 
         # setting up logger 
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
@@ -48,7 +44,7 @@ class ProxyGenerator(object):
         self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
-        self._use_luminaty = False
+        self._use_luminati = False
         # If we h:ve a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
@@ -67,10 +63,8 @@ class ProxyGenerator(object):
     def get_session(self):
         return self._session
 
-    def Luminati(self, usr = None , passwd = None, proxy_port = None ):
-        """ Setups a luminaty proxy without refreshing capabilities.
-        If a configuration isn't provided by the arguments (which requires all the arguments),
-        it searches for a configuration from environment variables.
+    def Luminati(self, usr , passwd, proxy_port):
+        """ Setups a luminati proxy without refreshing capabilities.
 
         :param usr: scholarly username, optional by default None
         :type usr: string
@@ -83,16 +77,12 @@ class ProxyGenerator(object):
             pg = ProxyGenerator()
             pg.Luminati(usr = foo, passwd = bar, port = 1200)
         """
-        required_variables = ["USERNAME", "PASSWORD", "PORT"]
         if (usr != None and passwd != None and proxy_port != None):
             username = usr
             password = passwd
             port = proxy_port 
-        elif all(var in self.env for var in required_variables): 
-            username = os.getenv("USERNAME") 
-            password = os.getenv("PASSWORD") 
-            port = os.getenv("PORT") 
         else:
+            self.logger.info("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
             return
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
@@ -163,8 +153,8 @@ class ProxyGenerator(object):
         :returns: if the proxy works
         :rtype: {bool}
         """
-        # check if the proxy url contains luminaty
-        self._use_luminaty = (True if "lum" in http else False)
+        # check if the proxy url contains luminati
+        self._use_luminati = (True if "lum" in http else False)
         if https is None:
             https = http
 
@@ -415,13 +405,14 @@ class ProxyGenerator(object):
         self._proxy_gen = gen
         return True
 
-    def get_next_proxy(self, num_tries = None):
+    def get_next_proxy(self, num_tries = None, old_timeout = 3):
+        new_timeout = old_timeout
         if self._can_refresh_tor:
             # Check if Tor is running and refresh it
             self.logger.info("Refreshing Tor ID...")
             self._refresh_tor_id(self._tor_control_port, self._tor_password)
             time.sleep(5) # wait for the refresh to happen
-            timeout=self._TIMEOUT # Reset timeout to default
+            new_timeout = self._TIMEOUT # Reset timeout to default
         elif self._proxy_gen:
             if (num_tries):
                 self.logger.info(f"Try #{num_tries} failed. Switching proxy.") # TODO: add tries
@@ -429,9 +420,9 @@ class ProxyGenerator(object):
             new_proxy = self._proxy_gen()
             while (not self._use_proxy(new_proxy)):
                 new_proxy = self._proxy_gen()
-            timeout=self._TIMEOUT # Reset timeout to default
+            new_timeout = self._TIMEOUT # Reset timeout to default
         else:
             self._new_session()
 
-        return self._session
+        return self._session, new_timeout
 
