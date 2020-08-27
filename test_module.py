@@ -148,7 +148,9 @@ class TestScholarly(unittest.TestCase):
         author = authors[0].fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')        
-        
+        pub = author.publications[2].fill()
+        self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:ufrVoPGSRksC')
+
     def test_search_author_multiple_authors(self):
         """
         As of May 12, 2020 there are at least 24 'Cattanis's listed as authors
