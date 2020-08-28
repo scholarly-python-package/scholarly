@@ -202,12 +202,9 @@ class Navigator(object, metaclass=Singleton):
                         if not self.got_403:
                             self.logger.info("Retrying immediately with another session.")
                         else:
-                            if not self._use_luminaty:
-                                w = random.uniform(60, 2*60)
-                                self.logger.info("Will retry after {} seconds (with another session).".format(w))
-                                time.sleep(w)
-                            else:
-                                self.logger.info("Using luminaty service retrying immediately")
+                            w = random.uniform(60, 2*60)
+                            self.logger.info("Will retry after {} seconds (with another session).".format(w))
+                            time.sleep(w)
                         self._new_session()
                         self.got_403 = True
                         

@@ -4,6 +4,7 @@ import arrow
 import pprint
 from bibtexparser.bibdatabase import BibDatabase
 
+
 _HOST = 'https://scholar.google.com{0}'
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
@@ -227,12 +228,25 @@ class Publication(object):
                                 'YYYY/MM/D']
                     self.bib['year'] = arrow.get(val.text, patterns).year
                 elif key == 'description':
-                    if val.text[0:8].lower() == 'abstract':
-                        val = val.text[9:].strip()
-                    abstract = val.find(class_='gsh_csp')
-                    if abstract is None:
+                    # try to find all the gsh_csp if they exist
+                    abstract = val.find_all(class_='gsh_csp')
+                    result = ""
+                    
+                    # append all gsh_csp together as there can be multiple in certain scenarios
+                    for item in abstract:
+                        if item.text[0:8].lower() == 'abstract':
+                            result += item.text[9:].strip()
+                        else:
+                            result += item.text
+                    
+                    if len(abstract) == 0: # if no gsh_csp were found 
                         abstract = val.find(class_='gsh_small')
-                    self.bib['abstract'] = abstract.text
+                        if abstract.text[0:8].lower() == 'abstract':
+                            result = abstract.text[9:].strip()
+                        else:
+                            result = abstract.text
+
+                    self.bib['abstract'] = result
                 elif key == 'total citations':
                     self.bib['cites_id'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
@@ -249,7 +263,8 @@ class Publication(object):
         elif self.source == 'scholar':
             bibtex_url = self._get_bibtex(self.url_scholarbib)
             bibtex = self.nav._get_page(bibtex_url)
-            self.bib.update(bibtexparser.loads(bibtex).entries[0])
+            parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+            self.bib.update(bibtexparser.loads(bibtex,parser).entries[-1])
             self._filled = True
         return self
 
