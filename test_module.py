@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 from scholarly import scholarly
+from scholarly.publication import Publication
 import random
 from fp.fp import FreeProxy
 
@@ -12,7 +13,7 @@ def set_new_proxy():
         proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
         if proxy_works:
             break
-    return proxy    
+    return proxy
 
 class TestScholarly(unittest.TestCase):
 
@@ -91,7 +92,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-    
+
     def test_search_author_filling_author_publications(self):
          """
          Download a few publications for author and check that abstracts are
@@ -147,7 +148,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 1)
         author = authors[0].fill()
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
-        self.assertEqual(author.id, u'4bahYMkAAAAJ')        
+        self.assertEqual(author.id, u'4bahYMkAAAAJ')
         pub = author.publications[2].fill()
         self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:ufrVoPGSRksC')
 
@@ -209,6 +210,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(pubs), 1)
         f = pubs[0].fill()
         self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(f.bib['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
         self.assertTrue(f.bib['journal'] == u'Journal of vision')
         self.assertTrue(f.bib['number'] == u'9')
         self.assertTrue(f.bib['pages'] == u'1--1')
@@ -218,7 +220,26 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f.bib['volume'] == u'18')
         self.assertTrue(f.bib['year'] == u'2018')
 
+    def test_extract_author_id_list(self):
+        '''
+        This test the extraction of the id of the authors from the html to  populate the author_id field
+        in the Publication object.
+        '''
+        author_html_full = '<a href="/citations?user=4bahYMkAAAAJ&amp;hl=en&amp;oi=sra">SA Cholewiak</a>, <a href="/citations?user=3xJXtlwAAAAJ&amp;hl=en&amp;oi=sra">GD Love</a>, <a href="/citations?user=Smr99uEAAAAJ&amp;hl=en&amp;oi=sra">MS Banks</a> - Journal of vision, 2018 - jov.arvojournals.org'
+        test_pub = Publication(self, None, 'test')
+        author_id_list = test_pub._get_author_id_list(author_html_full)
+        self.assertTrue(author_id_list[0] == '4bahYMkAAAAJ')
+        self.assertTrue(author_id_list[1] == '3xJXtlwAAAAJ')
+        self.assertTrue(author_id_list[2] == 'Smr99uEAAAAJ')
 
+        author_html_partial = "A Bateman, J O'Connell, N Lorenzini, <a href=\"/citations?user=TEndP-sAAAAJ&amp;hl=en&amp;oi=sra\">T Gardner</a>…&nbsp;- BMC psychiatry, 2016 - Springer"
+        test_pub = Publication(self, None, 'test')
+        author_id_list = test_pub._get_author_id_list(author_html_partial)
+        self.assertTrue(author_id_list[0] is None)
+        self.assertTrue(author_id_list[1] is None)
+        self.assertTrue(author_id_list[2] is None)
+        self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
+        self.assertTrue(author_id_list[4] is None)
 
 
 if __name__ == '__main__':
