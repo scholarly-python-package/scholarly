@@ -222,7 +222,7 @@ class TestScholarly(unittest.TestCase):
 
     def test_extract_author_id_list(self):
         '''
-        This test the extraction of the id of the authors from the html to  populate the author_id field
+        This unit test tests the extraction of the author id field from the html to populate the `author_id` field
         in the Publication object.
         '''
         author_html_full = '<a href="/citations?user=4bahYMkAAAAJ&amp;hl=en&amp;oi=sra">SA Cholewiak</a>, <a href="/citations?user=3xJXtlwAAAAJ&amp;hl=en&amp;oi=sra">GD Love</a>, <a href="/citations?user=Smr99uEAAAAJ&amp;hl=en&amp;oi=sra">MS Banks</a> - Journal of vision, 2018 - jov.arvojournals.org'
