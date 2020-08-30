@@ -429,7 +429,7 @@ PORT = <PORT_FOR_LUMINATY>
 To run tests execute the `test_module.py` file as:
 
 ```bash
-python3 test_module
+python3 test_module.py
 ```
 
 or
