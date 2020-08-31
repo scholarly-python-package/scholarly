@@ -109,6 +109,7 @@ print([citation.bib['title'] for citation in pub.citedby])
                      'perceived critical angle, ie, the tilt angle at which '
                      'the object',
          'author': ['SA Cholewiak', 'RW Fleming', 'M Singh'],
+         'author_id': ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'],
          'cites': '23',
          'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
          'gsrank': '1',
@@ -123,6 +124,9 @@ print([citation.bib['title'] for citation in pub.citedby])
  'url_add_sclib': '/citations?hl=en&xsrf=&continue=/scholar%3Fq%3DPerception%2Bof%2Bphysical%2Bstability%2Band%2Bcenter%2Bof%2Bmass%2Bof%2B3D%2Bobjects%26hl%3Den%26as_sdt%3D0,33&citilm=1&json=&update_op=library_add&info=K8ZpoI6hZNoJ&ei=ewEtX7_JOIvrmQHcvJqoDA',
  'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 ```
+
+Please note that the `author_id` array is positionally matching the `author` array. 
+You can use the `author_id` to get further details about the author using the `search_author_id` method.    
 
 ### Methods for `Publication` objects
 
