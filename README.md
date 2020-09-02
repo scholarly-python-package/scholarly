@@ -288,7 +288,7 @@ list of the portions of author information to fill, as follows:
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
 ```
 
-## Using proxies
+## Using proxies 
 
 In general, Google Scholar does not like bots, and can often block scholarly. We are actively
 working towards making scholarly more robust towards that front.
