@@ -215,6 +215,7 @@ class Publication(object):
         if self.source == 'citations':
             url = _CITATIONPUB.format(self.id_citations)
             soup = self.nav._get_soup(url)
+            print(f'in pub.fill(2): \nsoup={soup}')
             self.bib['title'] = soup.find('div', id='gsc_vcd_title').text
             if soup.find('a', class_='gsc_vcd_title_link'):
                 self.bib['url'] = soup.find(
@@ -222,7 +223,7 @@ class Publication(object):
             for item in soup.find_all('div', class_='gs_scl'):
                 key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
-                print(f'in pub.fill(2): \nitem={item}\nkey={key}\nval={val}')
+                print(f'in pub.fill(3): \nitem={item}\nkey={key}\nval={val}')
                 if key == 'authors':
                     self.bib['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])
