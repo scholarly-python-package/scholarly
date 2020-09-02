@@ -125,7 +125,7 @@ print([citation.bib['title'] for citation in pub.citedby])
  'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 ```
 
-Please note that the `author_id` array is positionally matching the `author` array. 
+Please note that the `author_id` array is positionally matching with the `author` array. 
 You can use the `author_id` to get further details about the author using the `search_author_id` method.    
 
 ### Methods for `Publication` objects
