@@ -63,6 +63,7 @@ class Publication(object):
     """Returns an object for a single publication"""
 
     def __init__(self, nav, __data, pubtype=None):
+        print(f'in pub.init: \npubtype={pubtype} \n__data={__data}')
         self.nav = nav
         self.bib = dict()
         self.source = pubtype
@@ -210,6 +211,7 @@ class Publication(object):
 
     def fill(self):
         """Populate the Publication with information from its profile"""
+        print(f'in pub.fill(1): \nself.source={self.source} \nself.bib={self.bib}')
         if self.source == 'citations':
             url = _CITATIONPUB.format(self.id_citations)
             soup = self.nav._get_soup(url)
@@ -220,6 +222,7 @@ class Publication(object):
             for item in soup.find_all('div', class_='gs_scl'):
                 key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
+                print(f'in pub.fill(2): \nitem={item}\nkey={key}\nval={val}')
                 if key == 'authors':
                     self.bib['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])

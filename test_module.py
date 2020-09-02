@@ -106,6 +106,7 @@ class TestScholarly(unittest.TestCase):
          author = authors[0].fill()
          # Check that we can fill without problem the first two publications
          publications = author.publications[:2]
+         print(f'in test_search_author_filling_author_publications before fill: publications:{publications}\n\n-----\n\n')
          for i in publications:
              i.fill()
          self.assertEqual(len(publications), 2)
