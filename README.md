@@ -109,6 +109,7 @@ print([citation.bib['title'] for citation in pub.citedby])
                      'perceived critical angle, ie, the tilt angle at which '
                      'the object',
          'author': ['SA Cholewiak', 'RW Fleming', 'M Singh'],
+         'author_id': ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'],
          'cites': '23',
          'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
          'gsrank': '1',
@@ -124,6 +125,9 @@ print([citation.bib['title'] for citation in pub.citedby])
  'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 ```
 
+Please note that the `author_id` array is positionally matching with the `author` array.
+You can use the `author_id` to get further details about the author using the `search_author_id` method.
+
 ### Methods for `Publication` objects
 
 #### `fill`
@@ -131,7 +135,7 @@ print([citation.bib['title'] for citation in pub.citedby])
 By default, scholarly returns only a lightly filled object for publication, to avoid overloading Google Scholar.
 If necessary to get more information for the publication object, we call the `.fill()` method.
 
-#### `citedby` 
+#### `citedby`
 
 Searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
 
@@ -298,32 +302,40 @@ The most common solution for avoiding network issues is to use proxies and Tor.
 There is a class in the scholarly library, which handles all these different types of connections for you, called `ProxyGenerator`.
 
 To use this class simply import it from the scholarly package:
+
 ```python
 from scholarly import ProxyGenerator
 ```
+
 Then you need to initialize an object:
 
 ```python
 pg = ProxyGenerator()
 ```
+
 Select the desirered connection type from the following options that come from the ProxyGenerator class:
+
 - Tor_Internal()
 - Tor_External()
 - Luminati()
 - FreeProxies()
 - SingleProxy()
-Example: 
+  Example:
 
 ```python
 pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
 ```
+
 Finally set scholarly to use this proxy for your actions
 
 if you want to use one of the above methods:
+
 ```python
 scholarly.use_proxy(pg)
 ```
+
 or if you want to run it without any proxy:
+
 ```python
 scholarly.use_proxy(None)
 ```
@@ -339,7 +351,6 @@ If you want to install and use Tor, then install it using the command
 ```
 sudo apt-get install -y tor
 ```
-
 
 See [setup_tor.sh](https://github.com/scholarly-python-package/scholarly/blob/master/setup_tor.sh)
 on how to setup a minimal, working `torrc` and set the password for the control server. (Note:
@@ -372,7 +383,9 @@ scholarly.use_proxy(pg)
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
+
 #### `pg.FreeProxy()`
+
 This uses the `free-proxy` pip library to add a proxy to your configuration.
 
 ```python
@@ -398,6 +411,7 @@ pg = ProxyGenerator()
 ```
 
 You can use your own configuration
+
 ```python
 pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
 ```
@@ -415,10 +429,10 @@ scholarly.use_proxy(pg)
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
+
 #### `pg.SingleProxy(http: str, https:str)`
 
 If you want to use a proxy of your choice, feel free to use this option.
-
 
 ```python
 from scholarly import scholarly, ProxyGenerator

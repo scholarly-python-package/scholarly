@@ -2,7 +2,8 @@ import unittest
 import argparse
 import os
 import sys
-from scholarly import scholarly, ProxyGenerator 
+from scholarly import scholarly, ProxyGenerator
+from scholarly.publication import Publication
 import random
 from fp.fp import FreeProxy
 
@@ -220,6 +221,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(pubs), 1)
         f = pubs[0].fill()
         self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(f.bib['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
         self.assertTrue(f.bib['journal'] == u'Journal of vision')
         self.assertTrue(f.bib['number'] == u'9')
         self.assertTrue(f.bib['pages'] == u'1--1')
@@ -228,6 +230,27 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(f.bib['volume'] == u'18')
         self.assertTrue(f.bib['year'] == u'2018')
+
+    def test_extract_author_id_list(self):
+        '''
+        This unit test tests the extraction of the author id field from the html to populate the `author_id` field
+        in the Publication object.
+        '''
+        author_html_full = '<a href="/citations?user=4bahYMkAAAAJ&amp;hl=en&amp;oi=sra">SA Cholewiak</a>, <a href="/citations?user=3xJXtlwAAAAJ&amp;hl=en&amp;oi=sra">GD Love</a>, <a href="/citations?user=Smr99uEAAAAJ&amp;hl=en&amp;oi=sra">MS Banks</a> - Journal of vision, 2018 - jov.arvojournals.org'
+        test_pub = Publication(self, None, 'test')
+        author_id_list = test_pub._get_author_id_list(author_html_full)
+        self.assertTrue(author_id_list[0] == '4bahYMkAAAAJ')
+        self.assertTrue(author_id_list[1] == '3xJXtlwAAAAJ')
+        self.assertTrue(author_id_list[2] == 'Smr99uEAAAAJ')
+
+        author_html_partial = "A Bateman, J O'Connell, N Lorenzini, <a href=\"/citations?user=TEndP-sAAAAJ&amp;hl=en&amp;oi=sra\">T Gardner</a>…&nbsp;- BMC psychiatry, 2016 - Springer"
+        test_pub = Publication(self, None, 'test')
+        author_id_list = test_pub._get_author_id_list(author_html_partial)
+        self.assertTrue(author_id_list[0] is None)
+        self.assertTrue(author_id_list[1] is None)
+        self.assertTrue(author_id_list[2] is None)
+        self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
+        self.assertTrue(author_id_list[4] is None)
 
 
 
