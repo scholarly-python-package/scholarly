@@ -74,6 +74,18 @@ print([citation.bib['title'] for citation in pub.citedby])
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'}
 ```
 
+#### `search_author_id` -- Search for an author by the id visible in the url of an Authors profile.
+
+```python
+>>> author = scholarly.search_author_id('Smr99uEAAAAJ')
+>>> print(author)
+{'affiliation': 'Professor of Vision Science, UC Berkeley',
+ 'filled': False,
+ 'id': 'Smr99uEAAAAJ',
+ 'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
+ 'name': 'Martin Banks'}
+```
+
 #### `search_keyword` -- Search by keyword and return a generator of Author objects.
 
 ```python
@@ -377,14 +389,14 @@ You need to pass a pointer to the Tor executable in your system.
 from scholarly import scholarly, ProxyGenerator
 
 pg = ProxyGenerator()
-pg.Tor_Intenal(tor_cmd = "tor")
+pg.Tor_Internal(tor_cmd = "tor")
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-#### `pg.FreeProxy()`
+#### `pg.FreeProxies()`
 
 This uses the `free-proxy` pip library to add a proxy to your configuration.
 
@@ -392,7 +404,7 @@ This uses the `free-proxy` pip library to add a proxy to your configuration.
 from scholarly import scholarly, ProxyGenerator
 
 pg = ProxyGenerator()
-pg.FreeProxy()
+pg.FreeProxies()
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
@@ -445,7 +457,7 @@ author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-**NOTE:** Please create a new object whenever you change proxy method, as this can lead to unexpected behavior.
+**NOTE:** Please create a new proxy object whenever you change proxy method, as this can lead to unexpected behavior.
 
 ## Setting up environment for Luminati and/or Testing
 
