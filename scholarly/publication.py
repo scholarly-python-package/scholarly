@@ -305,7 +305,9 @@ class Publication(object):
         if not self._filled:
             self.fill()
         a = BibDatabase()
-        a.entries = [self.bib]
+        converted_dict = self.bib
+        converted_dict['author_id'] = ', '.join(converted_dict['author_id'])
+        a.entries = [converted_dict]
         return bibtexparser.dumps(a)
 
     def _get_bibtex(self, bib_url) -> str:
