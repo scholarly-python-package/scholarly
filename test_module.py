@@ -2,27 +2,28 @@ import unittest
 import argparse
 import os
 import sys
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
+from scholarly.publication import Publication
 import random
 from fp.fp import FreeProxy
 
-def set_new_proxy():
-    while True:
-        proxy = FreeProxy(rand=True, timeout=1).get()
-        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
-        if proxy_works:
-            break
-    return proxy    
+# def set_new_proxy():
+#     while True:
+#         proxy = FreeProxy(rand=True, timeout=1).get()
+#         proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
+#         if proxy_works:
+#             break
+#     return proxy    
 
 class TestScholarly(unittest.TestCase):
 
     def setUp(self):
+        proxy_generator = ProxyGenerator()
         if "CONNECTION_METHOD" in scholarly.env:
             self.connection_method = os.getenv("CONNECTION_METHOD")
         else:
             self.connection_method = "none"
         if self.connection_method == "tor":
-            print("Using tor")
             tor_sock_port = None
             tor_control_port = None
             tor_password = "scholarly_password"
@@ -34,20 +35,30 @@ class TestScholarly(unittest.TestCase):
             elif sys.platform.startswith("win"):
                 tor_sock_port = 9150
                 tor_control_port = 9151
-            scholarly.use_tor(tor_sock_port, tor_control_port, tor_password)
+            proxy_generator.Tor_External(tor_sock_port,tor_control_port,tor_password)
+            scholarly.use_proxy(proxy_generator)
 
-        elif self.connection_method == "luminaty":
-            scholarly.use_lum_proxy()
+        elif self.connection_method == "tor_internal":
+            if sys.platform.startswith("linux"):
+                tor_cmd = 'tor'
+            elif sys.platform.startswith("win"):
+                tor_cmd = 'tor.exe'
+            proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
+            scholarly.use_proxy(proxy_generator)
+        elif self.connection_method == "luminati":
+            proxy_generator.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
+            scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "freeproxy":
-            set_new_proxy()
+            proxy_generator.FreeProxies()
+            scholarly.use_proxy(proxy_generator)
+        else:
+            scholarly.use_proxy(None)
 
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
         """
-        if self.connection_method != "tor":
-            return
-
+        proxy_generator = ProxyGenerator()
         if sys.platform.startswith("linux"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):
@@ -56,13 +67,14 @@ class TestScholarly(unittest.TestCase):
         tor_sock_port = random.randrange(9000, 9500)
         tor_control_port = random.randrange(9500, 9999)
 
-        result = scholarly.launch_tor(tor_cmd, tor_sock_port, tor_control_port)
+        result = proxy_generator.Tor_Internal(tor_cmd, tor_sock_port, tor_control_port)
         self.assertTrue(result["proxy_works"])
         self.assertTrue(result["refresh_works"])
         self.assertEqual(result["tor_control_port"], tor_control_port)
         self.assertEqual(result["tor_sock_port"], tor_sock_port)
         # Check that we can issue a query as well
         query = 'Ipeirotis'
+        scholarly.use_proxy(proxy_generator)
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
 
@@ -149,7 +161,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')        
         pub = author.publications[2].fill()
-        self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:ufrVoPGSRksC')
+        self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:roLk4NBRz8UC')
 
     def test_search_author_multiple_authors(self):
         """
@@ -209,6 +221,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(pubs), 1)
         f = pubs[0].fill()
         self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(f.bib['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
         self.assertTrue(f.bib['journal'] == u'Journal of vision')
         self.assertTrue(f.bib['number'] == u'9')
         self.assertTrue(f.bib['pages'] == u'1--1')
@@ -217,6 +230,27 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(f.bib['volume'] == u'18')
         self.assertTrue(f.bib['year'] == u'2018')
+
+    def test_extract_author_id_list(self):
+        '''
+        This unit test tests the extraction of the author id field from the html to populate the `author_id` field
+        in the Publication object.
+        '''
+        author_html_full = '<a href="/citations?user=4bahYMkAAAAJ&amp;hl=en&amp;oi=sra">SA Cholewiak</a>, <a href="/citations?user=3xJXtlwAAAAJ&amp;hl=en&amp;oi=sra">GD Love</a>, <a href="/citations?user=Smr99uEAAAAJ&amp;hl=en&amp;oi=sra">MS Banks</a> - Journal of vision, 2018 - jov.arvojournals.org'
+        test_pub = Publication(self, None, 'test')
+        author_id_list = test_pub._get_author_id_list(author_html_full)
+        self.assertTrue(author_id_list[0] == '4bahYMkAAAAJ')
+        self.assertTrue(author_id_list[1] == '3xJXtlwAAAAJ')
+        self.assertTrue(author_id_list[2] == 'Smr99uEAAAAJ')
+
+        author_html_partial = "A Bateman, J O'Connell, N Lorenzini, <a href=\"/citations?user=TEndP-sAAAAJ&amp;hl=en&amp;oi=sra\">T Gardner</a>…&nbsp;- BMC psychiatry, 2016 - Springer"
+        test_pub = Publication(self, None, 'test')
+        author_id_list = test_pub._get_author_id_list(author_html_partial)
+        self.assertTrue(author_id_list[0] is None)
+        self.assertTrue(author_id_list[1] is None)
+        self.assertTrue(author_id_list[2] is None)
+        self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
+        self.assertTrue(author_id_list[4] is None)
 
 
 

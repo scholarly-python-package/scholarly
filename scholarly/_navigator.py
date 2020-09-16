@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from ._proxy_generator import ProxyGenerator
 
 from typing import Callable
 from bs4 import BeautifulSoup
@@ -50,125 +51,26 @@ class Navigator(object, metaclass=Singleton):
         super(Navigator, self).__init__()
         logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
-        self._proxy_gen = None
-        # If we use a proxy or Tor, we set this to True
-        self._proxy_works = False
-        self._use_luminaty = False
-        # If we have a Tor server that we can refresh, we set this to True
-        self._tor_process = None
-        self._can_refresh_tor = False
-        self._tor_control_port = None
-        self._tor_password = None
         self._TIMEOUT = 5
         self._max_retries = 5
         self._session = None
-        self._new_session()
-
-    def __del__(self):
-        if self._tor_process:
-            self._tor_process.kill()
-        self._close_session()
-
-    def _get_webdriver(self):
-        if self._webdriver:
-            return self._webdriver
-
-        if self._proxy_works:
-            # Redirect webdriver through proxy
-            caps = DesiredCapabilities.FIREFOX.copy()
-            caps['proxy'] = {
-                "httpProxy": self._session.proxies['http'],
-                "ftpProxy": self._session.proxies['http'],
-                "sslProxy": self._session.proxies['https'],
-                "proxyType":"MANUAL",
-            }
-            self._webdriver = webdriver.Firefox(desired_capabilities = caps)
-        else:
-            self._webdriver = webdriver.Firefox()
-        self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
-
-        # It might make sense to (pre)set cookies as well, e.g., to set a GSP ID.
-        # However, a limitation of webdriver makes it impossible to set cookies for
-        # domains other than the current active one, cf. https://github.com/w3c/webdriver/issues/1238
-        # Therefore setting cookies in the session instance for other domains than the on set above
-        # (e.g., via self._session.cookies.set) will create problems when transferring them to the
-        # webdriver when handling captchas.
-
-        return self._webdriver
-
-
-    def _new_session(self):
-        proxies = {}
-        if self._session:
-            proxies = self._session.proxies
-            self._close_session()
-        self._session = requests.Session()
+        self.pm = ProxyGenerator()
+        self._session = self.pm.get_session()
         self.got_403 = False
 
-        _HEADERS = {
-            'accept-language': 'en-US,en',
-            'accept': 'text/html,application/xhtml+xml,application/xml'
-        }
-        _HEADERS['User-Agent'] = UserAgent().random
-        self._session.headers.update(_HEADERS)
 
-        if self._proxy_works:
-            self._session.proxies = proxies
-        self._webdriver = None
-
-    def _close_session(self):
-        if self._session:
-            self._session.close()
-        if self._webdriver:
-            self._webdriver.quit()
-
-    def _handle_captcha2(self, url, session):
-        cur_host = urlparse(self._get_webdriver().current_url).hostname
-        for cookie in self._session.cookies:
-            # Only set cookies matching the current domain, cf. https://github.com/w3c/webdriver/issues/1238
-            if cur_host is cookie.domain.lstrip('.'):
-                self._get_webdriver().add_cookie({
-                    'name': cookie.name,
-                    'value': cookie.value,
-                    'path': cookie.path,
-                    'domain':cookie.domain,
-                })
-        self._get_webdriver().get(url)
-
-        log_interval = 10
-        cur = 0
-        timeout = 60*60*24*7 # 1 week
-        while cur < timeout:
-            try:
-                cur = cur + log_interval # Update before exceptions can happen
-                WebDriverWait(self._get_webdriver(), log_interval).until_not(lambda drv : self._webdriver_has_captcha())
-                break
-            except TimeoutException:
-                self.logger.info(f"Solving the captcha took already {cur} seconds (of maximum {timeout} s).")
-            except UnexpectedAlertPresentException as e:
-                # This can apparently happen when reCAPTCHA has hiccups:
-                # "Cannot contact reCAPTCHA. Check your connection and try again."
-                self.logger.info(f"Unexpected alert while waiting for captcha completion: {e.args}")
-                time.sleep(15)
-            except DOSException as e:
-                self.logger.info(f"Google thinks we are DOSing the captcha.")
-                raise e
-            except (WebDriverException) as e:
-                self.logger.info(f"Browser seems to be disfunctional - closed by user?")
-                raise e
-            except Exception as e:
-                # TODO: This exception handler should eventually be removed when
-                # we know the "typical" (non-error) exceptions that can occur.
-                self.logger.info(f"Unhandled {type(e).__name__} while waiting for captcha completion: {e.args}")
+    def use_proxy(self, pg: ProxyGenerator):
+        if pg is not None:
+            self.pm = pg
         else:
-            raise TimeoutException(f"Could not solve captcha in time (within {timeout} s).")
-        self.logger.info(f"Solved captcha in less than {cur} seconds.")
+            self.pm = ProxyGenerator()
+        self._session = self.pm.get_session()
 
-        for cookie in self._get_webdriver().get_cookies():
-            cookie.pop("httpOnly", None)
-            cookie.pop("expiry", None)
-            self._session.cookies.set(**cookie)
+    def _new_session(self):
+        self.got_403 = False
+        self._session = self.pm._new_session()
 
+    
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
 
@@ -187,17 +89,19 @@ class Navigator(object, metaclass=Singleton):
                 w = random.uniform(1,2)
                 time.sleep(w)
                 resp = self._session.get(pagerequest, timeout=timeout)
+                self.logger.info("Session proxy config is {}".format(self._session.proxies))
+
                 has_captcha = self._requests_has_captcha(resp.text)
 
                 if resp.status_code == 200 and not has_captcha:
                     return resp.text
                 elif has_captcha:
                     self.logger.info("Got a captcha request.")
-                    self._handle_captcha2(pagerequest, self._session)
+                    self._session = self.pm._handle_captcha2(pagerequest)
                     continue # Retry request within same session
                 elif resp.status_code == 403:
                     self.logger.info(f"Got an access denied error (403).")
-                    if not self._can_refresh_tor and not self._proxy_gen:
+                    if not self.pm.has_proxy():
                         self.logger.info("No other connections possible.")
                         if not self.got_403:
                             self.logger.info("Retrying immediately with another session.")
@@ -216,7 +120,7 @@ class Navigator(object, metaclass=Singleton):
                                     Retrying...""")
 
             except DOSException:
-                if not self._can_refresh_tor and not self._proxy_gen:
+                if not self.pm.has_proxy():
                     self.logger.info("No other connections possible.")
                     w = random.uniform(60, 2*60)
                     self.logger.info("Will retry after {} seconds (with the same session).".format(w))
@@ -236,171 +140,15 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Retrying with a new session.")
 
             tries += 1
-            if self._can_refresh_tor:
-                # Check if Tor is running and refresh it
-                self.logger.info("Refreshing Tor ID...")
-                self._refresh_tor_id(self._tor_control_port, self._tor_password)
-                time.sleep(5) # wait for the refresh to happen
-                timeout=self._TIMEOUT # Reset timeout to default
-            elif self._proxy_gen:
-                self.logger.info(f"Try #{tries} failed. Switching proxy.")
-                # Try to get another proxy
-                new_proxy = self._proxy_gen()
-                while (not self._use_proxy(new_proxy)):
-                    new_proxy = self._proxy_gen()
-                timeout=self._TIMEOUT # Reset timeout to default
-            else:
-                self._new_session()
-
+            self._session, timeout = self.pm.get_next_proxy(num_tries = tries, old_timeout = timeout)
         raise Exception("Cannot fetch the page from Google Scholar.")
 
-    def _check_proxy(self, proxies) -> bool:
-        """Checks if a proxy is working.
-        :param proxies: A dictionary {'http': url1, 'https': url1}
-                        with the urls of the proxies
-        :returns: whether the proxy is working or not
-        :rtype: {bool}
-        """
-        with requests.Session() as session:
-            session.proxies = proxies
-            try:
-                # Netflix assets CDN should have very low latency for about everybody
-                resp = session.get("http://assets.nflxext.com", timeout=self._TIMEOUT)
-                if resp.status_code == 200:
-                    self.logger.info("Proxy works!")
-                    return True
-            except Exception as e:
-                self.logger.info(f"Exception while testing proxy: {e}")
-
-            return False
-
-    def _refresh_tor_id(self, tor_control_port: int, password: str) -> bool:
-        """Refreshes the id by using a new Tor node.
-
-        :returns: Whether or not the refresh was succesful
-        :rtype: {bool}
-        """
-        try:
-            with Controller.from_port(port=tor_control_port) as controller:
-                if password:
-                    controller.authenticate(password=password)
-                else:
-                    controller.authenticate()
-                controller.signal(Signal.NEWNYM)
-                self._new_session()
-            return True
-        except Exception as e:
-            err = f"Exception {e} while refreshing TOR. Retrying..."
-            self.logger.info(err)
-            return False
 
     def _set_retries(self, num_retries: int) -> None:
         if (num_retries < 0):
             raise ValueError("num_retries must not be negative")
         self._max_retries = num_retries
 
-    def _set_proxy_generator(self, gen: Callable[..., str]) -> bool:
-        self._proxy_gen = gen
-        return True
-
-    def _use_proxy(self, http: str, https: str = None) -> bool:
-        """Allows user to set their own proxy for the connection session.
-        Sets the proxy, and checks if it works.
-
-        :param http: the http proxy
-        :type http: str
-        :param https: the https proxy (default to the same as http)
-        :type https: str
-        :returns: if the proxy works
-        :rtype: {bool}
-        """
-        # check if the proxy url contains luminaty
-        self._use_luminaty = (True if "lum" in http else False)
-        if https is None:
-            https = http
-
-        proxies = {'http': http, 'https': https}
-        self._proxy_works = self._check_proxy(proxies)
-        if self._proxy_works:
-            self.logger.info(f"Enabling proxies: http={http} https={https}")
-            self._session.proxies = proxies
-            self._new_session()
-        else:
-            self.logger.info(f"Proxy {http} does not seem to work.")
-        return self._proxy_works
-
-    def _setup_tor(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
-        """
-        Setting up Tor Proxy
-
-        :param tor_sock_port: the port where the Tor sock proxy is running
-        :type tor_sock_port: int
-        :param tor_control_port: the port where the Tor control server is running
-        :type tor_control_port: int
-        :param tor_password: the password for the Tor control server
-        :type tor_password: str
-        """
-
-        proxy = f"socks5://127.0.0.1:{tor_sock_port}"
-        self._use_proxy(http=proxy, https=proxy)
-
-        self._can_refresh_tor = self._refresh_tor_id(tor_control_port, tor_password)
-        if self._can_refresh_tor:
-            self._tor_control_port = tor_control_port
-            self._tor_password = tor_password
-        else:
-            self._tor_control_port = None
-            self._tor_password = None
-
-        # Setting requests timeout to be reasonably long
-        # to accommodate slowness of the Tor network
-        self._TIMEOUT = 10
-
-        return {
-            "proxy_works": self._proxy_works,
-            "refresh_works": self._can_refresh_tor,
-            "tor_control_port": tor_control_port,
-            "tor_sock_port": tor_sock_port
-        }
-
-    def _launch_tor(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
-        '''
-        Starts a Tor client running in a scholarly-specific port,
-        together with a scholarly-specific control port.
-        '''
-        self.logger.info("Attempting to start owned Tor as the proxy")
-
-        if tor_cmd is None:
-            self.logger.info("No tor_cmd argument passed. This should point to the location of Tor executable.")
-            return {
-                "proxy_works": False,
-                "refresh_works": False,
-                "tor_control_port": None,
-                "tor_sock_port": None
-            }
-
-        if tor_sock_port is None:
-            # Picking a random port to avoid conflicts
-            # with simultaneous runs of scholarly
-            tor_sock_port = random.randrange(9000, 9500)
-
-        if tor_control_port is None:
-            # Picking a random port to avoid conflicts
-            # with simultaneous runs of scholarly
-            tor_control_port = random.randrange(9500, 9999)
-
-        # TODO: Check that the launched Tor process stops after scholar is done
-        self._tor_process = stem.process.launch_tor_with_config(
-            tor_cmd=tor_cmd,
-            config={
-                'ControlPort': str(tor_control_port),
-                'SocksPort': str(tor_sock_port),
-                'DataDirectory': tempfile.mkdtemp()
-                # TODO Perhaps we want to also set a password here
-            },
-            # take_ownership=True # Taking this out for now, as it seems to cause trouble
-        )
-        return self._setup_tor(tor_sock_port, tor_control_port, tor_password=None)
 
     def _requests_has_captcha(self, text) -> bool:
         """Tests whether some html text contains a captcha.
@@ -422,8 +170,8 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {bool}
         """
         return self._has_captcha(
-            lambda i : len(self._get_webdriver().find_elements(By.ID, i)) > 0,
-            lambda c : len(self._get_webdriver().find_elements(By.CLASS_NAME, c)) > 0,
+            lambda i : len(self.pm._get_webdriver().find_elements(By.ID, i)) > 0,
+            lambda c : len(self.pm._get_webdriver().find_elements(By.CLASS_NAME, c)) > 0,
         )
 
     def _has_captcha(self, got_id, got_class) -> bool:

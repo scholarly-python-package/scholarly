@@ -74,6 +74,18 @@ print([citation.bib['title'] for citation in pub.citedby])
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'}
 ```
 
+#### `search_author_id` -- Search for an author by the id visible in the url of an Authors profile.
+
+```python
+>>> author = scholarly.search_author_id('Smr99uEAAAAJ')
+>>> print(author)
+{'affiliation': 'Professor of Vision Science, UC Berkeley',
+ 'filled': False,
+ 'id': 'Smr99uEAAAAJ',
+ 'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
+ 'name': 'Martin Banks'}
+```
+
 #### `search_keyword` -- Search by keyword and return a generator of Author objects.
 
 ```python
@@ -109,6 +121,7 @@ print([citation.bib['title'] for citation in pub.citedby])
                      'perceived critical angle, ie, the tilt angle at which '
                      'the object',
          'author': ['SA Cholewiak', 'RW Fleming', 'M Singh'],
+         'author_id': ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'],
          'cites': '23',
          'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
          'gsrank': '1',
@@ -124,6 +137,9 @@ print([citation.bib['title'] for citation in pub.citedby])
  'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 ```
 
+Please note that the `author_id` array is positionally matching with the `author` array.
+You can use the `author_id` to get further details about the author using the `search_author_id` method.
+
 ### Methods for `Publication` objects
 
 #### `fill`
@@ -131,7 +147,7 @@ print([citation.bib['title'] for citation in pub.citedby])
 By default, scholarly returns only a lightly filled object for publication, to avoid overloading Google Scholar.
 If necessary to get more information for the publication object, we call the `.fill()` method.
 
-#### `citedby` 
+#### `citedby`
 
 Searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
 
@@ -295,52 +311,48 @@ working towards making scholarly more robust towards that front.
 
 The most common solution for avoiding network issues is to use proxies and Tor.
 
-The following options are available:
+There is a class in the scholarly library, which handles all these different types of connections for you, called `ProxyGenerator`.
 
-#### `scholarly.use_proxy`
-
-Here is an example using the [FreeProxy](https://pypi.org/project/free-proxy/) library
+To use this class simply import it from the scholarly package:
 
 ```python
-from fp.fp import FreeProxy
-from scholarly import scholarly
-
-def set_new_proxy():
-    while True:
-        proxy = FreeProxy(rand=True, timeout=1).get()
-        proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
-        if proxy_works:
-            break
-    print("Working proxy:", proxy)
-    return proxy
-
-set_new_proxy()
-
-while True:
-    try:
-        search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
-        print("Got the results of the query")
-        break
-    except Exception as e:
-        print("Trying new proxy")
-        set_new_proxy()
-
-pub = next(search_query)
-print(pub)
-
-while True:
-    try:
-        filled = pub.fill()
-        print("Filled the publication")
-        break
-    except Exception as e:
-        print("Trying new proxy")
-        set_new_proxy()
-
-print(filled)
+from scholarly import ProxyGenerator
 ```
 
-#### `scholarly.use_tor()`
+Then you need to initialize an object:
+
+```python
+pg = ProxyGenerator()
+```
+
+Select the desirered connection type from the following options that come from the ProxyGenerator class:
+
+- Tor_Internal()
+- Tor_External()
+- Luminati()
+- FreeProxies()
+- SingleProxy()
+  Example:
+
+```python
+pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+```
+
+Finally set scholarly to use this proxy for your actions
+
+if you want to use one of the above methods:
+
+```python
+scholarly.use_proxy(pg)
+```
+
+or if you want to run it without any proxy:
+
+```python
+scholarly.use_proxy(None)
+```
+
+#### `pg.Tor_External(tor_sock_port: int, tor_control_port: int, tor_password: str)`
 
 This option assumes that you have access to a Tor server and a `torrc` file configuring the Tor server
 to have a control port configured with a password; this setup allows scholarly to refresh the Tor ID,
@@ -358,38 +370,96 @@ the script uses `scholarly_password` as the default password, but you may want t
 installation.)
 
 ```python
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
 
-scholarly.use_tor(tor_sock_port=9050, tor_control_port=9051, tor_pw="scholarly_password")
+pg = ProxyGenerator()
+pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
+scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-#### `scholarly.launch_tor()`
+#### `pg.Tor_internal(tor_cmd=None, tor_sock_port=None, tor_control_port=None)`
 
 If you have Tor installed locally, this option allows scholarly to launch its own Tor process.
-You need to pass a pointer to the Tor executable in your system,
+You need to pass a pointer to the Tor executable in your system.
 
 ```python
-from scholarly import scholarly
+from scholarly import scholarly, ProxyGenerator
 
-scholarly.launch_tor('/usr/bin/tor',9030,9031)
+pg = ProxyGenerator()
+pg.Tor_Internal(tor_cmd = "tor")
+scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
 print(author)
 ```
 
-#### `scholarly.use_lum_proxy()`
+#### `pg.FreeProxies()`
 
-If you have a luminaty proxy service, please refer to the environment setup for Luminaty below
+This uses the `free-proxy` pip library to add a proxy to your configuration.
+
+```python
+from scholarly import scholarly, ProxyGenerator
+
+pg = ProxyGenerator()
+pg.FreeProxies()
+scholarly.use_proxy(pg)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+#### `pg.Luminati()`
+
+If you have a luminati proxy service, please refer to the environment setup for Luminati below
 and simply call the following command before any function you want to execute.
 
 ```python
-scholarly.use_lum_proxy()
+from scholarly import scholarly, ProxyGenerator
+
+pg = ProxyGenerator()
 ```
 
-## Setting up environment for Luminaty and/or Testing
+You can use your own configuration
+
+```python
+pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
+```
+
+Or alternatively you can use the environment variables set in your .env file
+
+```python
+import os
+pg.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
+```
+
+```python
+scholarly.use_proxy(pg)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+#### `pg.SingleProxy(http: str, https:str)`
+
+If you want to use a proxy of your choice, feel free to use this option.
+
+```python
+from scholarly import scholarly, ProxyGenerator
+
+pg = ProxyGenerator()
+pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+scholarly.use_proxy(pg)
+
+author = next(scholarly.search_author('Steven A Cholewiak'))
+print(author)
+```
+
+**NOTE:** Please create a new proxy object whenever you change proxy method, as this can lead to unexpected behavior.
+
+## Setting up environment for Luminati and/or Testing
 
 To run the `test_module.py` it is advised to create a `.env` file in the working directory of the `test_module.py` as:
 
@@ -403,23 +473,24 @@ nano .env # or any editor of your choice
 
 Define the connection method for the Tests, among these options:
 
-- luminaty (if you have a luminaty proxy service)
+- luminati (if you have a luminati proxy service)
 - freeproxy
 - tor
+- tor_internal
 - none (if you want a local connection, which is also the default value)
 
 ex.
 
 ```bash
-CONNECTION_METHOD = luminaty
+CONNECTION_METHOD = luminati
 ```
 
-If using a luminaty proxy service please append the following to your `.env`:
+If using a luminati proxy service please append the following to your `.env`:
 
 ```bash
-USERNAME = <LUMINATY_USERNAME>
-PASSWORD = <LUMINATY_PASSWORD>
-PORT = <PORT_FOR_LUMINATY>
+USERNAME = <LUMINATI_USERNAME>
+PASSWORD = <LUMINATI_PASSWORD>
+PORT = <PORT_FOR_LUMINATI>
 ```
 
 ## Tests

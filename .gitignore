@@ -25,3 +25,4 @@ setup_notes.md
 #dev testing
 vic.py
 .env
+.vscode/settings.json

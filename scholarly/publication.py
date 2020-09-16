@@ -102,6 +102,18 @@ class Publication(object):
             i = i.replace("…", "")
             authorlist.append(i)
         return authorlist
+    
+    def _get_author_id_list(self, authorinfo_inner_html):
+        author_id_list = list()
+        html = authorinfo_inner_html.split(' - ')[0]
+        for author_html in html.split(','):
+            author_html = author_html.strip()
+            match = re.search('\\?user=(.*?)&amp;', author_html)
+            if match:
+                author_id_list.append(match.groups()[0])
+            else:
+                author_id_list.append(None)
+        return author_id_list
 
     def _scholar_pub(self, __data):
         databox = __data.find('div', class_='gs_ri')
@@ -122,10 +134,13 @@ class Publication(object):
         if title.find('a'):
             self.bib['url'] = title.find('a')['href']
 
-        authorinfo = databox.find('div', class_='gs_a').text
+        author_div_element = databox.find('div', class_='gs_a')
+        authorinfo = author_div_element.text
         authorinfo = authorinfo.replace(u'\xa0', u' ')       # NBSP
         authorinfo = authorinfo.replace(u'&amp;', u'&')      # Ampersand
         self.bib["author"] = self._get_authorlist(authorinfo)
+        authorinfo_html = author_div_element.decode_contents()
+        self.bib["author_id"] = self._get_author_id_list(authorinfo_html)
 
         # There are 4 (known) patterns in the author/venue/year/host line:
         #  (A) authors - host
@@ -290,7 +305,9 @@ class Publication(object):
         if not self._filled:
             self.fill()
         a = BibDatabase()
-        a.entries = [self.bib]
+        converted_dict = self.bib
+        converted_dict['author_id'] = ', '.join(converted_dict['author_id'])
+        a.entries = [converted_dict]
         return bibtexparser.dumps(a)
 
     def _get_bibtex(self, bib_url) -> str:
