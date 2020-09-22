@@ -4,7 +4,6 @@ import arrow
 import pprint
 from bibtexparser.bibdatabase import BibDatabase
 
-
 _HOST = 'https://scholar.google.com{0}'
 _SCHOLARPUBRE = r'cites=([\w-]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
@@ -123,8 +122,8 @@ class Publication(object):
             self.bib['url'] = title.find('a')['href']
 
         authorinfo = databox.find('div', class_='gs_a').text
-        authorinfo = authorinfo.replace(u'\xa0', u' ')       # NBSP
-        authorinfo = authorinfo.replace(u'&amp;', u'&')      # Ampersand
+        authorinfo = authorinfo.replace(u'\xa0', u' ')  # NBSP
+        authorinfo = authorinfo.replace(u'&amp;', u'&')  # Ampersand
         self.bib["author"] = self._get_authorlist(authorinfo)
 
         # There are 4 (known) patterns in the author/venue/year/host line:
@@ -147,9 +146,9 @@ class Publication(object):
             if year.isnumeric() and len(year) == 4:
                 self.bib['year'] = year
                 if len(venueyear) >= 2:
-                    venue = ','.join(venueyear[0:-1]) # everything but last
+                    venue = ','.join(venueyear[0:-1])  # everything but last
             else:
-                venue = ','.join(venueyear) # everything
+                venue = ','.join(venueyear)  # everything
                 self.bib['year'] = 'NA'
             self.bib['venue'] = venue
 
@@ -205,21 +204,25 @@ class Publication(object):
             for item in soup.find_all('div', class_='gs_scl'):
                 key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
-                if key == 'authors':
-                    self.bib['author'] = ' and '.join(
-                        [i.strip() for i in val.text.split(',')])
-                elif key == 'journal':
-                    self.bib['journal'] = val.text
-                elif key == 'volume':
-                    self.bib['volume'] = val.text
-                elif key == 'issue':
-                    self.bib['number'] = val.text
-                elif key == 'pages':
-                    self.bib['pages'] = val.text
-                elif key == 'publisher':
-                    self.bib['publisher'] = val.text
-                elif key == 'Publication date':
 
+                # print(key, val.text)
+
+                if key == 'authors':
+                    # self.bib['author'] = ' and '.join(
+                    #     [i.strip() for i in val.text.split(',')])
+                    self.bib['authors'] = val.text
+                # elif key == 'journal':
+                #     self.bib['journal'] = val.text
+                # elif key == 'volume':
+                #     self.bib['volume'] = val.text
+                # elif key == 'issue':
+                #     self.bib['number'] = val.text
+                # elif key == 'pages':
+                #     self.bib['pages'] = val.text
+                # elif key == 'publisher':
+                #     self.bib['publisher'] = val.text
+                elif key == 'publication date':
+                    self.bib['publication date'] = val.text
                     patterns = ['YYYY/M',
                                 'YYYY/MM/DD',
                                 'YYYY',
@@ -228,29 +231,34 @@ class Publication(object):
                                 'YYYY/MM/D']
                     self.bib['year'] = arrow.get(val.text, patterns).year
                 elif key == 'description':
-                    # try to find all the gsh_csp if they exist
-                    abstract = val.find_all(class_='gsh_csp')
-                    result = ""
-                    
-                    # append all gsh_csp together as there can be multiple in certain scenarios
-                    for item in abstract:
-                        if item.text[0:8].lower() == 'abstract':
-                            result += item.text[9:].strip()
-                        else:
-                            result += item.text
-                    
-                    if len(abstract) == 0: # if no gsh_csp were found 
-                        abstract = val.find(class_='gsh_small')
-                        if abstract.text[0:8].lower() == 'abstract':
-                            result = abstract.text[9:].strip()
-                        else:
-                            result = abstract.text
-
-                    self.bib['abstract'] = result
+                    pass
+                    # # try to find all the gsh_csp if they exist
+                    # abstract = val.find_all(class_='gsh_csp')
+                    # result = ""
+                    #
+                    # # append all gsh_csp together as there can be multiple in certain scenarios
+                    # for item in abstract:
+                    #     if item.text[0:8].lower() == 'abstract':
+                    #         result += item.text[9:].strip()
+                    #     else:
+                    #         result += item.text
+                    #
+                    # if len(abstract) == 0: # if no gsh_csp were found
+                    #     abstract = val.find(class_='gsh_small')
+                    #     if abstract.text[0:8].lower() == 'abstract':
+                    #         result = abstract.text[9:].strip()
+                    #     else:
+                    #         result = abstract.text
+                    #
+                    # self.bib['abstract'] = result
                 elif key == 'total citations':
                     self.bib['cites_id'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
                     self.citations_link = _CITEDBYLINK.format(self.bib['cites_id'])
+
+                else:
+                    self.bib[key] = val.text
+
             # number of citation per year
             years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
@@ -264,7 +272,7 @@ class Publication(object):
             bibtex_url = self._get_bibtex(self.url_scholarbib)
             bibtex = self.nav._get_page(bibtex_url)
             parser = bibtexparser.bparser.BibTexParser(common_strings=True)
-            self.bib.update(bibtexparser.loads(bibtex,parser).entries[-1])
+            self.bib.update(bibtexparser.loads(bibtex, parser).entries[-1])
             self._filled = True
         return self
 
