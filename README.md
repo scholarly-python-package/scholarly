@@ -12,6 +12,13 @@ Check the [documentation](https://scholarly.readthedocs.io/en/latest/?badge=late
 
 ## Installation
 
+### To install modified version here:
+```bash
+pip3 install -U git+https://github.com/Jianbin-IBM/scholarly.git
+```
+
+### To install online version: 
+
 Use `pip` to install from pypi:
 
 ```bash
