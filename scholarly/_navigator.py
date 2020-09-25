@@ -27,8 +27,9 @@ from stem import Signal
 from stem.control import Controller
 from fake_useragent import UserAgent
 from .publication import _SearchScholarIterator
-from .author import Author
+from .author_parser import AuthorParser
 from .publication import Publication
+from .data_types import Author
 
 class DOSException(Exception):
     """DOS attack was detected."""
@@ -198,15 +199,16 @@ class Navigator(object, metaclass=Singleton):
             pass
         return res
 
-    def search_authors(self, url: str):
+    def search_authors(self, url: str)->Author:
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
-
+         
+        author_parser = AuthorParser(self)
         while True:
             rows = soup.find_all('div', 'gsc_1usr')
             self.logger.info("Found %d authors", len(rows))
             for row in rows:
-                yield Author(self, row)
+                yield author_parser.get_author(row)
             cls1 = 'gs_btnPR gs_in_ib gs_btn_half '
             cls2 = 'gs_btn_lsb gs_btn_srt gsc_pgn_pnx'
             next_button = soup.find(class_=cls1+cls2)  # Can be improved
@@ -255,8 +257,10 @@ class Navigator(object, metaclass=Singleton):
         :returns: an Author object
         :rtype: {Author}
         """
+        author_parser = AuthorParser(self)
+        res = author_parser.get_author(id)
         if filled:
-            res = Author(self, id).fill()
+            res = author_parser.fill(res)
         else:
-            res = Author(self, id).fill(sections=['basics'])
+            res = author_parser.fill(res, sections=['basics'])
         return res

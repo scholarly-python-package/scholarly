@@ -6,6 +6,7 @@ from typing import Callable
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
+from .author_parser import AuthorParser
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -135,6 +136,19 @@ class _Scholarly:
         """
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
+    
+    def fill(self, object, sections = []):
+        """Fills the object according to its type.
+        If the container type is Author it will fill the additional author fields
+        If it is Publication it will fill it accordingly.
+        """
+
+        if object['container_type'] == "Author":
+            author_parser = AuthorParser(self.__nav)
+            object = author_parser.fill(object, sections)
+            if object is False:
+                raise ValueError("Incorrect input")
+            return object
 
     def search_author_id(self, id: str, filled: bool = False):
         """Search by author id and return a single Author object

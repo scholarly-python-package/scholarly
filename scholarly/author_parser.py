@@ -1,7 +1,7 @@
 from .publication import Publication
 import re
 import pprint
-
+from .data_types import Author
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -10,47 +10,54 @@ _EMAILAUTHORRE = r'Verified email at '
 _CITATIONAUTH = '/citations?hl=en&user={0}'
 
 
-class Author:
+class AuthorParser:
     """Returns an object for a single author"""
 
-    def __init__(self, nav, __data):
+    def __init__(self, nav):
         self.nav = nav
-        self._filled = set()
         self._sections = {'basics',
                           'indices',
                           'counts',
                           'coauthors',
                           'publications'}
-
+    
+    def get_author(self, __data)->Author:
+        """ Fills the information for an author container
+        """
+        author: Author = {'container_type': 'Author'}
+        author['filled'] = set()
         if isinstance(__data, str):
-            self.id = __data
+            author['scholar_id'] = __data
         else:
-            self.id = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
+            author['scholar_id'] = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
 
-            pic = '/citations?view_op=medium_photo&user={}'.format(self.id)
-            self.url_picture = _HOST.format(pic)
+            pic = '/citations?view_op=medium_photo&user={}'.format(author['scholar_id'])
+            author['url_picture'] = _HOST.format(pic)
 
             name_class = self._find_tag_class_name(__data, 'h3', 'name')
-            self.name = __data.find('h3', class_=name_class).text
+            author['name'] = __data.find('h3', class_=name_class).text
 
             aff_class = self._find_tag_class_name(__data, 'div', 'aff')
             affiliation = __data.find('div', class_=aff_class)
             if affiliation:
-                self.affiliation = affiliation.text
+                author['affiliation'] = affiliation.text
 
             email_class = self._find_tag_class_name(__data, 'div', 'eml')
             email = __data.find('div', class_=email_class)
             if email:
-                self.email = re.sub(_EMAILAUTHORRE, r'@', email.text)
+                author['email_domain'] = re.sub(_EMAILAUTHORRE, r'@', email.text)
 
             int_class = self._find_tag_class_name(__data, 'a', 'one_int')
             interests = __data.find_all('a', class_=int_class)
-            self.interests = [i.text.strip() for i in interests]
+            author['interests'] = [i.text.strip() for i in interests]
 
             citedby_class = self._find_tag_class_name(__data, 'div', 'cby')
             citedby = __data.find('div', class_=citedby_class)
             if citedby and citedby.text != '':
-                self.citedby = int(citedby.text[9:])
+                author['citedby'] = int(citedby.text[9:])
+
+        return author
+
 
     def _find_tag_class_name(self, __data, tag, text):
         elements = __data.find_all(tag)
@@ -58,43 +65,43 @@ class Author:
             if 'class' in element.attrs and text in element.attrs['class'][0]:
                 return element.attrs['class'][0]
 
-    def _fill_basics(self, soup):
-        self.name = soup.find('div', id='gsc_prf_in').text
-        self.affiliation = soup.find('div', class_='gsc_prf_il').text
-        self.interests = [i.text.strip() for i in
+    def _fill_basics(self, soup, author):
+        author['name'] = soup.find('div', id='gsc_prf_in').text
+        author['affiliation'] = soup.find('div', class_='gsc_prf_il').text
+        author['interests'] = [i.text.strip() for i in
                           soup.find_all('a', class_='gsc_prf_inta')]
 
-    def _fill_indices(self, soup):
+    def _fill_indices(self, soup, author):
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
-            self.citedby = int(index[0].text)
-            self.citedby5y = int(index[1].text)
-            self.hindex = int(index[2].text)
-            self.hindex5y = int(index[3].text)
-            self.i10index = int(index[4].text)
-            self.i10index5y = int(index[5].text)
+            author['citedby'] = int(index[0].text)
+            author['citedby5y'] = int(index[1].text)
+            author['hindex'] = int(index[2].text)
+            author['hindex5y'] = int(index[3].text)
+            author['i10index'] = int(index[4].text)
+            author['i10index5y'] = int(index[5].text)
         else:
-            self.hindex = 0
-            self.hindex5y = 0
-            self.i10index = 0
-            self.i10index5y = 0
+            author['hindex'] = 0
+            author['hindex5y'] = 0
+            author['i10index'] = 0
+            author['i10index5y'] = 0
 
-    def _fill_counts(self, soup):
+    def _fill_counts(self, soup, author):
         years = [int(y.text)
                  for y in soup.find_all('span', class_='gsc_g_t')]
         cites = [int(c.text)
                  for c in soup.find_all('span', class_='gsc_g_al')]
-        self.cites_per_year = dict(zip(years, cites))
+        author['cites_per_year'] = dict(zip(years, cites))
 
-    def _fill_publications(self, soup):
-        self.publications = list()
+    def _fill_publications(self, soup, author):
+        author['publications'] = list()
         pubstart = 0
-        url_citations = _CITATIONAUTH.format(self.id)
+        url_citations = _CITATIONAUTH.format(author['scholar_id'])
 
         while True:
             for row in soup.find_all('tr', class_='gsc_a_tr'):
                 new_pub = Publication(self.nav, row, 'citations')
-                self.publications.append(new_pub)
+                author['publications'].append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
                 url = '{0}&cstart={1}&pagesize={2}'.format(
@@ -103,17 +110,17 @@ class Author:
             else:
                 break
 
-    def _fill_coauthors(self, soup):
-        self.coauthors = []
+    def _fill_coauthors(self, soup, author):
+        author['coauthors'] = []
         for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
-            new_coauthor = Author(self.nav, re.findall(
+            new_coauthor = self.get_author(re.findall(
                 _CITATIONAUTHRE, row('a')[0]['href'])[0])
-            new_coauthor.name = row.find(tabindex="-1").text
-            new_coauthor.affiliation = row.find(
+            new_coauthor['name'] = row.find(tabindex="-1").text
+            new_coauthor['affiliation'] = row.find(
                 class_="gsc_rsb_a_ext").text
-            self.coauthors.append(new_coauthor)
+            author['coauthors'].append(new_coauthor)
 
-    def fill(self, sections: list = []):
+    def fill(self, author, sections: list = []):
         """Populate the Author with information from their profile
 
         The `sections` argument allows for finer granularity of the profile
@@ -182,44 +189,25 @@ class Author:
         """
         try:
             sections = [section.lower() for section in sections]
-            url_citations = _CITATIONAUTH.format(self.id)
+            url_citations = _CITATIONAUTH.format(author['scholar_id'])
             url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
             soup = self.nav._get_soup(url)
 
             if sections == []:
                 for i in self._sections:
-                    if i not in self._filled:
-                        getattr(self, f'_fill_{i}')(soup)
-            else:
+                    if i not in author['filled']:
+                        getattr(self, f'_fill_{i}')(soup, author)
+                        author['filled'].add(i)
+            else: # TODO: if it is in the secit
                 for i in sections:
-                    if i in self._sections and i not in self._filled:
-                        getattr(self, f'_fill_{i}')(soup)
-                        self._filled.add(i)
-        except Exception:
-            return False
+                    if i in self._sections and i not in author['filled']:
+                        getattr(self, f'_fill_{i}')(soup, author)
+                        author['filled'].add(i)
+        except Exception as e:
+            raise(e)
 
-        return self
+        return author
 
-    @property
-    def filled(self) -> bool:
-        """Returns whether or not the author characteristics are filled
-
-        :getter: True if Author object is filled, False otherwise
-        :type: bool
-        """
-        return self._filled == self._sections
-
-    def __str__(self):
-        pdict = dict(self.__dict__)
-        try:
-            pdict["filled"] = self.filled
-            del pdict['nav']
-            del pdict['_sections']
-            del pdict['_filled']
-        except Exception:
-            raise
-
-        return pprint.pformat(pdict)
 
     def __repr__(self):
         return self.__str__()

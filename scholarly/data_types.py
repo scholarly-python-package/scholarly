@@ -185,6 +185,7 @@ class PublicationCitation(TypedDict):
     filled: bool
     author_pub_id: str # id_citations
     source: str
+    container_type: str
 
 class PublicationScholar(TypedDict):
     """
@@ -214,6 +215,7 @@ class PublicationScholar(TypedDict):
     filled: bool
     url_add_sclib: str
     url_scholarlib:str
+    container_type: str
 
 
 class Author(TypedDict):
@@ -253,4 +255,4 @@ class Author(TypedDict):
     cites_per_year: CitesPerYear
     publications: List[PublicationCitation]
     coauthors: List
-
+    container_type: str
