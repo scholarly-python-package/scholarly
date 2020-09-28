@@ -7,6 +7,8 @@ from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
+from .publication_parser import PublicationParser
+from .data_types import PublicationScholar, PublicationCitation
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -137,7 +139,7 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
     
-    def fill(self, object, sections = []):
+    def fill(self, object: dict, sections = []):
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.
@@ -148,7 +150,31 @@ class _Scholarly:
             object = author_parser.fill(object, sections)
             if object is False:
                 raise ValueError("Incorrect input")
-            return object
+        elif object['container_type'] == "Publication":
+            print("FILLING PUBLICATION")
+            publication_parser = PublicationParser(self.__nav)
+            object = publication_parser.fill(object)
+        return object
+
+    def bibtext(self, object: PublicationScholar or PublicationCitation)->str:
+        """Returns a bibtex entry for a publication that has either Scholar source
+        or citation source
+        """
+        if object['container_type'] == "Publication":
+           publication_parser = PublicationParser(self.__nav) 
+           return publication_parser.bibtex(object)
+        else:
+            print("Object not supported for bibtex exportation")
+            return
+
+    def citedby(self, object: PublicationScholar or PublicationCitation):
+        if object['container_type'] == "Publication":
+           publication_parser = PublicationParser(self.__nav) 
+           return publication_parser.citedby(object)
+        else:
+            print("Object not supported for bibtex exportation")
+            return
+
 
     def search_author_id(self, id: str, filled: bool = False):
         """Search by author id and return a single Author object

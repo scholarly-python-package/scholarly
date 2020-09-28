@@ -80,7 +80,7 @@ class AuthorSource(Enum):
 class BibEntryScholar(TypedDict):
     '''
     The bibliographic entry for a publication
-    :param entry_type: the type of entry for this bib (for example 'article')
+    :param ENTRYTYPE: the type of entry for this bib (for example 'article')
     :param abstract: description of the publication
     :param title: title of the publication
     :param author: list of author the author names that contributed to this publication
@@ -98,18 +98,20 @@ class BibEntryScholar(TypedDict):
     :param cites: number of citations of this Publication
     '''
 
-    entry_type: str
+    ENTRYTYPE: str
+    ID: str 
     abstract: str
     title: str
-    author: List[str]
+    author: str
     author_id: List[str]
     abstract: str
-    pub_year: int
+    pub_year: str
+    year: str
     eprint: str
     venue: str
     journal: str
-    volume: int
-    number: int
+    volume: str
+    number: str
     pages: str
     publisher: str  
     gsrank: int
@@ -141,8 +143,9 @@ class BibEntryCitation(TypedDict):
     '''
     title: str
     authors: str
+    journal: str
     abstract: str
-    pub_year: int
+    pub_year: str
     # pub_month: int
     venue: str
     pub_type: str # journal, conference, chapter, book, thesis, patent, course case, other ...
@@ -187,6 +190,7 @@ class PublicationCitation(TypedDict):
     source: str
     container_type: str
 
+
 class PublicationScholar(TypedDict):
     """
     :class:`Publication <Publication>` object used to represent a publication entry on Google Scholar.
@@ -209,12 +213,12 @@ class PublicationScholar(TypedDict):
     :param filled: The Publication filled with additional information
     """
     citedby_id: str # citations_link
-    related_id: str # TODO: not sure it is needed
+    # related_id: str # TODO: not sure it is needed
     bib: BibEntryScholar
     source: PublicationSource
     filled: bool
     url_add_sclib: str
-    url_scholarlib:str
+    url_scholarbib: str
     container_type: str
 
 

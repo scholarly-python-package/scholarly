@@ -26,9 +26,9 @@ from urllib.parse import urlparse
 from stem import Signal
 from stem.control import Controller
 from fake_useragent import UserAgent
-from .publication import _SearchScholarIterator
+from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
-from .publication import Publication
+from .publication_parser import PublicationParser
 from .data_types import Author
 
 class DOSException(Exception):
@@ -222,7 +222,7 @@ class Navigator(object, metaclass=Singleton):
                 break
 
     def search_publication(self, url: str,
-                           filled: bool = False) -> Publication:
+                           filled: bool = False) -> PublicationParser:
         """Search by scholar query and return a single Publication object
 
         :param url: the url to be searched at
@@ -233,7 +233,7 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {Publication}
         """
         soup = self._get_soup(url)
-        res = Publication(self, soup.find_all('div', 'gs_or')[0], 'scholar')
+        res = PublicationParser(self, soup.find_all('div', 'gs_or')[0], 'scholar')
         if filled:
             res.fill()
         return res

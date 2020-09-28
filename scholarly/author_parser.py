@@ -1,4 +1,4 @@
-from .publication import Publication
+from .publication_parser import PublicationParser
 import re
 import pprint
 from .data_types import Author
@@ -98,9 +98,10 @@ class AuthorParser:
         pubstart = 0
         url_citations = _CITATIONAUTH.format(author['scholar_id'])
 
+        pub_parser = PublicationParser(self.nav)
         while True:
             for row in soup.find_all('tr', class_='gsc_a_tr'):
-                new_pub = Publication(self.nav, row, 'citations')
+                new_pub = pub_parser.get_publication(row, 'citations')
                 author['publications'].append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
