@@ -102,6 +102,8 @@ class PublicationParser(object):
             return self._citation_pub(__data, publication)
         elif publication['source'] == 'scholar':
             return self._scholar_pub(__data, publication)
+        else:
+            return publication
 
     def _get_authorlist(self, authorinfo):
         authorlist = list()
