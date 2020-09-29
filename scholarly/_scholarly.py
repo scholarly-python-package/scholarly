@@ -8,7 +8,7 @@ from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
-from .data_types import PublicationScholar, PublicationCitation
+from .data_types import Author, PublicationScholar, PublicationCitation
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -139,7 +139,7 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
     
-    def fill(self, object: dict, sections = []):
+    def fill(self, object: dict, sections = [])-> Author or PublicationScholar or PublicationCitation:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.

@@ -101,7 +101,6 @@ class PublicationParser(object):
         if publication['source'] == 'citations':
             return self._citation_pub(__data, publication)
         elif publication['source'] == 'scholar':
-            print("FILLING SCHOLAR")
             return self._scholar_pub(__data, publication)
 
     def _get_authorlist(self, authorinfo):
@@ -213,7 +212,6 @@ class PublicationParser(object):
         if __data.find('div', class_='gs_ggs gs_fl'):
             publication['bib']['eprint'] = __data.find(
                 'div', class_='gs_ggs gs_fl').a['href']
-        print("FILLING PUB YEAR {}".format(publication['bib']['pub_year']))
         return publication
 
 
@@ -314,7 +312,6 @@ class PublicationParser(object):
         :type: str
         """
         if not publication['filled']:
-            print("FILLING PUBLICATION FOR BIBTEX")
             publication = self.fill(publication)
         a = BibDatabase()
         converted_dict = publication['bib']
