@@ -151,7 +151,6 @@ class _Scholarly:
             if object is False:
                 raise ValueError("Incorrect input")
         elif object['container_type'] == "Publication":
-            print("FILLING PUBLICATION")
             publication_parser = PublicationParser(self.__nav)
             object = publication_parser.fill(object)
         return object
