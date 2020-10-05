@@ -108,7 +108,7 @@ class _Scholarly:
         return self.__nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False):
-        """Search by scholar query and return a single Publication object"""
+        """Search by scholar query and return a single Publication container object"""
         url = _PUBSEARCH.format(requests.utils.quote(pub_title))
         return self.__nav.search_publication(url, filled)
 
@@ -252,6 +252,22 @@ class _Scholarly:
         to_print = object
         if to_print['container_type'] == 'Publication':
             del to_print['source']
+        elif to_print['container_type'] == 'Author':
+            parser = AuthorParser(self.__nav)
+            if parser._sections == to_print['filled']:
+                to_print['filled'] = True
+            else:
+                to_print['filled'] = False
+            
+            if 'coauthors' in to_print:
+                for coauthor in to_print['coauthors']:
+                    coauthor['filled'] = False
+                    del coauthor['container_type']
+
+            if 'publications' in to_print:
+                for publication in to_print['publications']:
+                    del publication['container_type']
+                    del publication['source']
 
         del to_print['container_type']
         print(pprint.pformat(to_print))
