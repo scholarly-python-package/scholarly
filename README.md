@@ -43,18 +43,18 @@ from scholarly import scholarly
 
 # Retrieve the author's data, fill-in, and print
 search_query = scholarly.search_author('Steven A Cholewiak')
-author = next(search_query).fill()
+author = scholarly.fill(next(search_query))
 print(author)
 
 # Print the titles of the author's publications
-print([pub.bib['title'] for pub in author.publications])
+print([pub['bib']['title'] for pub in author['publications']])
 
 # Take a closer look at the first publication
-pub = author.publications[0].fill()
+pub = scholarly.fill(author['publications'][0])
 print(pub)
 
 # Which papers cited that publication?
-print([citation.bib['title'] for citation in pub.citedby])
+print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 ```
 
 ## Methods for `scholar`
@@ -140,51 +140,16 @@ print([citation.bib['title'] for citation in pub.citedby])
 Please note that the `author_id` array is positionally matching with the `author` array.
 You can use the `author_id` to get further details about the author using the `search_author_id` method.
 
-### Methods for `Publication` objects
+#### `fill` - fill the Author and Publications container objects with additional information.
 
-#### `fill`
+##### About the Publications:
 
 By default, scholarly returns only a lightly filled object for publication, to avoid overloading Google Scholar.
-If necessary to get more information for the publication object, we call the `.fill()` method.
+If necessary to get more information for the publication object, we call this method.
 
-#### `citedby`
+##### About the Authors:
 
-Searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
-
-#### `bibtex`
-
-You can export a publication to Bibtex by using the `bibtex` property.
-Here's a quick example:
-
-```python
->>> query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
->>> pub = next(query)
->>> pub.bibtex
-```
-
-by running the code above you should get the following Bibtex entry:
-
-```bib
-@inproceedings{ester1996density,
- abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. However, the application to large spatial databases rises the following requirements for clustering algorithms: minimal requirements of domain knowledge to determine the input},
- author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\"o}rg and Xu, Xiaowei},
- booktitle = {Kdd},
- cites = {17500},
- eprint = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
- gsrank = {1},
- number = {34},
- pages = {226--231},
- title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
- url = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
- venue = {Kdd},
- volume = {96},
- year = {1996}
-}
-```
-
-### Methods for `Author` objects
-
-#### `Author.fill(sections=[])` -- Populate the Author object with information from their profile.
+If the container object passed to this method is an Author, the sections desired to be filled can be selected to populate the author with information from their profile, via the `sections` parameter.
 
 The optional `sections` parameter takes a
 list of the portions of author information to fill, as follows:
@@ -199,7 +164,7 @@ list of the portions of author information to fill, as follows:
 ```python
 >>> search_query = scholarly.search_author('Steven A Cholewiak')
 >>> author = next(search_query)
->>> print(author.fill(sections=['basics', 'indices', 'coauthors']))
+>>> print(scholarly.fill(author, sections=['basics', 'indices', 'coauthors']))
 {'affiliation': 'Vision Scientist',
  'citedby': 288,
  'citedby5y': 211,
@@ -302,6 +267,41 @@ list of the portions of author information to fill, as follows:
                'Haptics'],
  'name': 'Steven A. Cholewiak, PhD',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
+```
+
+#### `citedby`
+
+This is a method for the Publication container objects. It searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
+
+#### `bibtex`
+
+You can export a publication to Bibtex by using the `bibtex` property.
+Here's a quick example:
+
+```python
+>>> query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
+>>> pub = next(query)
+>>> pub.bibtex
+```
+
+by running the code above you should get the following Bibtex entry:
+
+```bib
+@inproceedings{ester1996density,
+ abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. However, the application to large spatial databases rises the following requirements for clustering algorithms: minimal requirements of domain knowledge to determine the input},
+ author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\"o}rg and Xu, Xiaowei},
+ booktitle = {Kdd},
+ cites = {17500},
+ eprint = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
+ gsrank = {1},
+ number = {34},
+ pages = {226--231},
+ title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
+ url = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
+ venue = {Kdd},
+ volume = {96},
+ year = {1996}
+}
 ```
 
 ## Using proxies
