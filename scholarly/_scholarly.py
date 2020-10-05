@@ -2,12 +2,13 @@
 import requests
 import random
 import os
+import pprint
 from typing import Callable
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
-from .publication_parser import PublicationParser
+from .publication_parser import PublicationParser, _SearchScholarIterator
 from .data_types import Author, PublicationScholar, PublicationCitation
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
@@ -166,7 +167,10 @@ class _Scholarly:
             print("Object not supported for bibtex exportation")
             return
 
-    def citedby(self, object: PublicationScholar or PublicationCitation):
+    def citedby(self, object: PublicationScholar or PublicationCitation)->_SearchScholarIterator:
+        """Searches Google Scholar for other articles that cite this Publication
+        and returns a Publication generator.
+        """
         if object['container_type'] == "Publication":
            publication_parser = PublicationParser(self.__nav) 
            return publication_parser.citedby(object)
@@ -175,7 +179,7 @@ class _Scholarly:
             return
 
 
-    def search_author_id(self, id: str, filled: bool = False):
+    def search_author_id(self, id: str, filled: bool = False)->Author:
         """Search by author id and return a single Author object
 
         :Example::
@@ -237,3 +241,18 @@ class _Scholarly:
         """Search by custom URL and return a generator of Author objects
         URL should be of the form '/citation?q=...'"""
         return self.__nav.search_authors(url)
+
+    def pprint(self, object: Author or PublicationCitation or PublicationScholar):
+        """Pretty print an Author or Publication container object
+        """
+        if 'container_type' not in object:
+            print("Not a scholarly container object")
+            return
+
+        to_print = object
+        if to_print['container_type'] == 'Publication':
+            del to_print['source']
+
+        del to_print['container_type']
+        print(pprint.pformat(to_print))
+
