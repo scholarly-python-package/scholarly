@@ -253,13 +253,16 @@ class Publication(object):
                             result += item.text[9:].strip()
                         else:
                             result += item.text
-                    
+
                     if len(abstract) == 0: # if no gsh_csp were found 
                         abstract = val.find(class_='gsh_small')
-                        if abstract.text[0:8].lower() == 'abstract':
-                            result = abstract.text[9:].strip()
+                        if abstract:
+                            if abstract.text[0:8].lower() == 'abstract':
+                                result = abstract.text[9:].strip()
+                            else:
+                                result = abstract.text
                         else:
-                            result = abstract.text
+                            result = ' '.join([description_part for description_part in val])
 
                     self.bib['abstract'] = result
                 elif key == 'total citations':
