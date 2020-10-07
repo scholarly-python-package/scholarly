@@ -103,30 +103,6 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-    
-    def test_search_author_filling_author_publications(self):
-         """
-         Download a few publications for author and check that abstracts are
-         populated with lengths within the expected limits. This process
-         checks the process of filling a publication that is derived
-         from the author profile page.
-         """
-         query = 'Ipeirotis'
-         authors = [a for a in scholarly.search_author(query)]
-         self.assertGreaterEqual(len(authors), 1)
-         author = authors[0].fill()
-         # Check that we can fill without problem the first two publications
-         publications = author.publications[:2]
-         for i in publications:
-             i.fill()
-         self.assertEqual(len(publications), 2)
-         abstracts_populated = ['abstract' in p.bib.keys() for p in publications]
-         # Check that all publications have the abstract field populated
-         self.assertTrue(all(abstracts_populated))
-         # Check that the abstracts have reasonable lengths
-         abstracts_length = [len(p.bib['abstract']) for p in publications]
-         abstracts_check = [1000 > n > 500 for n in abstracts_length]
-         self.assertTrue(all(abstracts_check))
 
     def test_search_pubs_citedby(self):
         """
@@ -161,7 +137,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
         self.assertEqual(author.id, u'4bahYMkAAAAJ')        
         pub = author.publications[2].fill()
-        self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:roLk4NBRz8UC')
+        self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:LI9QrySNdTsC')
 
     def test_search_author_multiple_authors(self):
         """
