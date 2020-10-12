@@ -281,7 +281,7 @@ Here's a quick example:
 ```python
 >>> query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
 >>> pub = next(query)
->>> pub.bibtex
+>>> scholarly.bibtex(pub)
 ```
 
 by running the code above you should get the following Bibtex entry:

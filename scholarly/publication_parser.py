@@ -172,18 +172,18 @@ class PublicationParser(object):
         venueyear = authorinfo.split(' - ')
         # If there is no middle part (A) then venue and year are unknown.
         if len(venueyear) <= 2:
-            publication['bib']['venue'], publication['bib']['pub_year'] = 'NA', 'NA'
+            publication['bib']['venue'], publication['bib']['year'] = 'NA', 'NA'
         else:
             venueyear = venueyear[1].split(',')
             venue = 'NA'
             year = venueyear[-1].strip()
             if year.isnumeric() and len(year) == 4:
-                publication['bib']['pub_year'] = year
+                publication['bib']['year'] = year
                 if len(venueyear) >= 2:
                     venue = ','.join(venueyear[0:-1]) # everything but last
             else:
                 venue = ','.join(venueyear) # everything
-                publication['bib']['pub_year'] = 'NA'
+                publication['bib']['year'] = 'NA'
             publication['bib']['venue'] = venue
 
         if databox.find('div', class_='gs_rs'):
@@ -332,17 +332,3 @@ class PublicationParser(object):
             if link.string.lower() == "bibtex":
                 return link.get('href')
         return ''
-
-    # def __str__(self):
-    #     pdict = dict(self.__dict__)
-    #     try:
-    #         pdict["filled"] = self.filled
-    #         del pdict['nav']
-    #         del pdict['_filled']
-    #     except Exception:
-    #         raise
-
-#         return pprint.pformat(pdict)
-
-    # def __repr__(self):
-    #     return self.__str__()

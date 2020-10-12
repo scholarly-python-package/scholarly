@@ -81,6 +81,7 @@ class AuthorSource(Enum):
 class BibEntryCitation(TypedDict):
     '''
     The bibliographic entry for a publication
+
     :param title: title of the publication
     :param authors: the names of the authors that contributed to this publication
     :param journal: Journal Name
@@ -100,7 +101,7 @@ class BibEntryCitation(TypedDict):
                        the "citedby_id" will be a comma-separated list of values. 
                        It is also used to return the "cluster" of all the different versions of the paper.
                        https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
-    :cites: number of citations of this publication
+    :param cites: number of citations of this publication
     '''
     title: str
     authors: str
@@ -154,6 +155,7 @@ class PublicationCitation(TypedDict):
 class BibEntryScholar(TypedDict):
     '''
     The bibliographic entry for a publication
+
     :param ENTRYTYPE: the type of entry for this bib (for example 'article')
     :param ID: bib entry id
     :param abstract: description of the publication
@@ -180,7 +182,6 @@ class BibEntryScholar(TypedDict):
     title: str
     author: str
     author_id: List[str]
-    pub_year: str
     year: str
     eprint: str
     venue: str
@@ -214,7 +215,6 @@ class PublicationScholar(TypedDict):
     :param url_scholarbib: the url containing links for the BibTeX entry, EndNote, RefMan and RefWorks
     """
     citedby_id: str # citations_link
-    # related_id: str # TODO: not sure it is needed
     bib: BibEntryScholar
     source: str
     filled: bool

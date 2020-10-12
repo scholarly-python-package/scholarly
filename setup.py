@@ -35,6 +35,7 @@ setuptools.setup(
                       'selenium',
                       'python-dotenv',
                       'free-proxy',
+                      'sphinx_rtd_theme',
                       ],
     test_suite="test_module.py"
 )

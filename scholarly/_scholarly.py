@@ -24,7 +24,7 @@ class _Scholarly:
         self.env = os.environ.copy()
         self.__nav = Navigator()
 
-    def set_retries(self, num_retries: int):
+    def set_retries(self, num_retries: int)->None:
         """Sets the number of retries in case of errors
 
         :param num_retries: the number of retries
@@ -34,16 +34,21 @@ class _Scholarly:
         return self.__nav._set_retries(num_retries)
 
 
-    def use_proxy(self, proxy_generator: ProxyGenerator):
+    def use_proxy(self, proxy_generator: ProxyGenerator)->None:
+        """Select which proxy method to use.
+        See the available ProxyGenerator methods.
+
+        :param proxy_generator: proxy generator objects
+        :type proxy_generator: ProxyGenerator
+        """
         self.__nav.use_proxy(proxy_generator)
 
     def search_pubs(self,
                     query: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,
-                    year_high: int = None):
+                    year_high: int = None)->_SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
 
-        [description]
         :param query: terms to be searched
         :type query: str
         :param patents: Whether or not to include patents, defaults to True
@@ -107,8 +112,14 @@ class _Scholarly:
         url = url + yr_lo + yr_hi + citations + patents
         return self.__nav.search_publications(url)
 
-    def search_single_pub(self, pub_title: str, filled: bool = False):
-        """Search by scholar query and return a single Publication container object"""
+    def search_single_pub(self, pub_title: str, filled: bool = False)->PublicationParser:
+        """Search by scholar query and return a single Publication container object
+        
+        :param pub_title: Title of the publication to search
+        :type pub_title: string
+        :param filled: Whether the application should be filled with additional information
+        :type filled: bool
+        """
         url = _PUBSEARCH.format(requests.utils.quote(pub_title))
         return self.__nav.search_publication(url, filled)
 
@@ -144,6 +155,11 @@ class _Scholarly:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.
+        
+        :param object: the Author or Publication object that needs to get filled
+        :type object: Author or PublicationScholar or PublicationCitation
+        :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications']
+        :type sections: list
         """
 
         if object['container_type'] == "Author":
@@ -156,9 +172,12 @@ class _Scholarly:
             object = publication_parser.fill(object)
         return object
 
-    def bibtext(self, object: PublicationScholar or PublicationCitation)->str:
+    def bibtex(self, object: PublicationScholar or PublicationCitation)->str:
         """Returns a bibtex entry for a publication that has either Scholar source
         or citation source
+        
+        :param object: The Publication object for the bibtex exportation
+        :type object: PublicationScholar or PublicationCitation
         """
         if object['container_type'] == "Publication":
            publication_parser = PublicationParser(self.__nav) 
@@ -170,6 +189,9 @@ class _Scholarly:
     def citedby(self, object: PublicationScholar or PublicationCitation)->_SearchScholarIterator:
         """Searches Google Scholar for other articles that cite this Publication
         and returns a Publication generator.
+
+        :param object: The Publication object for the bibtex exportation
+        :type object: PublicationScholar or PublicationCitation
         """
         if object['container_type'] == "Publication":
            publication_parser = PublicationParser(self.__nav) 
@@ -232,18 +254,29 @@ class _Scholarly:
         url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
         return self.__nav.search_authors(url)
 
-    def search_pubs_custom_url(self, url: str):
+    def search_pubs_custom_url(self, url: str)->_SearchScholarIterator:
         """Search by custom URL and return a generator of Publication objects
-        URL should be of the form '/scholar?q=...'"""
+        URL should be of the form '/scholar?q=...'
+
+        :param url: custom url to seach for the publication
+        :type url: string
+        """
         return self.__nav.search_publications(url)
 
-    def search_author_custom_url(self, url: str):
+    def search_author_custom_url(self, url: str)->Author:
         """Search by custom URL and return a generator of Author objects
-        URL should be of the form '/citation?q=...'"""
+        URL should be of the form '/citation?q=...'
+
+        :param url: url for the custom author url
+        :type url: string
+        """
         return self.__nav.search_authors(url)
 
-    def pprint(self, object: Author or PublicationCitation or PublicationScholar):
+    def pprint(self, object: Author or PublicationCitation or PublicationScholar)->None:
         """Pretty print an Author or Publication container object
+        
+        :param object: Publication or Author container object
+        :type object: Author or PublicationCitation or PublicationScholar
         """
         if 'container_type' not in object:
             print("Not a scholarly container object")
