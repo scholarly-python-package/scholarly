@@ -1,4 +1,4 @@
-Publication module
+PublicationParser module
 ----------------------------
 
 .. automodule:: scholarly.publication_parser

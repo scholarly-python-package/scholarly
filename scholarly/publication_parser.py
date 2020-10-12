@@ -217,8 +217,12 @@ class PublicationParser(object):
         return publication
 
 
-    def fill(self, publication):
-        """Populate the Publication with information from its profile"""
+    def fill(self, publication: dict)->PublicationCitation or PublicationScholar:
+        """Populate the Publication with information from its profile
+        
+        :param publication: Scholar or Citation publication container object that is not filled
+        :type publication: PublicationCitation or PublicationScholar
+        """
         if publication['source'] == 'citations':
             url = _CITATIONPUB.format(publication['author_pub_id'])
             soup = self.nav._get_soup(url)
@@ -296,9 +300,12 @@ class PublicationParser(object):
         return publication
 
 
-    def citedby(self, publication) -> _SearchScholarIterator or list:
+    def citedby(self, publication: dict) -> _SearchScholarIterator or list:
         """Searches Google Scholar for other articles that cite this Publication and
         returns a Publication generator.
+
+        :param publication: Scholar or Citation publication container object
+        :type publication: PublicationCitation or PublicationScholar
 
         :getter: Returns a Generator of Publications that cited the current.
         :type: Iterator[:class:`Publication`]
@@ -307,8 +314,11 @@ class PublicationParser(object):
             publication = self.fill(publication)
         return _SearchScholarIterator(self.nav, publication['citedby_id'])
 
-    def bibtex(self, publication) -> str:
+    def bibtex(self, publication: dict) -> str:
         """Returns the publication as a Bibtex entry
+
+        :param publication: Scholar or Citation publication container object
+        :type publication: PublicationCitation or PublicationScholar
 
         :getter: Returns a Bibtex entry in text format
         :type: str
@@ -325,6 +335,8 @@ class PublicationParser(object):
         return bibtexparser.dumps(a)
 
     def _get_bibtex(self, bib_url) -> str:
+        """Retrieves the bibtex url"""
+
         soup = self.nav._get_soup(bib_url)
         styles = soup.find_all('a', class_='gs_citi')
 

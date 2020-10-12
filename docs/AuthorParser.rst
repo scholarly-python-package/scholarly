@@ -1,4 +1,4 @@
-Author module
+AuthorParser module
 -----------------------
 
 .. automodule:: scholarly.author_parser

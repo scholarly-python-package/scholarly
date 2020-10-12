@@ -225,6 +225,9 @@ class _Scholarly:
 
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
+        
+        :param keyword: keyword to be searched
+        :type keyword: str
 
         :Example::
 
