@@ -87,7 +87,9 @@ class PublicationParser(object):
         
         return publication
 
-    def get_publication(self, __data, pubtype=None):
+    def get_publication(self, __data, pubtype=None)->PublicationCitation or PublicationScholar:
+        """Returns a publication that has either 'citation' or 'scholar' source
+        """
 
         publication = {}
         if pubtype == 'citations':
