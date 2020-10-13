@@ -63,14 +63,14 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 
 ```python
 >>> search_query = scholarly.search_author('Marty Banks, Berkeley')
->>> print(next(search_query))
+>>> scholarly.pprint(next(search_query))
 {'affiliation': 'Professor of Vision Science, UC Berkeley',
- 'citedby': 20160,
- 'email': '@berkeley.edu',
+ 'citedby': 20975,
+ 'email_domain': '@berkeley.edu',
  'filled': False,
- 'id': 'Smr99uEAAAAJ',
  'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
  'name': 'Martin Banks',
+ 'scholar_id': 'Smr99uEAAAAJ',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'}
 ```
 
@@ -78,29 +78,29 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 
 ```python
 >>> author = scholarly.search_author_id('Smr99uEAAAAJ')
->>> print(author)
+>>> scholarly.pprint(author)
 {'affiliation': 'Professor of Vision Science, UC Berkeley',
  'filled': False,
- 'id': 'Smr99uEAAAAJ',
  'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
- 'name': 'Martin Banks'}
+ 'name': 'Martin Banks',
+ 'scholar_id': 'Smr99uEAAAAJ'}
 ```
 
 #### `search_keyword` -- Search by keyword and return a generator of Author objects.
 
 ```python
 >>> search_query = scholarly.search_keyword('Haptics')
->>> print(next(search_query))
+>>> scholarly.pprint(next(search_query))
 {'affiliation': 'Postdoctoral research assistant, University of Bremen',
- 'citedby': 55943,
- 'email': '@collision-detection.com',
+ 'citedby': 56600,
+ 'email_domain': '@collision-detection.com',
  'filled': False,
- 'id': 'lHrs3Y4AAAAJ',
  'interests': ['Computer Graphics',
                'Collision Detection',
                'Haptics',
                'Geometric Data Structures'],
  'name': 'Rene Weller',
+ 'scholar_id': 'lHrs3Y4AAAAJ',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
 ```
 
@@ -108,7 +108,7 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 
 ```python
 >>> search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
->>> print(next(search_query))
+>>> scholarly.pprint(next(search_query))
 {'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
                      'physically stable or not. Such judgments allow observers '
                      'to predict the physical behavior of objects, and hence '
@@ -121,19 +121,18 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
                      'perceived critical angle, ie, the tilt angle at which '
                      'the object',
          'author': ['SA Cholewiak', 'RW Fleming', 'M Singh'],
-         'author_id': ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'],
-         'cites': '23',
+         'author_id': ['4bahYMkAAAAJ', 'ruUKktgAAAAJ', ''],
+         'cites': 23,
          'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
-         'gsrank': '1',
+         'gsrank': 1,
          'title': 'Perception of physical stability and center of mass of 3-D '
                   'objects',
          'url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
          'venue': 'Journal of vision',
          'year': '2015'},
- 'citations_link': '/scholar?cites=15736880631888070187&as_sdt=5,33&sciodt=0,33&hl=en',
+ 'citedby_id': '/scholar?cites=15736880631888070187&as_sdt=5,33&sciodt=0,33&hl=en',
  'filled': False,
- 'source': 'scholar',
- 'url_add_sclib': '/citations?hl=en&xsrf=&continue=/scholar%3Fq%3DPerception%2Bof%2Bphysical%2Bstability%2Band%2Bcenter%2Bof%2Bmass%2Bof%2B3D%2Bobjects%26hl%3Den%26as_sdt%3D0,33&citilm=1&json=&update_op=library_add&info=K8ZpoI6hZNoJ&ei=ewEtX7_JOIvrmQHcvJqoDA',
+ 'url_add_sclib': '/citations?hl=en&xsrf=&continue=/scholar%3Fq%3DPerception%2Bof%2Bphysical%2Bstability%2Band%2Bcenter%2Bof%2Bmass%2Bof%2B3D%2Bobjects%26hl%3Den%26as_sdt%3D0,33&citilm=1&json=&update_op=library_add&info=K8ZpoI6hZNoJ&ei=IVuFX_zfGoqVmgGUyaso',
  'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 ```
 
@@ -164,108 +163,111 @@ list of the portions of author information to fill, as follows:
 ```python
 >>> search_query = scholarly.search_author('Steven A Cholewiak')
 >>> author = next(search_query)
->>> print(scholarly.fill(author, sections=['basics', 'indices', 'coauthors']))
+>>> scholarly.pprint(scholarly.fill(author, sections=['basics', 'indices', 'coauthors']))
 {'affiliation': 'Vision Scientist',
- 'citedby': 288,
- 'citedby5y': 211,
- 'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental Psychology, University '
-                'of Giessen',
- 'filled': False,
- 'id': 'ruUKktgAAAAJ',
- 'name': 'Roland Fleming'},
+ 'citedby': 302,
+ 'citedby5y': 225,
+ 'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental '
+                               'Psychology, University of Giessen',
+                'filled': False,
+                'name': 'Roland Fleming',
+                'scholar_id': 'ruUKktgAAAAJ'},
                {'affiliation': 'Professor of Vision Science, UC Berkeley',
- 'filled': False,
- 'id': 'Smr99uEAAAAJ',
- 'name': 'Martin Banks'},
+                'filled': False,
+                'name': 'Martin Banks',
+                'scholar_id': 'Smr99uEAAAAJ'},
                {'affiliation': 'Durham University, Computer Science & Physics',
- 'filled': False,
- 'id': '3xJXtlwAAAAJ',
- 'name': 'Gordon D. Love'},
+                'filled': False,
+                'name': 'Gordon D. Love',
+                'scholar_id': '3xJXtlwAAAAJ'},
                {'affiliation': 'Professor of ECE, Purdue University',
- 'filled': False,
- 'id': 'OiVOAHMAAAAJ',
- 'name': 'Hong Z Tan'},
+                'filled': False,
+                'name': 'Hong Z Tan',
+                'scholar_id': 'OiVOAHMAAAAJ'},
                {'affiliation': 'Deepmind',
- 'filled': False,
- 'id': 'MnUboHYAAAAJ',
- 'name': 'Ari Weinstein'},
-               {'affiliation': "Brigham and Women's Hospital/Harvard Medical School",
- 'filled': False,
- 'id': 'dqokykoAAAAJ',
- 'name': 'Chia-Chien Wu'},
-               {'affiliation': 'Professor of Psychology and Cognitive Science, Rutgers '
-                'University',
- 'filled': False,
- 'id': 'KoJrMIAAAAAJ',
- 'name': 'Jacob Feldman'},
-               {'affiliation': 'Research Scientist at Google Research, PhD Student at UC '
-                'Berkeley',
- 'filled': False,
- 'id': 'aYyDsZ0AAAAJ',
- 'name': 'Pratul Srinivasan'},
-               {'affiliation': 'Formerly: Indiana University, Rutgers University, University '
-                'of Pennsylvania',
- 'filled': False,
- 'id': 'FoVvIK0AAAAJ',
- 'name': 'Peter C. Pantelis'},
-               {'affiliation': 'Professor in Computer Science, University of California, '
-                'Berkeley',
- 'filled': False,
- 'id': '6H0mhLUAAAAJ',
- 'name': 'Ren Ng'},
+                'filled': False,
+                'name': 'Ari Weinstein',
+                'scholar_id': 'MnUboHYAAAAJ'},
+               {'affiliation': "Brigham and Women's Hospital/Harvard Medical "
+                               'School',
+                'filled': False,
+                'name': 'Chia-Chien Wu',
+                'scholar_id': 'dqokykoAAAAJ'},
+               {'affiliation': 'Professor of Psychology and Cognitive Science, '
+                               'Rutgers University',
+                'filled': False,
+                'name': 'Jacob Feldman',
+                'scholar_id': 'KoJrMIAAAAAJ'},
+               {'affiliation': 'Research Scientist at Google Research, PhD '
+                               'Student at UC Berkeley',
+                'filled': False,
+                'name': 'Pratul Srinivasan',
+                'scholar_id': 'aYyDsZ0AAAAJ'},
+               {'affiliation': 'Formerly: Indiana University, Rutgers '
+                               'University, University of Pennsylvania',
+                'filled': False,
+                'name': 'Peter C. Pantelis',
+                'scholar_id': 'FoVvIK0AAAAJ'},
+               {'affiliation': 'Professor in Computer Science, University of '
+                               'California, Berkeley',
+                'filled': False,
+                'name': 'Ren Ng',
+                'scholar_id': '6H0mhLUAAAAJ'},
                {'affiliation': 'Yale University',
- 'filled': False,
- 'id': 'rNTIQXYAAAAJ',
- 'name': 'Steven W Zucker'},
+                'filled': False,
+                'name': 'Steven W Zucker',
+                'scholar_id': 'rNTIQXYAAAAJ'},
                {'affiliation': 'Brown University',
- 'filled': False,
- 'id': 'JPZWLKQAAAAJ',
- 'name': 'Ben Kunsberg'},
+                'filled': False,
+                'name': 'Ben Kunsberg',
+                'scholar_id': 'JPZWLKQAAAAJ'},
                {'affiliation': 'Rutgers University, New Brunswick, NJ',
- 'filled': False,
- 'id': '9XRvM88AAAAJ',
- 'name': 'Manish Singh'},
+                'filled': False,
+                'name': 'Manish Singh',
+                'scholar_id': '9XRvM88AAAAJ'},
                {'affiliation': 'Kent State University',
- 'filled': False,
- 'id': 'itUoRvUAAAAJ',
- 'name': 'Kwangtaek Kim'},
-               {'affiliation': 'Silicon Valley Professor of ECE, Purdue University',
- 'filled': False,
- 'id': 'fD3JviYAAAAJ',
- 'name': 'David S. Ebert'},
+                'filled': False,
+                'name': 'Kwangtaek Kim',
+                'scholar_id': 'itUoRvUAAAAJ'},
+               {'affiliation': 'Silicon Valley Professor of ECE, Purdue '
+                               'University',
+                'filled': False,
+                'name': 'David S. Ebert',
+                'scholar_id': 'fD3JviYAAAAJ'},
                {'affiliation': 'MIT',
- 'filled': False,
- 'id': 'rRJ9wTJMUB8C',
- 'name': 'Joshua B. Tenenbaum'},
+                'filled': False,
+                'name': 'Joshua B. Tenenbaum',
+                'scholar_id': 'rRJ9wTJMUB8C'},
                {'affiliation': 'Chief Scientist, isee AI',
- 'filled': False,
- 'id': 'bTdT7hAAAAAJ',
- 'name': 'Chris Baker'},
-               {'affiliation': 'Professor of Psychology, Ewha Womans University',
- 'filled': False,
- 'id': 'KXQb7CAAAAAJ',
- 'name': 'Sung-Ho Kim'},
+                'filled': False,
+                'name': 'Chris Baker',
+                'scholar_id': 'bTdT7hAAAAAJ'},
+               {'affiliation': 'Clinical Director, Neurolens Inc.,',
+                'filled': False,
+                'name': 'Vivek Labhishetty',
+                'scholar_id': 'tD7OGTQAAAAJ'},
+               {'affiliation': 'Professor of Psychology, Ewha Womans '
+                               'University',
+                'filled': False,
+                'name': 'Sung-Ho Kim',
+                'scholar_id': 'KXQb7CAAAAAJ'},
                {'affiliation': 'Assistant Professor, Boston University',
+                'filled': False,
+                'name': 'Melissa M. Kibbe',
+                'scholar_id': 'NN4GKo8AAAAJ'}],
+ 'email_domain': '@berkeley.edu',
  'filled': False,
- 'id': 'NN4GKo8AAAAJ',
- 'name': 'Melissa M. Kibbe'},
-               {'affiliation': 'Nvidia Corporation',
- 'filled': False,
- 'id': 'nHx9IgYAAAAJ',
- 'name': 'Peter Shirley'}],
- 'email': '@berkeley.edu',
- 'filled': False,
- 'hindex': 8,
- 'hindex5y': 8,
+ 'hindex': 9,
+ 'hindex5y': 9,
  'i10index': 8,
  'i10index5y': 7,
- 'id': '4bahYMkAAAAJ',
  'interests': ['Depth Cues',
                '3D Shape',
                'Shape from Texture & Shading',
                'Naive Physics',
                'Haptics'],
  'name': 'Steven A. Cholewiak, PhD',
+ 'scholar_id': '4bahYMkAAAAJ',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
 ```
 
@@ -289,9 +291,10 @@ by running the code above you should get the following Bibtex entry:
 ```bib
 @inproceedings{ester1996density,
  abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. However, the application to large spatial databases rises the following requirements for clustering algorithms: minimal requirements of domain knowledge to determine the input},
- author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\"o}rg and Xu, Xiaowei},
+ author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\"o}rg and Xu, Xiaowei and others},
+ author_id = {ZYwC_CQAAAAJ, DBf9LC4AAAAJ, QzFTFLEAAAAJ, 7McohLsAAAAJ},
  booktitle = {Kdd},
- cites = {17500},
+ cites = {18903},
  eprint = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
  gsrank = {1},
  number = {34},
@@ -377,7 +380,7 @@ pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholar
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+scholarly.pprint(author)
 ```
 
 #### `pg.Tor_internal(tor_cmd=None, tor_sock_port=None, tor_control_port=None)`
@@ -393,7 +396,7 @@ pg.Tor_Internal(tor_cmd = "tor")
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+scholarly.pprint(author)
 ```
 
 #### `pg.FreeProxies()`
@@ -408,7 +411,7 @@ pg.FreeProxies()
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+scholarly.pprint(author)
 ```
 
 #### `pg.Luminati()`
@@ -439,7 +442,7 @@ pg.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = 
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+scholarly.pprint(author)
 ```
 
 #### `pg.SingleProxy(http: str, https:str)`
@@ -454,7 +457,7 @@ pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
 scholarly.use_proxy(pg)
 
 author = next(scholarly.search_author('Steven A Cholewiak'))
-print(author)
+scholarly.pprint(author)
 ```
 
 **NOTE:** Please create a new proxy object whenever you change proxy method, as this can lead to unexpected behavior.

@@ -131,8 +131,8 @@ class PublicationParser(object):
             match = re.search('\\?user=(.*?)&amp;', author_html)
             if match:
                 author_id_list.append(match.groups()[0])
-            # else: #TODO: might need to remove
-            #     author_id_list.append(None)
+            else: 
+                author_id_list.append("")
         return author_id_list
 
     def _scholar_pub(self, __data, publication: PublicationScholar):

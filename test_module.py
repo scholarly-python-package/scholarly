@@ -222,7 +222,7 @@ class TestScholarly(unittest.TestCase):
         author_html_partial = "A Bateman, J O'Connell, N Lorenzini, <a href=\"/citations?user=TEndP-sAAAAJ&amp;hl=en&amp;oi=sra\">T Gardner</a>…&nbsp;- BMC psychiatry, 2016 - Springer"
         pub_parser = PublicationParser(None)
         author_id_list = pub_parser._get_author_id_list(author_html_partial)
-        self.assertTrue(author_id_list[0] == 'TEndP-sAAAAJ')
+        self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
 
 
 
