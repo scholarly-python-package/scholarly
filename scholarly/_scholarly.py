@@ -9,7 +9,7 @@ from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser, _SearchScholarIterator
-from .data_types import Author, PublicationScholar, PublicationCitation
+from .data_types import Author, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -151,7 +151,7 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
     
-    def fill(self, object: dict, sections = [])-> Author or PublicationScholar or PublicationCitation:
+    def fill(self, object: dict, sections = [])-> Author or Publication:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.
@@ -172,7 +172,7 @@ class _Scholarly:
             object = publication_parser.fill(object)
         return object
 
-    def bibtex(self, object: PublicationScholar or PublicationCitation)->str:
+    def bibtex(self, object: Publication)->str:
         """Returns a bibtex entry for a publication that has either Scholar source
         or citation source
         
@@ -186,7 +186,7 @@ class _Scholarly:
             print("Object not supported for bibtex exportation")
             return
 
-    def citedby(self, object: PublicationScholar or PublicationCitation)->_SearchScholarIterator:
+    def citedby(self, object: Publication)->_SearchScholarIterator:
         """Searches Google Scholar for other articles that cite this Publication
         and returns a Publication generator.
 
@@ -275,7 +275,7 @@ class _Scholarly:
         """
         return self.__nav.search_authors(url)
 
-    def pprint(self, object: Author or PublicationCitation or PublicationScholar)->None:
+    def pprint(self, object: Author or Publication)->None:
         """Pretty print an Author or Publication container object
         
         :param object: Publication or Author container object
@@ -287,7 +287,7 @@ class _Scholarly:
 
         to_print = object
         if to_print['container_type'] == 'Publication':
-            del to_print['source']
+            to_print['source'] = PublicationSource(to_print['source']).name
         elif to_print['container_type'] == 'Author':
             parser = AuthorParser(self.__nav)
             if parser._sections == to_print['filled']:

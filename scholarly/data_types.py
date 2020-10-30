@@ -222,6 +222,89 @@ class PublicationScholar(TypedDict):
     url_scholarbib: str
     container_type: str
 
+class BibEntry(TypedDict, total=False):
+    """
+    The bibliographic entry for a publication
+
+    :param ENTRYTYPE: the type of entry for this bib (for example 'article') (1)
+    :param ID: bib entry id (1)
+    :param abstract: description of the publication
+    :param title: title of the publication
+    :param author: list of author the author names that contributed to this publication
+    :param pub_year: the year the publication was first published
+    :param eprint: digital version of the Publication. Usually it is a pdf.
+    :param venue: the venue of the publication
+    :param journal: Journal Name
+    :param volume: number of years a publication has been circulated
+    :param number: NA number of a publication
+    :param pages: range of pages
+    :param publisher: The publisher's name
+    :param url: url of the website providing the publication
+    """
+    pub_type: str
+    bib_id: str
+    abstract: str
+    title: str
+    author: str
+    pub_year: str
+    eprint: str # TODO: this should represent url
+    venue: str
+    journal: str
+    volume: int
+    number: int
+    pages: str
+    publisher: str  
+    url: str
+
+
+class Publication(TypedDict, total=False):
+    """
+    :param BibEntryCitation: contains additional information about the publication
+    :param gsrank: position of the publication in the query (1)
+    :param author_id: list of the corresponding author ids of the authors that contributed to the Publication (1)
+    :param num_citations: number of citations of this Publication
+    :param cites_id: This corresponds to a "single" publication on Google Scholar. Used in the web search
+                       request to return all the papers that cite the publication. If cites_id = 
+                       16766804411681372720 then:
+                       https://scholar.google.com/scholar?cites=<cites_id>&hl=en
+                       If the publication comes from a "merged" list of papers from an authors page, 
+                       the "citedby_id" will be a comma-separated list of values. 
+                       It is also used to return the "cluster" of all the different versions of the paper.
+                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
+                       (2)
+    :param citedby_id: This corresponds to a "single" publication on Google Scholar. Used in the web search
+                       request to return all the papers that cite the publication. 
+                       https://scholar.google.com/scholar?cites=16766804411681372720hl=en
+                       If the publication comes from a "merged" list of papers from an authors page, 
+                       the "citedby_id" will be a comma-separated list of values. 
+                       It is also used to return the "cluster" of all the different versions of the paper.
+                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en (both)
+    :param cites_per_year: a dictionay containing the number of citations per year for this Publication (2)
+    :param author_pub_id: The id of the paper on Google Scholar from an author page. Comes from the 
+                          parameter "citation_for_view=PA9La6oAAAAJ:YsMSGLbcyi4C". It combines the 
+                          author id, together with a publication id. It may corresponds to a merging
+                          of multiple publications, and therefore may have multiple "citedby_id" (2)
+                          values.
+    :param url_add_sclib: (1)
+    :param url_scholarbib: the url containing links for 
+                           the BibTeX entry, EndNote, RefMan and RefWorks (1)
+    :param filled: whether the publication is fully filled or not
+    :param source: The source of the publication entry TODO corresponds to 
+    """
+
+    bib: BibEntry
+    gsrank: int # TODO: should be moved
+    author_id: List[str]
+    num_citations: int # TODO: change name to num_citations
+    cites_id: int # same thing as id
+    citedby_id: str # TODO: change to link
+    cites_per_year: CitesPerYear
+    author_pub_id: str # id_citations
+    url_add_sclib: str
+    url_scholarbib: str
+    filled: bool
+    source: PublicationSource # Change to publication enum
+    container_type: str
 
 class Author(TypedDict):
     """

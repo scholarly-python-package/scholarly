@@ -1,7 +1,7 @@
 from .publication_parser import PublicationParser
 import re
 import pprint
-from .data_types import Author
+from .data_types import Author, PublicationSource
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -101,7 +101,7 @@ class AuthorParser:
         pub_parser = PublicationParser(self.nav)
         while True:
             for row in soup.find_all('tr', class_='gsc_a_tr'):
-                new_pub = pub_parser.get_publication(row, 'citations')
+                new_pub = pub_parser.get_publication(row, PublicationSource.AUTHOR_PUBLICATION_ENTRY)
                 author['publications'].append(new_pub)
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE

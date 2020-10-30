@@ -3,7 +3,7 @@ import bibtexparser
 import arrow
 import pprint
 from bibtexparser.bibdatabase import BibDatabase
-from .data_types import PublicationCitation, PublicationScholar
+from .data_types import BibEntry, PublicationCitation, PublicationScholar, Publication, PublicationSource
 
 
 _HOST = 'https://scholar.google.com{0}'
@@ -15,6 +15,19 @@ _BIBCITE = '/scholar?q=info:{0}:scholar.google.com/\
 &output=cite&scirp={1}&hl=en'
 _CITEDBYLINK = '/scholar?cites={0}'
 
+_BIB_MAPPING = {
+    'ENTRYTYPE': 'pub_type',
+    'ID': 'bib_id',
+    'year': 'pub_year',
+}
+
+
+def remap_bib(parsed_bib: dict) -> BibEntry:
+    for key, value in _BIB_MAPPING.items():
+        if key in parsed_bib:
+            parsed_bib[value] = parsed_bib.pop(key)
+
+    return parsed_bib
 
 class _SearchScholarIterator(object):
     """Iterator that returns Publication objects from the search page
@@ -42,7 +55,7 @@ class _SearchScholarIterator(object):
         if self._pos < len(self._rows):
             row = self._rows[self._pos]
             self._pos += 1
-            res = self.pub_parser.get_publication(row, 'scholar')
+            res = self.pub_parser.get_publication(row, PublicationSource.PUBLICATION_SEARCH_SNIPPET)
             return res
         elif self._soup.find(class_='gs_ico gs_ico_nav_next'):
             url = self._soup.find(
@@ -68,16 +81,16 @@ class PublicationParser(object):
     def __init__(self, nav):
         self.nav = nav
 
-    def _citation_pub(self, __data, publication: PublicationCitation):
+    def _citation_pub(self, __data, publication: Publication):
         # create the bib entry in the dictionary
         publication['bib']['title'] = __data.find('a', class_='gsc_a_at').text
         publication['author_pub_id'] = re.findall(_CITATIONPUBRE, __data.find(
             'a', class_='gsc_a_at')['data-href'])[0]
         citedby = __data.find(class_='gsc_a_ac')
 
-        publication['bib']["cites"] = 0
+        publication["num_citations"] = 0
         if citedby and not (citedby.text.isspace() or citedby.text == ''):
-            publication['bib']["cites"] = int(citedby.text.strip())
+            publication["num_citations"] = int(citedby.text.strip())
 
         year = __data.find(class_='gsc_a_h')
         if (year and year.text
@@ -87,22 +100,18 @@ class PublicationParser(object):
         
         return publication
 
-    def get_publication(self, __data, pubtype=None)->PublicationCitation or PublicationScholar:
+    def get_publication(self, __data, pubtype: PublicationSource)->Publication:
         """Returns a publication that has either 'citation' or 'scholar' source
         """
 
-        publication = {}
-        if pubtype == 'citations':
-            publication: PublicationCitation = {'container_type': 'Publication'}
-        elif pubtype == 'scholar':
-            publication: PublicationScholar = {'container_type': 'Publication'}
+        publication: Publication = {'container_type': 'Publication'}
         publication['source'] = pubtype
-        publication['bib'] = {}
+        publication['bib']: BibEntry = {}
         publication['filled'] = False
 
-        if publication['source'] == 'citations':
+        if publication['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
             return self._citation_pub(__data, publication)
-        elif publication['source'] == 'scholar':
+        elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             return self._scholar_pub(__data, publication)
         else:
             return publication
@@ -135,14 +144,14 @@ class PublicationParser(object):
                 author_id_list.append("")
         return author_id_list
 
-    def _scholar_pub(self, __data, publication: PublicationScholar):
+    def _scholar_pub(self, __data, publication: Publication):
         databox = __data.find('div', class_='gs_ri')
         title = databox.find('h3', class_='gs_rt')
 
         cid = __data.get('data-cid')
         pos = __data.get('data-rp')
 
-        publication['bib']['gsrank'] = int(pos) + 1
+        publication['gsrank'] = int(pos) + 1
 
         if title.find('span', class_='gs_ctu'):  # A citation
             title.span.extract()
@@ -160,7 +169,7 @@ class PublicationParser(object):
         authorinfo = authorinfo.replace(u'&amp;', u'&')      # Ampersand
         publication['bib']["author"] = self._get_authorlist(authorinfo)
         authorinfo_html = author_div_element.decode_contents()
-        publication['bib']["author_id"] = self._get_author_id_list(authorinfo_html)
+        publication["author_id"] = self._get_author_id_list(authorinfo_html)
 
         # There are 4 (known) patterns in the author/venue/year/host line:
         #  (A) authors - host
@@ -180,12 +189,12 @@ class PublicationParser(object):
             venue = 'NA'
             year = venueyear[-1].strip()
             if year.isnumeric() and len(year) == 4:
-                publication['bib']['year'] = year
+                publication['bib']['pub_year'] = year
                 if len(venueyear) >= 2:
                     venue = ','.join(venueyear[0:-1]) # everything but last
             else:
                 venue = ','.join(venueyear) # everything
-                publication['bib']['year'] = 'NA'
+                publication['bib']['pub_year'] = 'NA'
             publication['bib']['venue'] = venue
 
         if databox.find('div', class_='gs_rs'):
@@ -199,7 +208,7 @@ class PublicationParser(object):
 
         lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
 
-        publication['bib']["cites"] = 0
+        publication["num_citations"] = 0
 
         for link in lowerlinks:
             if (link is not None and
@@ -210,7 +219,7 @@ class PublicationParser(object):
                 publication['url_add_sclib'] = sclib
 
             if 'Cited by' in link.text:
-                publication['bib']['cites'] = int(re.findall(r'\d+', link.text)[0].strip())
+                publication['num_citations'] = int(re.findall(r'\d+', link.text)[0].strip())
                 publication['citedby_id'] = link['href']
 
         if __data.find('div', class_='gs_ggs gs_fl'):
@@ -219,13 +228,13 @@ class PublicationParser(object):
         return publication
 
 
-    def fill(self, publication: dict)->PublicationCitation or PublicationScholar:
+    def fill(self, publication: Publication)->Publication:
         """Populate the Publication with information from its profile
         
         :param publication: Scholar or Citation publication container object that is not filled
         :type publication: PublicationCitation or PublicationScholar
         """
-        if publication['source'] == 'citations':
+        if publication['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
             url = _CITATIONPUB.format(publication['author_pub_id'])
             soup = self.nav._get_soup(url)
             publication['bib']['title'] = soup.find('div', id='gsc_vcd_title').text
@@ -236,7 +245,7 @@ class PublicationParser(object):
                 key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
                 if key == 'authors':
-                    publication['bib']['authors'] = ' and '.join(
+                    publication['bib']['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])
                 elif key == 'journal':
                     publication['bib']['journal'] = val.text
@@ -281,9 +290,9 @@ class PublicationParser(object):
 
                     publication['bib']['abstract'] = result
                 elif key == 'total citations':
-                    publication['bib']['cites_id'] = re.findall(
+                    publication['cites_id'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
-                    publication['citedby_id'] = _CITEDBYLINK.format(publication['bib']['cites_id'])
+                    publication['citedby_id'] = _CITEDBYLINK.format(publication['cites_id'])
             # number of citation per year
             years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
@@ -293,16 +302,17 @@ class PublicationParser(object):
                 publication['bib']['eprint'] = soup.find(
                     'div', class_='gsc_vcd_title_ggi').a['href']
             publication['filled'] = True
-        elif publication['source'] == 'scholar':
+        elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             bibtex_url = self._get_bibtex(publication['url_scholarbib'])
             bibtex = self.nav._get_page(bibtex_url)
             parser = bibtexparser.bparser.BibTexParser(common_strings=True)
-            publication['bib'].update(bibtexparser.loads(bibtex,parser).entries[-1])
+            parsed_bib = remap_bib(bibtexparser.loads(bibtex,parser).entries[-1])
+            publication['bib'].update(remap_bib(parsed_bib))
             publication['filled'] = True
         return publication
 
 
-    def citedby(self, publication: dict) -> _SearchScholarIterator or list:
+    def citedby(self, publication: Publication) -> _SearchScholarIterator or list:
         """Searches Google Scholar for other articles that cite this Publication and
         returns a Publication generator.
 
