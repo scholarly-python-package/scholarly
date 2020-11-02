@@ -118,7 +118,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(pubs), 1)
         filled = scholarly.fill(pubs[0])
         cites = [c for c in scholarly.citedby(filled)]
-        self.assertEqual(len(cites), filled['bib']['cites'])
+        self.assertEqual(len(cites), filled['num_citations'])
 
     def test_search_keyword(self):
         """
@@ -169,7 +169,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
         self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
-        self.assertGreaterEqual(author['citedby'], 1963)
+        self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
         self.assertGreaterEqual(len(author['publications']), 179)
 
     def test_search_pubs(self):
@@ -197,7 +197,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(pubs), 1)
         f = scholarly.fill(pubs[0])
         self.assertTrue(f['bib']['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
-        self.assertTrue(f['bib']['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
+        self.assertTrue(f['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
         self.assertTrue(f['bib']['journal'] == u'Journal of vision')
         self.assertTrue(f['bib']['number'] == u'9')
         self.assertTrue(f['bib']['pages'] == u'1--1')
@@ -205,7 +205,7 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f['bib']['title'] == u'Creating correct blur and its effect on accommodation')
         self.assertTrue(f['bib']['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(f['bib']['volume'] == u'18')
-        self.assertTrue(f['bib']['year'] == u'2018')
+        self.assertTrue(f['bib']['pub_year'] == u'2018')
 
     def test_extract_author_id_list(self):
         '''

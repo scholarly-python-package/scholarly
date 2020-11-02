@@ -1,7 +1,6 @@
 from .publication_parser import PublicationParser
 import re
-import pprint
-from .data_types import Author, PublicationSource
+from .data_types import Author, AuthorSource, PublicationSource
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -28,7 +27,9 @@ class AuthorParser:
         author['filled'] = set()
         if isinstance(__data, str):
             author['scholar_id'] = __data
+            author['source'] = AuthorSource.AUTHOR_PROFILE_PAGE
         else:
+            author['source'] = AuthorSource.SEARCH_AUTHOR_SNIPPETS
             author['scholar_id'] = re.findall(_CITATIONAUTHRE, __data('a')[0]['href'])[0]
 
             pic = '/citations?view_op=medium_photo&user={}'.format(author['scholar_id'])
@@ -119,6 +120,7 @@ class AuthorParser:
             new_coauthor['name'] = row.find(tabindex="-1").text
             new_coauthor['affiliation'] = row.find(
                 class_="gsc_rsb_a_ext").text
+            new_coauthor['source'] = AuthorSource.CO_AUTHORS_LIST
             author['coauthors'].append(new_coauthor)
 
     def fill(self, author, sections: list = []):
@@ -199,7 +201,7 @@ class AuthorParser:
                     if i not in author['filled']:
                         getattr(self, f'_fill_{i}')(soup, author)
                         author['filled'].add(i)
-            else: # TODO: if it is in the secit
+            else:
                 for i in sections:
                     if i in self._sections and i not in author['filled']:
                         getattr(self, f'_fill_{i}')(soup, author)

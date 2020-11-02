@@ -106,7 +106,7 @@ class PublicationParser(object):
 
         publication: Publication = {'container_type': 'Publication'}
         publication['source'] = pubtype
-        publication['bib']: BibEntry = {}
+        publication['bib'] = {}
         publication['filled'] = False
 
         if publication['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
@@ -183,7 +183,7 @@ class PublicationParser(object):
         venueyear = authorinfo.split(' - ')
         # If there is no middle part (A) then venue and year are unknown.
         if len(venueyear) <= 2:
-            publication['bib']['venue'], publication['bib']['year'] = 'NA', 'NA'
+            publication['bib']['venue'], publication['bib']['pub_year'] = 'NA', 'NA'
         else:
             venueyear = venueyear[1].split(',')
             venue = 'NA'
@@ -326,7 +326,7 @@ class PublicationParser(object):
             publication = self.fill(publication)
         return _SearchScholarIterator(self.nav, publication['citedby_id'])
 
-    def bibtex(self, publication: dict) -> str:
+    def bibtex(self, publication: Publication) -> str:
         """Returns the publication as a Bibtex entry
 
         :param publication: Scholar or Citation publication container object
@@ -339,8 +339,6 @@ class PublicationParser(object):
             publication = self.fill(publication)
         a = BibDatabase()
         converted_dict = publication['bib']
-        if publication['source'] == "scholar":
-            converted_dict['author_id'] = ', '.join([item for item in converted_dict['author_id'] if item is not None])
         str_dict = {key: str(value) for key, value in converted_dict.items()}
         # convert every key of the dictionary to string to be Bibtex compatible
         a.entries = [str_dict]

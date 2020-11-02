@@ -9,7 +9,7 @@ from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser, _SearchScholarIterator
-from .data_types import Author, Publication, PublicationSource
+from .data_types import Author, AuthorSource, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -157,7 +157,7 @@ class _Scholarly:
         If it is Publication it will fill it accordingly.
         
         :param object: the Author or Publication object that needs to get filled
-        :type object: Author or PublicationScholar or PublicationCitation
+        :type object: Author or Publication
         :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications']
         :type sections: list
         """
@@ -177,7 +177,7 @@ class _Scholarly:
         or citation source
         
         :param object: The Publication object for the bibtex exportation
-        :type object: PublicationScholar or PublicationCitation
+        :type object: Publication
         """
         if object['container_type'] == "Publication":
            publication_parser = PublicationParser(self.__nav) 
@@ -191,7 +191,7 @@ class _Scholarly:
         and returns a Publication generator.
 
         :param object: The Publication object for the bibtex exportation
-        :type object: PublicationScholar or PublicationCitation
+        :type object: Publication
         """
         if object['container_type'] == "Publication":
            publication_parser = PublicationParser(self.__nav) 
@@ -279,7 +279,7 @@ class _Scholarly:
         """Pretty print an Author or Publication container object
         
         :param object: Publication or Author container object
-        :type object: Author or PublicationCitation or PublicationScholar
+        :type object: Author or Publication
         """
         if 'container_type' not in object:
             print("Not a scholarly container object")
@@ -290,6 +290,7 @@ class _Scholarly:
             to_print['source'] = PublicationSource(to_print['source']).name
         elif to_print['container_type'] == 'Author':
             parser = AuthorParser(self.__nav)
+            to_print['source'] = AuthorSource(to_print['source']).name
             if parser._sections == to_print['filled']:
                 to_print['filled'] = True
             else:
@@ -299,11 +300,12 @@ class _Scholarly:
                 for coauthor in to_print['coauthors']:
                     coauthor['filled'] = False
                     del coauthor['container_type']
+                    coauthor['source'] = AuthorSource(coauthor['source']).name
 
             if 'publications' in to_print:
                 for publication in to_print['publications']:
+                    publication['source'] = PublicationSource(publication['source']).name
                     del publication['container_type']
-                    del publication['source']
 
         del to_print['container_type']
         print(pprint.pformat(to_print))
