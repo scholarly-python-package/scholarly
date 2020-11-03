@@ -3,7 +3,7 @@ import bibtexparser
 import arrow
 import pprint
 from bibtexparser.bibdatabase import BibDatabase
-from .data_types import BibEntry, PublicationCitation, PublicationScholar, Publication, PublicationSource
+from .data_types import BibEntry, Publication, PublicationSource
 
 
 _HOST = 'https://scholar.google.com{0}'
@@ -21,11 +21,24 @@ _BIB_MAPPING = {
     'year': 'pub_year',
 }
 
+_BIB_DATATYPES = {
+    'number': 'int',
+    'volume': 'int',
+}
+_BIB_REVERSE_MAPPING = {
+    'pub_type': 'ENTRYTYPE',
+    'bib_id': 'ID',
+}
 
-def remap_bib(parsed_bib: dict) -> BibEntry:
-    for key, value in _BIB_MAPPING.items():
+def remap_bib(parsed_bib: dict, mapping: dict, data_types:dict ={}) -> BibEntry:
+    for key, value in mapping.items():
         if key in parsed_bib:
             parsed_bib[value] = parsed_bib.pop(key)
+
+    for key, value in data_types.items():
+        if key in parsed_bib:
+            if value == 'int':
+                parsed_bib[key] = int(parsed_bib[key])
 
     return parsed_bib
 
@@ -161,7 +174,7 @@ class PublicationParser(object):
         publication['bib']['title'] = title.text.strip()
 
         if title.find('a'):
-            publication['bib']['url'] = title.find('a')['href']
+            publication['pub_url'] = title.find('a')['href']
 
         author_div_element = databox.find('div', class_='gs_a')
         authorinfo = author_div_element.text
@@ -220,10 +233,10 @@ class PublicationParser(object):
 
             if 'Cited by' in link.text:
                 publication['num_citations'] = int(re.findall(r'\d+', link.text)[0].strip())
-                publication['citedby_id'] = link['href']
+                publication['citedby_url'] = link['href']
 
         if __data.find('div', class_='gs_ggs gs_fl'):
-            publication['bib']['eprint'] = __data.find(
+            publication['eprint_url'] = __data.find(
                 'div', class_='gs_ggs gs_fl').a['href']
         return publication
 
@@ -239,7 +252,7 @@ class PublicationParser(object):
             soup = self.nav._get_soup(url)
             publication['bib']['title'] = soup.find('div', id='gsc_vcd_title').text
             if soup.find('a', class_='gsc_vcd_title_link'):
-                publication['bib']['url'] = soup.find(
+                publication['pub_url'] = soup.find(
                     'a', class_='gsc_vcd_title_link')['href']
             for item in soup.find_all('div', class_='gs_scl'):
                 key = item.find(class_='gsc_vcd_field').text.strip().lower()
@@ -292,22 +305,22 @@ class PublicationParser(object):
                 elif key == 'total citations':
                     publication['cites_id'] = re.findall(
                         _SCHOLARPUBRE, val.a['href'])[0]
-                    publication['citedby_id'] = _CITEDBYLINK.format(publication['cites_id'])
+                    publication['citedby_url'] = _CITEDBYLINK.format(publication['cites_id'])
             # number of citation per year
             years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
             publication['cites_per_year'] = dict(zip(years, cites))
 
             if soup.find('div', class_='gsc_vcd_title_ggi'):
-                publication['bib']['eprint'] = soup.find(
+                publication['eprint_url'] = soup.find(
                     'div', class_='gsc_vcd_title_ggi').a['href']
             publication['filled'] = True
         elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             bibtex_url = self._get_bibtex(publication['url_scholarbib'])
             bibtex = self.nav._get_page(bibtex_url)
             parser = bibtexparser.bparser.BibTexParser(common_strings=True)
-            parsed_bib = remap_bib(bibtexparser.loads(bibtex,parser).entries[-1])
-            publication['bib'].update(remap_bib(parsed_bib))
+            parsed_bib = remap_bib(bibtexparser.loads(bibtex,parser).entries[-1], _BIB_MAPPING, _BIB_DATATYPES)
+            publication['bib'].update(parsed_bib)
             publication['filled'] = True
         return publication
 
@@ -317,20 +330,20 @@ class PublicationParser(object):
         returns a Publication generator.
 
         :param publication: Scholar or Citation publication container object
-        :type publication: PublicationCitation or PublicationScholar
+        :type publication: Publication
 
         :getter: Returns a Generator of Publications that cited the current.
         :type: Iterator[:class:`Publication`]
         """
         if not publication['filled']:
             publication = self.fill(publication)
-        return _SearchScholarIterator(self.nav, publication['citedby_id'])
+        return _SearchScholarIterator(self.nav, publication['citedby_url'])
 
     def bibtex(self, publication: Publication) -> str:
         """Returns the publication as a Bibtex entry
 
         :param publication: Scholar or Citation publication container object
-        :type publication: PublicationCitation or PublicationScholar
+        :type publication: Publication
 
         :getter: Returns a Bibtex entry in text format
         :type: str
@@ -339,6 +352,7 @@ class PublicationParser(object):
             publication = self.fill(publication)
         a = BibDatabase()
         converted_dict = publication['bib']
+        converted_dict = remap_bib(converted_dict, _BIB_REVERSE_MAPPING)
         str_dict = {key: str(value) for key, value in converted_dict.items()}
         # convert every key of the dictionary to string to be Bibtex compatible
         a.entries = [str_dict]

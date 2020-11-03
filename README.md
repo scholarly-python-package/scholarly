@@ -6,9 +6,13 @@
 
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way.
 
+## Important Note
+
+This is version 1.0 of the `scholarly` library. There has been a major refactor in the way the library operates and it's code structure and it **will break** most existing code, based on the previous versions.
+
 ## Documentation
 
-Check the [documentation](https://scholarly.readthedocs.io/en/latest/?badge=latest) for a complete reference. (Warning: Still under development, please excuse the messiness.)
+Check the [documentation](https://scholarly.readthedocs.io/en/latest/?badge=latest) for a complete reference.
 
 ## Installation
 
@@ -65,12 +69,13 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 >>> search_query = scholarly.search_author('Marty Banks, Berkeley')
 >>> scholarly.pprint(next(search_query))
 {'affiliation': 'Professor of Vision Science, UC Berkeley',
- 'citedby': 20975,
+ 'citedby': 21074,
  'email_domain': '@berkeley.edu',
  'filled': False,
  'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
  'name': 'Martin Banks',
  'scholar_id': 'Smr99uEAAAAJ',
+ 'source': 'SEARCH_AUTHOR_SNIPPETS',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'}
 ```
 
@@ -83,7 +88,8 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
  'filled': False,
  'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
  'name': 'Martin Banks',
- 'scholar_id': 'Smr99uEAAAAJ'}
+ 'scholar_id': 'Smr99uEAAAAJ',
+ 'source': 'AUTHOR_PROFILE_PAGE'}
 ```
 
 #### `search_keyword` -- Search by keyword and return a generator of Author objects.
@@ -92,7 +98,7 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 >>> search_query = scholarly.search_keyword('Haptics')
 >>> scholarly.pprint(next(search_query))
 {'affiliation': 'Postdoctoral research assistant, University of Bremen',
- 'citedby': 56600,
+ 'citedby': 56666,
  'email_domain': '@collision-detection.com',
  'filled': False,
  'interests': ['Computer Graphics',
@@ -101,6 +107,7 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
                'Geometric Data Structures'],
  'name': 'Rene Weller',
  'scholar_id': 'lHrs3Y4AAAAJ',
+ 'source': 'SEARCH_AUTHOR_SNIPPETS',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
 ```
 
@@ -109,7 +116,8 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 ```python
 >>> search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
 >>> scholarly.pprint(next(search_query))
-{'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
+{'author_id': ['4bahYMkAAAAJ', 'ruUKktgAAAAJ', ''],
+ 'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
                      'physically stable or not. Such judgments allow observers '
                      'to predict the physical behavior of objects, and hence '
                      'to guide their motor actions. We investigated the visual '
@@ -121,18 +129,18 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
                      'perceived critical angle, ie, the tilt angle at which '
                      'the object',
          'author': ['SA Cholewiak', 'RW Fleming', 'M Singh'],
-         'author_id': ['4bahYMkAAAAJ', 'ruUKktgAAAAJ', ''],
-         'cites': 23,
-         'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
-         'gsrank': 1,
+         'pub_year': '2015',
          'title': 'Perception of physical stability and center of mass of 3-D '
                   'objects',
-         'url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
-         'venue': 'Journal of vision',
-         'year': '2015'},
- 'citedby_id': '/scholar?cites=15736880631888070187&as_sdt=5,33&sciodt=0,33&hl=en',
+         'venue': 'Journal of vision'},
+ 'citedby_url': '/scholar?cites=15736880631888070187&as_sdt=5,33&sciodt=0,33&hl=en',
+ 'eprint_url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
  'filled': False,
- 'url_add_sclib': '/citations?hl=en&xsrf=&continue=/scholar%3Fq%3DPerception%2Bof%2Bphysical%2Bstability%2Band%2Bcenter%2Bof%2Bmass%2Bof%2B3D%2Bobjects%26hl%3Den%26as_sdt%3D0,33&citilm=1&json=&update_op=library_add&info=K8ZpoI6hZNoJ&ei=IVuFX_zfGoqVmgGUyaso',
+ 'gsrank': 1,
+ 'num_citations': 23,
+ 'pub_url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
+ 'source': 'PUBLICATION_SEARCH_SNIPPET',
+ 'url_add_sclib': '/citations?hl=en&xsrf=&continue=/scholar%3Fq%3DPerception%2Bof%2Bphysical%2Bstability%2Band%2Bcenter%2Bof%2Bmass%2Bof%2B3D%2Bobjects%26hl%3Den%26as_sdt%3D0,33&citilm=1&json=&update_op=library_add&info=K8ZpoI6hZNoJ&ei=kiahX9qWNs60mAHIspTIBA',
  'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 ```
 
@@ -165,96 +173,116 @@ list of the portions of author information to fill, as follows:
 >>> author = next(search_query)
 >>> scholarly.pprint(scholarly.fill(author, sections=['basics', 'indices', 'coauthors']))
 {'affiliation': 'Vision Scientist',
- 'citedby': 302,
- 'citedby5y': 225,
+ 'citedby': 304,
+ 'citedby5y': 226,
  'coauthors': [{'affiliation': 'Kurt Koffka Professor of Experimental '
                                'Psychology, University of Giessen',
                 'filled': False,
                 'name': 'Roland Fleming',
-                'scholar_id': 'ruUKktgAAAAJ'},
+                'scholar_id': 'ruUKktgAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Professor of Vision Science, UC Berkeley',
                 'filled': False,
                 'name': 'Martin Banks',
-                'scholar_id': 'Smr99uEAAAAJ'},
+                'scholar_id': 'Smr99uEAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Durham University, Computer Science & Physics',
                 'filled': False,
                 'name': 'Gordon D. Love',
-                'scholar_id': '3xJXtlwAAAAJ'},
+                'scholar_id': '3xJXtlwAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Professor of ECE, Purdue University',
                 'filled': False,
                 'name': 'Hong Z Tan',
-                'scholar_id': 'OiVOAHMAAAAJ'},
+                'scholar_id': 'OiVOAHMAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Deepmind',
                 'filled': False,
                 'name': 'Ari Weinstein',
-                'scholar_id': 'MnUboHYAAAAJ'},
+                'scholar_id': 'MnUboHYAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': "Brigham and Women's Hospital/Harvard Medical "
                                'School',
                 'filled': False,
                 'name': 'Chia-Chien Wu',
-                'scholar_id': 'dqokykoAAAAJ'},
+                'scholar_id': 'dqokykoAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Professor of Psychology and Cognitive Science, '
                                'Rutgers University',
                 'filled': False,
                 'name': 'Jacob Feldman',
-                'scholar_id': 'KoJrMIAAAAAJ'},
+                'scholar_id': 'KoJrMIAAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Research Scientist at Google Research, PhD '
                                'Student at UC Berkeley',
                 'filled': False,
                 'name': 'Pratul Srinivasan',
-                'scholar_id': 'aYyDsZ0AAAAJ'},
+                'scholar_id': 'aYyDsZ0AAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Formerly: Indiana University, Rutgers '
                                'University, University of Pennsylvania',
                 'filled': False,
                 'name': 'Peter C. Pantelis',
-                'scholar_id': 'FoVvIK0AAAAJ'},
+                'scholar_id': 'FoVvIK0AAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Professor in Computer Science, University of '
                                'California, Berkeley',
                 'filled': False,
                 'name': 'Ren Ng',
-                'scholar_id': '6H0mhLUAAAAJ'},
+                'scholar_id': '6H0mhLUAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Yale University',
                 'filled': False,
                 'name': 'Steven W Zucker',
-                'scholar_id': 'rNTIQXYAAAAJ'},
+                'scholar_id': 'rNTIQXYAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Brown University',
                 'filled': False,
                 'name': 'Ben Kunsberg',
-                'scholar_id': 'JPZWLKQAAAAJ'},
+                'scholar_id': 'JPZWLKQAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Rutgers University, New Brunswick, NJ',
                 'filled': False,
                 'name': 'Manish Singh',
-                'scholar_id': '9XRvM88AAAAJ'},
-               {'affiliation': 'Kent State University',
-                'filled': False,
-                'name': 'Kwangtaek Kim',
-                'scholar_id': 'itUoRvUAAAAJ'},
+                'scholar_id': '9XRvM88AAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Silicon Valley Professor of ECE, Purdue '
                                'University',
                 'filled': False,
                 'name': 'David S. Ebert',
-                'scholar_id': 'fD3JviYAAAAJ'},
-               {'affiliation': 'MIT',
-                'filled': False,
-                'name': 'Joshua B. Tenenbaum',
-                'scholar_id': 'rRJ9wTJMUB8C'},
-               {'affiliation': 'Chief Scientist, isee AI',
-                'filled': False,
-                'name': 'Chris Baker',
-                'scholar_id': 'bTdT7hAAAAAJ'},
+                'scholar_id': 'fD3JviYAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Clinical Director, Neurolens Inc.,',
                 'filled': False,
                 'name': 'Vivek Labhishetty',
-                'scholar_id': 'tD7OGTQAAAAJ'},
+                'scholar_id': 'tD7OGTQAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
+               {'affiliation': 'MIT',
+                'filled': False,
+                'name': 'Joshua B. Tenenbaum',
+                'scholar_id': 'rRJ9wTJMUB8C',
+                'source': 'CO_AUTHORS_LIST'},
+               {'affiliation': 'Chief Scientist, isee AI',
+                'filled': False,
+                'name': 'Chris Baker',
+                'scholar_id': 'bTdT7hAAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Professor of Psychology, Ewha Womans '
                                'University',
                 'filled': False,
                 'name': 'Sung-Ho Kim',
-                'scholar_id': 'KXQb7CAAAAAJ'},
+                'scholar_id': 'KXQb7CAAAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
                {'affiliation': 'Assistant Professor, Boston University',
                 'filled': False,
                 'name': 'Melissa M. Kibbe',
-                'scholar_id': 'NN4GKo8AAAAJ'}],
+                'scholar_id': 'NN4GKo8AAAAJ',
+                'source': 'CO_AUTHORS_LIST'},
+               {'affiliation': 'Nvidia Corporation',
+                'filled': False,
+                'name': 'Peter Shirley',
+                'scholar_id': 'nHx9IgYAAAAJ',
+                'source': 'CO_AUTHORS_LIST'}],
  'email_domain': '@berkeley.edu',
  'filled': False,
  'hindex': 9,
@@ -268,6 +296,7 @@ list of the portions of author information to fill, as follows:
                'Haptics'],
  'name': 'Steven A. Cholewiak, PhD',
  'scholar_id': '4bahYMkAAAAJ',
+ 'source': 'SEARCH_AUTHOR_SNIPPETS',
  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}
 ```
 
@@ -292,18 +321,13 @@ by running the code above you should get the following Bibtex entry:
 @inproceedings{ester1996density,
  abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. However, the application to large spatial databases rises the following requirements for clustering algorithms: minimal requirements of domain knowledge to determine the input},
  author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\"o}rg and Xu, Xiaowei and others},
- author_id = {ZYwC_CQAAAAJ, DBf9LC4AAAAJ, QzFTFLEAAAAJ, 7McohLsAAAAJ},
  booktitle = {Kdd},
- cites = {18903},
- eprint = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
- gsrank = {1},
  number = {34},
  pages = {226--231},
+ pub_year = {1996},
  title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
- url = {https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf?source=post_page---------------------------},
  venue = {Kdd},
- volume = {96},
- year = {1996}
+ volume = {96}
 }
 ```
 

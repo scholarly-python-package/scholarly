@@ -77,150 +77,9 @@ class AuthorSource(Enum):
     CO_AUTHORS_LIST = 3
     
 
-
-class BibEntryCitation(TypedDict):
-    '''
-    The bibliographic entry for a publication
-
-    :param title: title of the publication
-    :param authors: the names of the authors that contributed to this publication
-    :param journal: Journal Name
-    :param abstract: description of the publication
-    :param pub_year: The year the publication was first published
-    :param eprint: digital version of the Publication
-    :param volume: number of years a publication has been circulated
-    :param number: NA number of a publication
-    :param pages: number of pages of a publication
-    :param url: url where the publication is posted
-    :param publisher: the Publisher of the Publication
-    :param cites_id: This corresponds to a "single" publication on Google Scholar. Used in the web search
-                       request to return all the papers that cite the publication. If cites_id = 
-                       16766804411681372720 then:
-                       https://scholar.google.com/scholar?cites=<cites_id>&hl=en
-                       If the publication comes from a "merged" list of papers from an authors page, 
-                       the "citedby_id" will be a comma-separated list of values. 
-                       It is also used to return the "cluster" of all the different versions of the paper.
-                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
-    :param cites: number of citations of this publication
-    '''
-    title: str
-    authors: str
-    journal: str
-    abstract: str
-    pub_year: str
-    eprint: str
-    # pub_type: str # journal, conference, chapter, book, thesis, patent, course case, other ...
-    volume: str
-    number: str
-    pages: str
-    url: str
-    publisher: str  
-    cites_id: int # same thing as id
-    cites: int
-
 ''' Lightweight Data Structure to keep distribution of citations of the years '''
 CitesPerYear = Dict[int, int]
 
-
-class PublicationCitation(TypedDict):
-    """
-    :param BibEntryCitation: contains additional information about the publication
-    :param citedby_id: This corresponds to a "single" publication on Google Scholar. Used in the web search
-                       request to return all the papers that cite the publication. 
-                       https://scholar.google.com/scholar?cites=16766804411681372720hl=en
-                       If the publication comes from a "merged" list of papers from an authors page, 
-                       the "citedby_id" will be a comma-separated list of values. 
-                       It is also used to return the "cluster" of all the different versions of the paper.
-                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
-    :param cites_per_year: a dictionay containing the number of citations per year for this Publication
-    :param filled: whether the publication is fully filled or not
-    :param author_pub_id: The id of the paper on Google Scholar from an author page. Comes from the 
-                          parameter "citation_for_view=PA9La6oAAAAJ:YsMSGLbcyi4C". It combines the 
-                          author id, together with a publication id. It may corresponds to a merging
-                          of multiple publications, and therefore may have multiple "citedby_id" 
-                          values.
-    :param source: source of publication can either be `scholar` or `citation`
-    :param container_type: Type of this Dictionary (Publication)
-
-    """
-    bib: BibEntryCitation
-    citedby_id: str #citations_link
-    cites_per_year: CitesPerYear
-    filled: bool
-    author_pub_id: str # id_citations
-    source: str
-    container_type: str
-
-
-class BibEntryScholar(TypedDict):
-    '''
-    The bibliographic entry for a publication
-
-    :param ENTRYTYPE: the type of entry for this bib (for example 'article')
-    :param ID: bib entry id
-    :param abstract: description of the publication
-    :param title: title of the publication
-    :param author: list of author the author names that contributed to this publication
-    :param author_id: list of the corresponding author ids of the authors that contributed to the Publication 
-    :param pub_year: the year the publication was first published
-    :param year: the year the publication was first published
-    :param eprint: digital version of the Publication
-    :param venue: the venue of the publication
-    :param journal: Journal Name
-    :param volume: number of years a publication has been circulated
-    :param number: NA number of a publication
-    :param pages: range of pages
-    :param publisher: The publisher's name
-    :param gsrank: position of the publication in the query
-    :param url: url of the website providing the publication
-    :param cites: number of citations of this Publication
-    '''
-
-    ENTRYTYPE: str
-    ID: str 
-    abstract: str
-    title: str
-    author: str
-    author_id: List[str]
-    year: str
-    eprint: str
-    venue: str
-    journal: str
-    volume: str
-    number: str
-    pages: str
-    publisher: str  
-    gsrank: int
-    url: str
-    cites: int
-
-
-class PublicationScholar(TypedDict):
-    """
-    :class:`Publication <Publication>` object used to represent a publication entry on Google Scholar.
-    
-    :param cites: number of citation for this publication
-    :param citedby_id: This corresponds to a "single" publication on Google Scholar. Used in the web search
-                       request to return all the papers that cite the publication. 
-                       https://scholar.google.com/scholar?cites=16766804411681372720hl=en
-                       If the publication comes from a "merged" list of papers from an authors page, 
-                       the "citedby_id" will be a comma-separated list of values. 
-                       It is also used to return the "cluster" of all the different versions of the paper.
-                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
-    :param related_id: Used to return the related papers for the given publication (also called "data-cid")     
-    :param bib: The bibliographic entry for the page
-    :param source: The source of the publication entry TODO corresponds to 
-    :param filled: The Publication filled with additional information
-    :param url_add_sclib: 
-    :param url_scholarbib: the url containing links for the BibTeX entry, EndNote, RefMan and RefWorks
-    """
-    citedby_id: str # citations_link
-    bib: BibEntryScholar
-    source: str
-    filled: bool
-    url_add_sclib: str
-    url_scholarbib: str
-    container_type: str
 
 class BibEntry(TypedDict, total=False):
     """
@@ -232,14 +91,13 @@ class BibEntry(TypedDict, total=False):
     :param title: title of the publication
     :param author: list of author the author names that contributed to this publication
     :param pub_year: the year the publication was first published
-    :param eprint: digital version of the Publication. Usually it is a pdf.
-    :param venue: the venue of the publication
+    :param venue: the venue of the publication (source: PUBLICATION_SEARCH_SNIPPET)
     :param journal: Journal Name
     :param volume: number of years a publication has been circulated
     :param number: NA number of a publication
     :param pages: range of pages
     :param publisher: The publisher's name
-    :param url: url of the website providing the publication
+    :param pub_url: url of the website providing the publication
     """
     pub_type: str
     bib_id: str
@@ -247,14 +105,12 @@ class BibEntry(TypedDict, total=False):
     title: str
     author: str
     pub_year: str
-    eprint: str
     venue: str
     journal: str
     volume: int
     number: int
     pages: str
-    publisher: str  
-    url: str
+    publisher: str
 
 
 class Publication(TypedDict, total=False):
@@ -272,15 +128,17 @@ class Publication(TypedDict, total=False):
                        It is also used to return the "cluster" of all the different versions of the paper.
                        https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
                        (source: AUTHOR_PUBLICATION_ENTRY)
-    :param citedby_id: This corresponds to a "single" publication on Google Scholar. Used in the web search
+    :param citedby_url: This corresponds to a "single" publication on Google Scholar. Used in the web search
                        request to return all the papers that cite the publication. 
                        https://scholar.google.com/scholar?cites=16766804411681372720hl=en
                        If the publication comes from a "merged" list of papers from an authors page, 
-                       the "citedby_id" will be a comma-separated list of values. 
+                       the "citedby_url" will be a comma-separated list of values. 
                        It is also used to return the "cluster" of all the different versions of the paper.
-                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en (both)
+                       https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
     :param cites_per_year: a dictionay containing the number of citations per year for this Publication
                            (source: AUTHOR_PUBLICATION_ENTRY)
+    :param eprint_url: digital version of the Publication. Usually it is a pdf.
+    :param pub_url: url of the website providing the publication
     :param author_pub_id: The id of the paper on Google Scholar from an author page. Comes from the
                           parameter "citation_for_view=PA9La6oAAAAJ:YsMSGLbcyi4C". It combines the
                           author id, together with a publication id. It may corresponds to a merging
@@ -291,21 +149,25 @@ class Publication(TypedDict, total=False):
     :param url_scholarbib: the url containing links for 
                            the BibTeX entry, EndNote, RefMan and RefWorks (source: PUBLICATION_SEARCH_SNIPPET)
     :param filled: whether the publication is fully filled or not
-    :param source: The source of the publication entry TODO corresponds to 
+    :param source: The source of the publication entry
+    :param container_type: Used from the source code to identify if this container object
+                           is an Author or a Publication object.
     """
 
     bib: BibEntry
     gsrank: int
     author_id: List[str]
-    num_citations: int 
-    cites_id: int # same thing as id
-    citedby_id: str # TODO: change to link
+    num_citations: int
+    cites_id: int
+    citedby_url: str
     cites_per_year: CitesPerYear
-    author_pub_id: str # id_citations
+    author_pub_id: str
+    eprint_url: str
+    pub_url: str
     url_add_sclib: str
     url_scholarbib: str
     filled: bool
-    source: PublicationSource # Change to publication enum
+    source: PublicationSource
     container_type: str
 
 class Author(TypedDict, total=False):
@@ -328,7 +190,8 @@ class Author(TypedDict, total=False):
     :param cites_per_year: Breakdown of the number of citations to all publications over the years
     :param publications: A list of publications objects
     :param coauthors: A list of coauthors (list of Author objects)
-    :param container_type: The type of this dictionary
+    :param container_type: Used from the source code to identify if this container object
+                           is an Author or a Publication object.
     :param source: The place where the citation is derived 
     """
 
@@ -346,7 +209,7 @@ class Author(TypedDict, total=False):
     i10index: int
     i10index5y: int
     cites_per_year: CitesPerYear
-    publications: List[PublicationCitation]
+    publications: List[Publication]
     coauthors: List # List of authors. No self dict functionality Available
     container_type: str
     source: AuthorSource

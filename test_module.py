@@ -7,13 +7,6 @@ from scholarly.publication_parser import PublicationParser
 import random
 from fp.fp import FreeProxy
 
-# def set_new_proxy():
-#     while True:
-#         proxy = FreeProxy(rand=True, timeout=1).get()
-#         proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
-#         if proxy_works:
-#             break
-#     return proxy    
 
 class TestScholarly(unittest.TestCase):
 
@@ -203,7 +196,7 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f['bib']['pages'] == u'1--1')
         self.assertTrue(f['bib']['publisher'] == u'The Association for Research in Vision and Ophthalmology')
         self.assertTrue(f['bib']['title'] == u'Creating correct blur and its effect on accommodation')
-        self.assertTrue(f['bib']['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(f['pub_url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(f['bib']['volume'] == u'18')
         self.assertTrue(f['bib']['pub_year'] == u'2018')
 
