@@ -177,22 +177,22 @@ class Author(TypedDict, total=False):
     :param scholar_id: The id of the author on Google Scholar
     :param name: The name of the author
     :param affiliation: The affiliation of the author
-    :param email_domain: The email domain of the author
+    :param email_domain: The email domain of the author (source: SEARCH_AUTHOR_SNIPPETS)
     :param url_picture: The URL for the picture of the author
-    :param citedby: The number of citations to all publications.
+    :param citedby: The number of citations to all publications. (source: SEARCH_AUTHOR_SNIPPETS)
     :param filled: The set of sections filled out of the total set of sections that can be filled
-    :param interests: Fields of interest of this Author
-    :param citedby5y: The number of new citations in the last 5 years to all publications.
-    :param hindex: The h-index is the largest number h such that h publications have at least h citations
-    :param hindex5y: The largest number h such that h publications have at least h new citations in the last 5 years
-    :param i10index: This is the number of publications with at least 10 citations.
-    :param i10index5y: The number of publications that have received at least 10 new citations in the last 5 years. 
-    :param cites_per_year: Breakdown of the number of citations to all publications over the years
-    :param publications: A list of publications objects
-    :param coauthors: A list of coauthors (list of Author objects)
+    :param interests: Fields of interest of this Author (sources: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
+    :param citedby5y: The number of new citations in the last 5 years to all publications. (source: SEARCH_AUTHOR_SNIPPETS)
+    :param hindex: The h-index is the largest number h such that h publications have at least h citations. (source: SEARCH_AUTHOR_SNIPPETS)
+    :param hindex5y: The largest number h such that h publications have at least h new citations in the last 5 years. (source: SEARCH_AUTHOR_SNIPPETS)
+    :param i10index: This is the number of publications with at least 10 citations.  (source: SEARCH_AUTHOR_SNIPPETS)
+    :param i10index5y: The number of publications that have received at least 10 new citations in the last 5 years. (source: SEARCH_AUTHOR_SNIPPETS)
+    :param cites_per_year: Breakdown of the number of citations to all publications over the years (source: SEARCH_AUTHOR_SNIPPETS)
+    :param publications: A list of publications objects. (source: SEARCH_AUTHOR_SNIPPETS)
+    :param coauthors: A list of coauthors (list of Author objects) (source: SEARCH_AUTHOR_SNIPPETS)
     :param container_type: Used from the source code to identify if this container object
                            is an Author or a Publication object.
-    :param source: The place where the citation is derived 
+    :param source: The place where the author information are derived 
     """
 
     scholar_id: str
@@ -210,6 +210,6 @@ class Author(TypedDict, total=False):
     i10index5y: int
     cites_per_year: CitesPerYear
     publications: List[Publication]
-    coauthors: List # List of authors. No self dict functionality Available
+    coauthors: List # List of authors. No self dict functionality available
     container_type: str
     source: AuthorSource
