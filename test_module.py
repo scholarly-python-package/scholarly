@@ -192,12 +192,12 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f['bib']['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
         self.assertTrue(f['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
         self.assertTrue(f['bib']['journal'] == u'Journal of vision')
-        self.assertTrue(f['bib']['number'] == u'9')
+        self.assertTrue(f['bib']['number'] == 9)
         self.assertTrue(f['bib']['pages'] == u'1--1')
         self.assertTrue(f['bib']['publisher'] == u'The Association for Research in Vision and Ophthalmology')
         self.assertTrue(f['bib']['title'] == u'Creating correct blur and its effect on accommodation')
         self.assertTrue(f['pub_url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
-        self.assertTrue(f['bib']['volume'] == u'18')
+        self.assertTrue(f['bib']['volume'] == 18)
         self.assertTrue(f['bib']['pub_year'] == u'2018')
 
     def test_extract_author_id_list(self):

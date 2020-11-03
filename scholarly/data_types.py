@@ -83,7 +83,8 @@ CitesPerYear = Dict[int, int]
 
 class BibEntry(TypedDict, total=False):
     """
-    The bibliographic entry for a publication
+    :class:`BibEntry <BibEntry>` The bibliographic entry for a publication
+            (When source is not specified, the field is present in all sources)
 
     :param pub_type: the type of entry for this bib (for example 'article') (source: PUBLICATION_SEARCH_SNIPPET)
     :param bib_id: bib entry id (source: PUBLICATION_SEARCH_SNIPPET)
@@ -115,6 +116,9 @@ class BibEntry(TypedDict, total=False):
 
 class Publication(TypedDict, total=False):
     """
+    :class:`Publication <Publication>` object used to represent a publication entry on Google Scholar.
+           (When source is not specified, the field is present in all sources)
+
     :param BibEntryCitation: contains additional information about the publication
     :param gsrank: position of the publication in the query (source: PUBLICATION_SEARCH_SNIPPET)
     :param author_id: list of the corresponding author ids of the authors that contributed to the Publication (source: PUBLICATION_SEARCH_SNIPPET)
@@ -173,6 +177,7 @@ class Publication(TypedDict, total=False):
 class Author(TypedDict, total=False):
     """
     :class:`Author <Author>` object used to represent an author entry on Google Scholar.
+           (When source is not specified, the field is present in all sources)
     
     :param scholar_id: The id of the author on Google Scholar
     :param name: The name of the author
