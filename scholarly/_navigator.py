@@ -70,7 +70,7 @@ class Navigator(object, metaclass=Singleton):
         self.got_403 = False
         self._session = self.pm._new_session()
 
-    
+
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
 
@@ -111,7 +111,7 @@ class Navigator(object, metaclass=Singleton):
                             time.sleep(w)
                         self._new_session()
                         self.got_403 = True
-                        
+
                         continue # Retry request within same session
                     else:
                         self.logger.info("We can use another connection... let's try that.")
@@ -209,7 +209,7 @@ class Navigator(object, metaclass=Singleton):
                 yield Author(self, row)
             cls1 = 'gs_btnPR gs_in_ib gs_btn_half '
             cls2 = 'gs_btn_lsb gs_btn_srt gsc_pgn_pnx'
-            next_button = soup.find(class_=cls1+cls2)  # Can be improved
+            next_button = soup.find(class_=cls1 + cls2)  # Can be improved
             if next_button and 'disabled' not in next_button.attrs:
                 self.logger.info("Loading next page of authors")
                 url = next_button['onclick'][17:-1]
@@ -218,6 +218,29 @@ class Navigator(object, metaclass=Singleton):
             else:
                 self.logger.info("No more author pages")
                 break
+
+    def search_organization(self, url: str, fromauthor: bool):
+        """Generate instiution object from author search page.
+           if no results are found and `fromuthor` is True, then use the first author from the search
+           to get institution/organization name.
+        """
+        soup = self._get_soup(url)
+        rows = soup.find_all('h3', 'gsc_inst_res')
+        if rows:
+            self.logger.info("Found institution")
+
+        res = []
+        for row in rows:
+            res.append({'Organization': row.a.text, 'id': row.a['href'].split('org=', 1)[1]})
+
+        if rows == [] and fromauthor is True:
+            try:
+                auth = next(self.search_authors(url))
+                res.append(self.search_author_id(auth.id).organization)
+            except Exception:
+                res = []
+
+        return res
 
     def search_publication(self, url: str,
                            filled: bool = False) -> Publication:

@@ -136,6 +136,30 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
 
+    def search_org(self, name: str, fromauthor: bool = False):
+        """Search by organization name and return a list of possible disambiguations
+
+        :Example::
+
+            .. testcode::
+
+                search_query = scholarly.search_org('ucla')
+                print(search_query)
+
+        :Output::
+
+            .. testoutput::
+
+                [{'Organization': 'University of California, Los Angeles',
+                  'id': '14108176128635076915'},
+                 {'Organization': 'Universidad Centroccidental Lisandro Alvarado',
+                  'id': '9670678584336165373'}
+                ]
+        """
+
+        url = _AUTHSEARCH.format(requests.utils.quote(name))
+        return self.__nav.search_organization(url, fromauthor)
+
     def search_author_id(self, id: str, filled: bool = False):
         """Search by author id and return a single Author object
 

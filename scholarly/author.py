@@ -31,8 +31,8 @@ class Author:
             self.url_picture = _HOST.format(pic)
 
             name_class = self._find_tag_class_name(__data, 'h3', 'name')
-            self.name = __data.find('h3', class_=name_class).text
-
+            authdiv= __data.find('h3', class_=name_class)
+            self.name = authdiv.text
             aff_class = self._find_tag_class_name(__data, 'div', 'aff')
             affiliation = __data.find('div', class_=aff_class)
             if affiliation:
@@ -60,6 +60,8 @@ class Author:
 
     def _fill_basics(self, soup):
         self.name = soup.find('div', id='gsc_prf_in').text
+        aff = soup.find('div', class_='gsc_prf_il')
+        self.organization = {'id': aff.find('a')['href'].split('org=', 1)[1], 'Organization': aff.find('a').text}
         self.affiliation = soup.find('div', class_='gsc_prf_il').text
         self.interests = [i.text.strip() for i in
                           soup.find_all('a', class_='gsc_prf_inta')]
