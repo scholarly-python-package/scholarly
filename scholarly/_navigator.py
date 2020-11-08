@@ -236,7 +236,9 @@ class Navigator(object, metaclass=Singleton):
         if rows == [] and fromauthor is True:
             try:
                 auth = next(self.search_authors(url))
-                res.append(self.search_author_id(auth.id).organization)
+                authorg = self.search_author_id(auth.id).organization
+                authorg['fromauthor'] = True
+                res.append(authorg)
             except Exception:
                 res = []
 
