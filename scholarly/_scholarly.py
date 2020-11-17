@@ -45,7 +45,9 @@ class _Scholarly:
 
 
     def set_logger(self, enable: bool):
-        """Enable or disable the logger for google scholar."""
+        """Enable or disable the logger for google scholar. 
+        Enabled by default
+        """
         self.__nav.set_logger(enable)
 
 
