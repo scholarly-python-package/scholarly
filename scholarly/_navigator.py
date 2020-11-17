@@ -60,6 +60,12 @@ class Navigator(object, metaclass=Singleton):
         self.got_403 = False
 
 
+    def set_logger(self, enable: bool):
+        """Enable or disable the logger for google scholar."""
+
+        self.logger.setLevel((logging.DEBUG if enable else logging.CRITICAL))
+
+
     def use_proxy(self, pg: ProxyGenerator):
         if pg is not None:
             self.pm = pg

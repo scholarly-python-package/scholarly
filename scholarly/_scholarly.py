@@ -43,6 +43,12 @@ class _Scholarly:
         """
         self.__nav.use_proxy(proxy_generator)
 
+
+    def set_logger(self, enable: bool):
+        """Enable or disable the logger for google scholar."""
+        self.__nav.set_logger(enable)
+
+
     def search_pubs(self,
                     query: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,
