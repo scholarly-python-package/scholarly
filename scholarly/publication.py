@@ -309,6 +309,9 @@ class Publication(object):
             self.fill()
         a = BibDatabase()
         converted_dict = self.bib
+        if not 'author_id' in converted_dict:
+            converted_dict['author_id'] = []
+        converted_dict['author_id'] = [i for i in converted_dict['author_id'] if i]
         converted_dict['author_id'] = ', '.join(converted_dict['author_id'])
         a.entries = [converted_dict]
         return bibtexparser.dumps(a)
