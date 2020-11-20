@@ -50,7 +50,7 @@ class Navigator(object, metaclass=Singleton):
 
     def __init__(self):
         super(Navigator, self).__init__()
-        logging.basicConfig(filename='scholar.log', level=logging.INFO)
+        logging.basicConfig(filename='scholar.log', level=logging.CRITICAL)
         self.logger = logging.getLogger('scholarly')
         self._TIMEOUT = 5
         self._max_retries = 5
@@ -63,7 +63,7 @@ class Navigator(object, metaclass=Singleton):
     def set_logger(self, enable: bool):
         """Enable or disable the logger for google scholar."""
 
-        self.logger.setLevel((logging.DEBUG if enable else logging.CRITICAL))
+        self.logger.setLevel((logging.INFO if enable else logging.CRITICAL))
 
 
     def use_proxy(self, pg: ProxyGenerator):
