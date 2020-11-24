@@ -68,6 +68,11 @@ class AuthorParser:
 
     def _fill_basics(self, soup, author):
         author['name'] = soup.find('div', id='gsc_prf_in').text
+        if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
+            res = soup.find('img', id='gsc_prf_pup-img')
+            if res != None:
+                if "avatar_scholar" not in res['src']:
+                    author['url_picture'] = res['src']
         author['affiliation'] = soup.find('div', class_='gsc_prf_il').text
         author['interests'] = [i.text.strip() for i in
                           soup.find_all('a', class_='gsc_prf_inta')]
