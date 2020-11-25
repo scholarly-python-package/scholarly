@@ -26,9 +26,10 @@ from urllib.parse import urlparse
 from stem import Signal
 from stem.control import Controller
 from fake_useragent import UserAgent
-from .publication import _SearchScholarIterator
-from .author import Author
-from .publication import Publication
+from .publication_parser import _SearchScholarIterator
+from .author_parser import AuthorParser
+from .publication_parser import PublicationParser
+from .data_types import Author
 
 class DOSException(Exception):
     """DOS attack was detected."""
@@ -49,7 +50,7 @@ class Navigator(object, metaclass=Singleton):
 
     def __init__(self):
         super(Navigator, self).__init__()
-        logging.basicConfig(filename='scholar.log', level=logging.INFO)
+        logging.basicConfig(filename='scholar.log', level=logging.CRITICAL)
         self.logger = logging.getLogger('scholarly')
         self._TIMEOUT = 5
         self._max_retries = 5
@@ -57,6 +58,12 @@ class Navigator(object, metaclass=Singleton):
         self.pm = ProxyGenerator()
         self._session = self.pm.get_session()
         self.got_403 = False
+
+
+    def set_logger(self, enable: bool):
+        """Enable or disable the logger for google scholar."""
+
+        self.logger.setLevel((logging.INFO if enable else logging.CRITICAL))
 
 
     def use_proxy(self, pg: ProxyGenerator):
@@ -106,9 +113,10 @@ class Navigator(object, metaclass=Singleton):
                         if not self.got_403:
                             self.logger.info("Retrying immediately with another session.")
                         else:
-                            w = random.uniform(60, 2*60)
-                            self.logger.info("Will retry after {} seconds (with another session).".format(w))
-                            time.sleep(w)
+                            if not self.pm._use_luminati:
+                                w = random.uniform(60, 2*60)
+                                self.logger.info("Will retry after {} seconds (with another session).".format(w))
+                                time.sleep(w)
                         self._new_session()
                         self.got_403 = True
                         
@@ -198,15 +206,16 @@ class Navigator(object, metaclass=Singleton):
             pass
         return res
 
-    def search_authors(self, url: str):
+    def search_authors(self, url: str)->Author:
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
-
+         
+        author_parser = AuthorParser(self)
         while True:
             rows = soup.find_all('div', 'gsc_1usr')
             self.logger.info("Found %d authors", len(rows))
             for row in rows:
-                yield Author(self, row)
+                yield author_parser.get_author(row)
             cls1 = 'gs_btnPR gs_in_ib gs_btn_half '
             cls2 = 'gs_btn_lsb gs_btn_srt gsc_pgn_pnx'
             next_button = soup.find(class_=cls1+cls2)  # Can be improved
@@ -220,7 +229,7 @@ class Navigator(object, metaclass=Singleton):
                 break
 
     def search_publication(self, url: str,
-                           filled: bool = False) -> Publication:
+                           filled: bool = False) -> PublicationParser:
         """Search by scholar query and return a single Publication object
 
         :param url: the url to be searched at
@@ -231,7 +240,7 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {Publication}
         """
         soup = self._get_soup(url)
-        res = Publication(self, soup.find_all('div', 'gs_or')[0], 'scholar')
+        res = PublicationParser(self, soup.find_all('div', 'gs_or')[0], 'scholar')
         if filled:
             res.fill()
         return res
@@ -255,8 +264,10 @@ class Navigator(object, metaclass=Singleton):
         :returns: an Author object
         :rtype: {Author}
         """
+        author_parser = AuthorParser(self)
+        res = author_parser.get_author(id)
         if filled:
-            res = Author(self, id).fill()
+            res = author_parser.fill(res)
         else:
-            res = Author(self, id).fill(sections=['basics'])
+            res = author_parser.fill(res, sections=['basics'])
         return res

@@ -211,6 +211,7 @@ class ProxyGenerator(object):
         If no arguments are passed for the tor_sock_port and the tor_control_port they are automatically generated in the following ranges
         - tor_sock_port: (9000, 9500)
         - tor_control_port: (9500, 9999)
+
         :param tor_cmd: tor executable location (absolute path if its not exported in PATH)
         :type tor_cmd: string
         :param tor_sock_port: tor socket port 

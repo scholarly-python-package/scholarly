@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import sphinx_rtd_theme
 sys.path.insert(0, os.path.abspath('..'))
 
 
@@ -22,7 +23,7 @@ copyright = '2020, Steven A. Cholewiak, Panos Ipeirotis, Victor Silva'
 author = 'Steven A. Cholewiak, Panos Ipeirotis, Victor Silva'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.1'
+release = '1.0b1'
 master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
@@ -36,6 +37,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.doctest',
+    'sphinx_rtd_theme',
     #'sphinx.ext.napoleon'
 ]
 
@@ -65,7 +67,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 
 # -- Extension configuration -------------------------------------------------

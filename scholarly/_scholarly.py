@@ -2,10 +2,14 @@
 import requests
 import random
 import os
+import pprint
 from typing import Callable
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
+from .author_parser import AuthorParser
+from .publication_parser import PublicationParser, _SearchScholarIterator
+from .data_types import Author, AuthorSource, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -20,7 +24,7 @@ class _Scholarly:
         self.env = os.environ.copy()
         self.__nav = Navigator()
 
-    def set_retries(self, num_retries: int):
+    def set_retries(self, num_retries: int)->None:
         """Sets the number of retries in case of errors
 
         :param num_retries: the number of retries
@@ -30,16 +34,29 @@ class _Scholarly:
         return self.__nav._set_retries(num_retries)
 
 
-    def use_proxy(self, proxy_generator: ProxyGenerator):
+    def use_proxy(self, proxy_generator: ProxyGenerator)->None:
+        """Select which proxy method to use.
+        See the available ProxyGenerator methods.
+
+        :param proxy_generator: proxy generator objects
+        :type proxy_generator: ProxyGenerator
+        """
         self.__nav.use_proxy(proxy_generator)
+
+
+    def set_logger(self, enable: bool):
+        """Enable or disable the logger for google scholar. 
+        Enabled by default
+        """
+        self.__nav.set_logger(enable)
+
 
     def search_pubs(self,
                     query: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,
-                    year_high: int = None):
+                    year_high: int = None)->_SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
 
-        [description]
         :param query: terms to be searched
         :type query: str
         :param patents: Whether or not to include patents, defaults to True
@@ -55,42 +72,41 @@ class _Scholarly:
 
         :Example::
 
-            .. testcode::
+        .. testcode::
 
-                search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
-                print(next(search_query))
+            search_query = scholarly.search_pubs('Perception of physical stability and center of mass of 3D objects')
+            scholarly.pprint(next(search_query)) # in order to pretty print the result
 
         :Output::
 
-            .. testoutput::
+        .. testoutput::
 
-                {
-                    'bib':{
-                            'abstract':'Humans can judge from vision alone whether an object is '
-                                        'physically stable or not. Such judgments allow observers '
-                                        'to predict the physical behavior of objects, and hence '
-                                        'to guide their motor actions. We investigated the visual '
-                                        'estimation of physical stability of 3-D objects (shown '
-                                        'in stereoscopically viewed rendered scenes) and how it '
-                                        'relates to visual estimates of their center of mass '
-                                        '(COM). In Experiment 1, observers viewed an object near '
-                                        'the edge of a table and adjusted its tilt to the '
-                                        'perceived critical angle, ie, the tilt angle at which '
-                                        'the object …',
-                            'author': 'SA Cholewiak and RW Fleming and M Singh',
-                            'eprint': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
-                            'title': 'Perception of physical stability and center of mass of 3-D '
-                                  'objects',
-                            'url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
-                            'venue': 'Journal of vision',
-                            'year': ' 2015'
-                    },
-                    'citedby': 19,
-                    'filled': False,
-                    'id_scholarcitedby': '15736880631888070187',
-                    'source': 'scholar',
-                    'url_scholarbib': 'https://scholar.googleusercontent.com/scholar.bib?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=citation&scisdr=CgXsOAkeGAA:AAGBfm0AAAAAXsLLJNxa7vzefAEwz6a3tLCEoMsli6vj&scisig=AAGBfm0AAAAAXsLLJNK0I3FleN-7_r_TxUF8m5JDa9W5&scisf=4&ct=citation&cd=0&hl=en'
-                }
+            {'author_id': ['4bahYMkAAAAJ', 'ruUKktgAAAAJ', ''],
+             'bib': {'abstract': 'Humans can judge from vision alone whether an object is '
+                                 'physically stable or not. Such judgments allow observers '
+                                 'to predict the physical behavior of objects, and hence '
+                                 'to guide their motor actions. We investigated the visual '
+                                 'estimation of physical stability of 3-D objects (shown '
+                                 'in stereoscopically viewed rendered scenes) and how it '
+                                 'relates to visual estimates of their center of mass '
+                                 '(COM). In Experiment 1, observers viewed an object near '
+                                 'the edge of a table and adjusted its tilt to the '
+                                 'perceived critical angle, ie, the tilt angle at which '
+                                 'the object',
+                     'author': ['SA Cholewiak', 'RW Fleming', 'M Singh'],
+                     'pub_year': '2015',
+                     'title': 'Perception of physical stability and center of mass of 3-D '
+                              'objects',
+                     'venue': 'Journal of vision'},
+             'citedby_url': '/scholar?cites=15736880631888070187&as_sdt=5,33&sciodt=0,33&hl=en',
+             'eprint_url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
+             'filled': False,
+             'gsrank': 1,
+             'num_citations': 23,
+             'pub_url': 'https://jov.arvojournals.org/article.aspx?articleID=2213254',
+             'source': 'PUBLICATION_SEARCH_SNIPPET',
+             'url_add_sclib': '/citations?hl=en&xsrf=&continue=/scholar%3Fq%3DPerception%2Bof%2Bphysical%2Bstability%2Band%2Bcenter%2Bof%2Bmass%2Bof%2B3D%2Bobjects%26hl%3Den%26as_sdt%3D0,33&citilm=1&json=&update_op=library_add&info=K8ZpoI6hZNoJ&ei=QhqhX66wKoyNy9YPociEuA0',
+             'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 
         """
         url = _PUBSEARCH.format(requests.utils.quote(query))
@@ -103,8 +119,14 @@ class _Scholarly:
         url = url + yr_lo + yr_hi + citations + patents
         return self.__nav.search_publications(url)
 
-    def search_single_pub(self, pub_title: str, filled: bool = False):
-        """Search by scholar query and return a single Publication object"""
+    def search_single_pub(self, pub_title: str, filled: bool = False)->PublicationParser:
+        """Search by scholar query and return a single Publication container object
+        
+        :param pub_title: Title of the publication to search
+        :type pub_title: string
+        :param filled: Whether the application should be filled with additional information
+        :type filled: bool
+        """
         url = _PUBSEARCH.format(requests.utils.quote(pub_title))
         return self.__nav.search_publication(url, filled)
 
@@ -116,27 +138,76 @@ class _Scholarly:
             .. testcode::
 
                 search_query = scholarly.search_author('Marty Banks, Berkeley')
-                print(next(search_query))
+                scholarly.pprint(next(search_query))
 
         :Output::
 
-            .. testoutput::
+        .. testoutput::
 
-                {
-                    'affiliation': 'Professor of Vision Science, UC Berkeley',
-                    'citedby': 20160,
-                    'email': '@berkeley.edu',
-                    'filled': False,
-                    'id': 'Smr99uEAAAAJ',
-                    'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
-                    'name': 'Martin Banks',
-                    'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'
-                }
+            {'affiliation': 'Professor of Vision Science, UC Berkeley',
+             'citedby': 21074,
+             'email_domain': '@berkeley.edu',
+             'filled': False,
+             'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
+             'name': 'Martin Banks',
+             'scholar_id': 'Smr99uEAAAAJ',
+             'source': 'SEARCH_AUTHOR_SNIPPETS',
+             'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=Smr99uEAAAAJ'}
         """
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
+    
+    def fill(self, object: dict, sections=[]) -> Author or Publication:
+        """Fills the object according to its type.
+        If the container type is Author it will fill the additional author fields
+        If it is Publication it will fill it accordingly.
+        
+        :param object: the Author or Publication object that needs to get filled
+        :type object: Author or Publication
+        :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications']
+        :type sections: list
+        """
 
-    def search_author_id(self, id: str, filled: bool = False):
+        if object['container_type'] == "Author":
+            author_parser = AuthorParser(self.__nav)
+            object = author_parser.fill(object, sections)
+            if object is False:
+                raise ValueError("Incorrect input")
+        elif object['container_type'] == "Publication":
+            publication_parser = PublicationParser(self.__nav)
+            object = publication_parser.fill(object)
+        return object
+
+    def bibtex(self, object: Publication)->str:
+        """Returns a bibtex entry for a publication that has either Scholar source
+        or citation source
+        
+        :param object: The Publication object for the bibtex exportation
+        :type object: Publication
+        """
+        if object['container_type'] == "Publication":
+           publication_parser = PublicationParser(self.__nav) 
+           return publication_parser.bibtex(object)
+        else:
+            print("Object not supported for bibtex exportation")
+            return
+
+    def citedby(self, object: Publication)->_SearchScholarIterator:
+        """Searches Google Scholar for other articles that cite this Publication
+        and returns a Publication generator.
+
+        :param object: The Publication object for the bibtex exportation
+        :type object: Publication
+        """
+        if object['container_type'] == "Publication":
+           publication_parser = PublicationParser(self.__nav) 
+           return publication_parser.citedby(object)
+        else:
+            print("Object not supported for bibtex exportation")
+            return
+
+
+    def search_author_id(self, id: str, filled: bool = False)->Author:
         """Search by author id and return a single Author object
 
         :Example::
@@ -144,7 +215,7 @@ class _Scholarly:
             .. testcode::
 
                 search_query = scholarly.search_author_id('EmD_lTEAAAAJ')
-                print(search_query)
+                scholarly.pprint(search_query)
 
         :Output::
 
@@ -152,49 +223,96 @@ class _Scholarly:
 
                 {'affiliation': 'Institut du radium, University of Paris',
                  'filled': False,
-                 'id': 'EmD_lTEAAAAJ',
                  'interests': [],
-                 'name': 'Marie Skłodowska-Curie'}
+                 'name': 'Marie Skłodowska-Curie',
+                 'scholar_id': 'EmD_lTEAAAAJ',
+                 'source': 'AUTHOR_PROFILE_PAGE'}
         """
         return self.__nav.search_author_id(id, filled)
 
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
+        
+        :param keyword: keyword to be searched
+        :type keyword: str
 
         :Example::
 
-            .. testcode::
+        .. testcode::
 
-                search_query = scholarly.search_keyword('Haptics')
-                print(next(search_query))
+            search_query = scholarly.search_keyword('Haptics')
+            scholarly.pprint(next(search_query))
 
         :Output::
 
-            .. testoutput::
+        .. testoutput::
 
-                {
-                    'affiliation': 'Postdoctoral research assistant, University of Bremen',
-                    'citedby': 55943,
-                    'email': '@collision-detection.com',
-                    'filled': False,
-                    'id': 'lHrs3Y4AAAAJ',
-                    'interests': ['Computer Graphics',
-                               'Collision Detection',
-                               'Haptics',
-                               'Geometric Data Structures'],
-                    'name': 'Rene Weller',
-                    'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'
-                }
+            {'affiliation': 'Postdoctoral research assistant, University of Bremen',
+             'citedby': 56666,
+             'email_domain': '@collision-detection.com',
+             'filled': False,
+             'interests': ['Computer Graphics',
+                           'Collision Detection',
+                           'Haptics',
+                           'Geometric Data Structures'],
+             'name': 'Rene Weller',
+             'scholar_id': 'lHrs3Y4AAAAJ',
+             'source': 'SEARCH_AUTHOR_SNIPPETS',
+             'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
         """
         url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
         return self.__nav.search_authors(url)
 
-    def search_pubs_custom_url(self, url: str):
+    def search_pubs_custom_url(self, url: str)->_SearchScholarIterator:
         """Search by custom URL and return a generator of Publication objects
-        URL should be of the form '/scholar?q=...'"""
+        URL should be of the form '/scholar?q=...'
+
+        :param url: custom url to seach for the publication
+        :type url: string
+        """
         return self.__nav.search_publications(url)
 
-    def search_author_custom_url(self, url: str):
+    def search_author_custom_url(self, url: str)->Author:
         """Search by custom URL and return a generator of Author objects
-        URL should be of the form '/citation?q=...'"""
+        URL should be of the form '/citation?q=...'
+
+        :param url: url for the custom author url
+        :type url: string
+        """
         return self.__nav.search_authors(url)
+
+    def pprint(self, object: Author or Publication)->None:
+        """Pretty print an Author or Publication container object
+        
+        :param object: Publication or Author container object
+        :type object: Author or Publication
+        """
+        if 'container_type' not in object:
+            print("Not a scholarly container object")
+            return
+
+        to_print = object
+        if to_print['container_type'] == 'Publication':
+            to_print['source'] = PublicationSource(to_print['source']).name
+        elif to_print['container_type'] == 'Author':
+            parser = AuthorParser(self.__nav)
+            to_print['source'] = AuthorSource(to_print['source']).name
+            if parser._sections == to_print['filled']:
+                to_print['filled'] = True
+            else:
+                to_print['filled'] = False
+            
+            if 'coauthors' in to_print:
+                for coauthor in to_print['coauthors']:
+                    coauthor['filled'] = False
+                    del coauthor['container_type']
+                    coauthor['source'] = AuthorSource(coauthor['source']).name
+
+            if 'publications' in to_print:
+                for publication in to_print['publications']:
+                    publication['source'] = PublicationSource(publication['source']).name
+                    del publication['container_type']
+
+        del to_print['container_type']
+        print(pprint.pformat(to_print))
+
