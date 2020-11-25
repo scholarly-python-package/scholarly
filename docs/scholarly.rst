@@ -5,5 +5,7 @@ scholarly Package
    :maxdepth: 2
 
    scholarly_user
-   Author.rst
-   Publication.rst
+   AuthorParser.rst
+   PublicationParser.rst
+   ProxyGenerator.rst
+   DataTypes.rst
