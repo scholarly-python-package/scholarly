@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='scholarly',
-    version='0.5.1',
+    version='1.0',
     author='Steven A. Cholewiak, Panos Ipeirotis, Victor Silva',
     author_email='steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca',
     description='Simple access to Google Scholar authors and citations',
@@ -35,6 +35,7 @@ setuptools.setup(
                       'selenium',
                       'python-dotenv',
                       'free-proxy',
+                      'sphinx_rtd_theme',
                       ],
     test_suite="test_module.py"
 )

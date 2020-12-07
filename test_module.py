@@ -3,17 +3,10 @@ import argparse
 import os
 import sys
 from scholarly import scholarly, ProxyGenerator
-from scholarly.publication import Publication
+from scholarly.publication_parser import PublicationParser
 import random
 from fp.fp import FreeProxy
 
-# def set_new_proxy():
-#     while True:
-#         proxy = FreeProxy(rand=True, timeout=1).get()
-#         proxy_works = scholarly.use_proxy(http=proxy, https=proxy)
-#         if proxy_works:
-#             break
-#     return proxy    
 
 class TestScholarly(unittest.TestCase):
 
@@ -116,16 +109,16 @@ class TestScholarly(unittest.TestCase):
         query = 'Machine-learned epidemiology: real-time detection of foodborne illness at scale'
         pubs = [p for p in scholarly.search_pubs(query)]
         self.assertGreaterEqual(len(pubs), 1)
-        filled = pubs[0].fill()
-        cites = [c for c in filled.citedby]
-        self.assertEqual(str(len(cites)), filled.bib['cites'])
+        filled = scholarly.fill(pubs[0])
+        cites = [c for c in scholarly.citedby(filled)]
+        self.assertEqual(len(cites), filled['num_citations'])
 
     def test_search_keyword(self):
         """
         When we search for the keyword "3d_shape" the author
         Steven A. Cholewiak should be among those listed
         """
-        authors = [a.name for a in scholarly.search_keyword('3d_shape')]
+        authors = [a['name'] for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
         self.assertIn(u'Steven A. Cholewiak, PhD', authors)
 
@@ -133,18 +126,18 @@ class TestScholarly(unittest.TestCase):
         query = 'Steven A. Cholewiak'
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
-        author = authors[0].fill()
-        self.assertEqual(author.name, u'Steven A. Cholewiak, PhD')
-        self.assertEqual(author.id, u'4bahYMkAAAAJ')        
-        pub = author.publications[2].fill()
-        self.assertEqual(pub.id_citations,u'4bahYMkAAAAJ:LI9QrySNdTsC')
+        author = scholarly.fill(authors[0])
+        self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
+        self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')        
+        pub = scholarly.fill(author['publications'][2])
+        self.assertEqual(pub['author_pub_id'],u'4bahYMkAAAAJ:LI9QrySNdTsC')
 
     def test_search_author_multiple_authors(self):
         """
         As of May 12, 2020 there are at least 24 'Cattanis's listed as authors
         and Giordano Cattani is one of them
         """
-        authors = [a.name for a in scholarly.search_author('cattani')]
+        authors = [a['name'] for a in scholarly.search_author('cattani')]
         self.assertGreaterEqual(len(authors), 24)
         self.assertIn(u'Giordano Cattani', authors)
 
@@ -154,8 +147,8 @@ class TestScholarly(unittest.TestCase):
         EmD_lTEAAAAJ and these IDs are permenant
         """
         author = scholarly.search_author_id('EmD_lTEAAAAJ')
-        self.assertEqual(author.name, u'Marie Skłodowska-Curie')
-        self.assertEqual(author.affiliation,
+        self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
+        self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
 
     def test_search_author_id_filled(self):
@@ -166,11 +159,11 @@ class TestScholarly(unittest.TestCase):
         on Google Scholar and 179 publications
         """
         author = scholarly.search_author_id('EmD_lTEAAAAJ', filled=True)
-        self.assertEqual(author.name, u'Marie Skłodowska-Curie')
-        self.assertEqual(author.affiliation,
+        self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
+        self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
-        self.assertGreaterEqual(author.citedby, 1963)
-        self.assertGreaterEqual(len(author.publications), 179)
+        self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
+        self.assertGreaterEqual(len(author['publications']), 179)
 
     def test_search_pubs(self):
         """
@@ -180,7 +173,7 @@ class TestScholarly(unittest.TestCase):
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
-        pubs = [p.bib['title'] for p in scholarly.search_pubs(
+        pubs = [p['bib']['title'] for p in scholarly.search_pubs(
             '"naive physics" stability "3d shape"')]
         self.assertGreaterEqual(len(pubs), 27)
 
@@ -195,17 +188,17 @@ class TestScholarly(unittest.TestCase):
         results = scholarly.search_pubs(query)
         pubs = [p for p in results]
         self.assertGreaterEqual(len(pubs), 1)
-        f = pubs[0].fill()
-        self.assertTrue(f.bib['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
-        self.assertTrue(f.bib['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
-        self.assertTrue(f.bib['journal'] == u'Journal of vision')
-        self.assertTrue(f.bib['number'] == u'9')
-        self.assertTrue(f.bib['pages'] == u'1--1')
-        self.assertTrue(f.bib['publisher'] == u'The Association for Research in Vision and Ophthalmology')
-        self.assertTrue(f.bib['title'] == u'Creating correct blur and its effect on accommodation')
-        self.assertTrue(f.bib['url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
-        self.assertTrue(f.bib['volume'] == u'18')
-        self.assertTrue(f.bib['year'] == u'2018')
+        f = scholarly.fill(pubs[0])
+        self.assertTrue(f['bib']['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
+        self.assertTrue(f['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
+        self.assertTrue(f['bib']['journal'] == u'Journal of vision')
+        self.assertTrue(f['bib']['number'] == 9)
+        self.assertTrue(f['bib']['pages'] == u'1--1')
+        self.assertTrue(f['bib']['publisher'] == u'The Association for Research in Vision and Ophthalmology')
+        self.assertTrue(f['bib']['title'] == u'Creating correct blur and its effect on accommodation')
+        self.assertTrue(f['pub_url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(f['bib']['volume'] == 18)
+        self.assertTrue(f['bib']['pub_year'] == u'2018')
 
     def test_extract_author_id_list(self):
         '''
@@ -213,20 +206,16 @@ class TestScholarly(unittest.TestCase):
         in the Publication object.
         '''
         author_html_full = '<a href="/citations?user=4bahYMkAAAAJ&amp;hl=en&amp;oi=sra">SA Cholewiak</a>, <a href="/citations?user=3xJXtlwAAAAJ&amp;hl=en&amp;oi=sra">GD Love</a>, <a href="/citations?user=Smr99uEAAAAJ&amp;hl=en&amp;oi=sra">MS Banks</a> - Journal of vision, 2018 - jov.arvojournals.org'
-        test_pub = Publication(self, None, 'test')
-        author_id_list = test_pub._get_author_id_list(author_html_full)
+        pub_parser = PublicationParser(None)
+        author_id_list = pub_parser._get_author_id_list(author_html_full)
         self.assertTrue(author_id_list[0] == '4bahYMkAAAAJ')
         self.assertTrue(author_id_list[1] == '3xJXtlwAAAAJ')
         self.assertTrue(author_id_list[2] == 'Smr99uEAAAAJ')
 
         author_html_partial = "A Bateman, J O'Connell, N Lorenzini, <a href=\"/citations?user=TEndP-sAAAAJ&amp;hl=en&amp;oi=sra\">T Gardner</a>…&nbsp;- BMC psychiatry, 2016 - Springer"
-        test_pub = Publication(self, None, 'test')
-        author_id_list = test_pub._get_author_id_list(author_html_partial)
-        self.assertTrue(author_id_list[0] is None)
-        self.assertTrue(author_id_list[1] is None)
-        self.assertTrue(author_id_list[2] is None)
+        pub_parser = PublicationParser(None)
+        author_id_list = pub_parser._get_author_id_list(author_html_partial)
         self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
-        self.assertTrue(author_id_list[4] is None)
 
 
 

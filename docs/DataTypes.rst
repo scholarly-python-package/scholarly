@@ -1,6 +1,6 @@
-Author module
+DataTypes module
 -----------------------
 
-.. automodule:: scholarly.author
+.. automodule:: scholarly.data_types
    :members:
    :undoc-members:
