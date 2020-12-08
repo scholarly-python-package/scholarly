@@ -77,7 +77,7 @@ class Navigator(object, metaclass=Singleton):
         self.got_403 = False
         self._session = self.pm._new_session()
 
-    
+
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
 
@@ -119,7 +119,7 @@ class Navigator(object, metaclass=Singleton):
                                 time.sleep(w)
                         self._new_session()
                         self.got_403 = True
-                        
+
                         continue # Retry request within same session
                     else:
                         self.logger.info("We can use another connection... let's try that.")
@@ -209,7 +209,7 @@ class Navigator(object, metaclass=Singleton):
     def search_authors(self, url: str)->Author:
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
-         
+
         author_parser = AuthorParser(self)
         while True:
             rows = soup.find_all('div', 'gsc_1usr')
@@ -271,3 +271,29 @@ class Navigator(object, metaclass=Singleton):
         else:
             res = author_parser.fill(res, sections=['basics'])
         return res
+
+    def search_organization(self, url: str, fromauthor: bool) -> list:
+        """Generate instiution object from author search page.
+           if no results are found and `fromuthor` is True, then use the first author from the search
+           to get institution/organization name.
+        """
+        soup = self._get_soup(url)
+        rows = soup.find_all('h3', 'gsc_inst_res')
+        if rows:
+            self.logger.info("Found institution")
+
+        res = []
+        for row in rows:
+            res.append({'Organization': row.a.text, 'id': row.a['href'].split('org=', 1)[1]})
+
+        if rows == [] and fromauthor is True:
+            try:
+                auth = next(self.search_authors(url))
+                authorg = self.search_author_id(auth.id).organization
+                authorg['fromauthor'] = True
+                res.append(authorg)
+            except Exception:
+                res = []
+
+        return res
+
