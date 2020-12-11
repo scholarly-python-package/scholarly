@@ -2,6 +2,7 @@
 import requests
 import random
 import os
+import copy
 import pprint
 from typing import Callable
 from ._navigator import Navigator
@@ -291,7 +292,7 @@ class _Scholarly:
             print("Not a scholarly container object")
             return
 
-        to_print = object
+        to_print = copy.deepcopy(object)
         if to_print['container_type'] == 'Publication':
             to_print['source'] = PublicationSource(to_print['source']).name
         elif to_print['container_type'] == 'Author':
