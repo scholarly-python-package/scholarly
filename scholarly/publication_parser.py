@@ -22,8 +22,8 @@ _BIB_MAPPING = {
 }
 
 _BIB_DATATYPES = {
-    'number': 'int',
-    'volume': 'int',
+    'number': 'str',
+    'volume': 'str',
 }
 _BIB_REVERSE_MAPPING = {
     'pub_type': 'ENTRYTYPE',
@@ -263,9 +263,9 @@ class PublicationParser(object):
                 elif key == 'journal':
                     publication['bib']['journal'] = val.text
                 elif key == 'volume':
-                    publication['bib']['volume'] = int(val.text)
+                    publication['bib']['volume'] = val.text
                 elif key == 'issue':
-                    publication['bib']['number'] = int(val.text)
+                    publication['bib']['number'] = val.text
                 elif key == 'pages':
                     publication['bib']['pages'] = val.text
                 elif key == 'publisher':
