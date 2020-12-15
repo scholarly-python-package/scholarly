@@ -108,8 +108,8 @@ class BibEntry(TypedDict, total=False):
     pub_year: str
     venue: str
     journal: str
-    volume: int
-    number: int
+    volume: str
+    number: str
     pages: str
     publisher: str
 
