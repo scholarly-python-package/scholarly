@@ -79,6 +79,11 @@ class AuthorParser:
         if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
             email = soup.find('div', id="gsc_prf_ivh", class_="gsc_prf_il")
             author['email_domain'] = '@'+email.text.split(" ")[3]
+        if author['source'] == AuthorSource.CO_AUTHORS_LIST:
+            picture = soup.find('img', id="gsc_prf_pup-img").get('src')
+            if "avatar_scholar" in picture:
+                picture = _HOST.format(picture)
+            author['url_picture'] = picture
         
     def _fill_indices(self, soup, author):
         index = soup.find_all('td', class_='gsc_rsb_std')
