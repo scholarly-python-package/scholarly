@@ -78,7 +78,8 @@ class AuthorParser:
                           soup.find_all('a', class_='gsc_prf_inta')]
         if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
             email = soup.find('div', id="gsc_prf_ivh", class_="gsc_prf_il")
-            author['email_domain'] = '@'+email.text.split(" ")[3]
+            if email.text != "No verified email":
+                author['email_domain'] = '@'+email.text.split(" ")[3]
         if author['source'] == AuthorSource.CO_AUTHORS_LIST:
             picture = soup.find('img', id="gsc_prf_pup-img").get('src')
             if "avatar_scholar" in picture:

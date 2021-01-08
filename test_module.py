@@ -39,6 +39,7 @@ class TestScholarly(unittest.TestCase):
             proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "luminati":
+            scholarly.set_retries(10)
             proxy_generator.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "freeproxy":
