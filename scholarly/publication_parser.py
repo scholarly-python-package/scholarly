@@ -309,7 +309,12 @@ class PublicationParser(object):
             # number of citation per year
             years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
-            publication['cites_per_year'] = dict(zip(years, cites))
+            cites_year = [int(c.get('href')[-4:]) for c in soup.find_all(class_='gsc_vcd_g_a')]
+            nonzero_cites_per_year = dict(zip(cites_year, cites))
+            res_dict = {}
+            for year in years:
+                res_dict[year] = (nonzero_cites_per_year[year] if year in nonzero_cites_per_year else 0)
+            publication['cites_per_year'] = res_dict
 
             if soup.find('div', class_='gsc_vcd_title_ggi'):
                 publication['eprint_url'] = soup.find(

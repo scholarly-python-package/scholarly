@@ -85,6 +85,7 @@ print([citation['bib']['title'] for citation in scholarly.citedby(pub)])
 >>> author = scholarly.search_author_id('Smr99uEAAAAJ')
 >>> scholarly.pprint(author)
 {'affiliation': 'Professor of Vision Science, UC Berkeley',
+ 'email_domain': '@berkeley.edu',
  'filled': False,
  'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
  'name': 'Martin Banks',
