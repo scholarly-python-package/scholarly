@@ -95,7 +95,7 @@ class Navigator(object, metaclass=Singleton):
         resp = None
         tries = 0
         timeout=self._TIMEOUT
-        err =""
+        exception ="None"
         while tries < self._max_retries:
             try:
                 w = random.uniform(1,2)
@@ -133,6 +133,7 @@ class Navigator(object, metaclass=Singleton):
                                     Retrying...""")
 
             except DOSException:
+                exception = type(DOSException).__name__
                 if not self.pm.has_proxy():
                     self.logger.info("No other connections possible.")
                     w = random.uniform(60, 2*60)
@@ -141,6 +142,7 @@ class Navigator(object, metaclass=Singleton):
                     continue
             except Timeout as e:
                 err = f"Timeout Exception %s while fetching page: %s" % (type(e).__name__, e.args)
+                exception = type(e).__name__
                 self.logger.info(err)
                 if timeout < 3*self._TIMEOUT:
                     self.logger.info("Increasing timeout and retrying within same session.")
@@ -149,12 +151,13 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Giving up this session.")
             except Exception as e:
                 err = f"Exception %s while fetching page: %s" % (type(e).__name__, e.args)
+                exception = type(e).__name__
                 self.logger.info(err)
                 self.logger.info("Retrying with a new session.")
 
             tries += 1
             self._session, timeout = self.pm.get_next_proxy(num_tries = tries, old_timeout = timeout)
-        raise Exception(f"Cannot Fetch from Google Scholar. {err}")
+        raise Exception(f"Cannot Fetch from Google Scholar. Exception code is: {exception}")
 
 
     def _set_retries(self, num_retries: int) -> None:
