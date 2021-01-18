@@ -51,6 +51,10 @@ class _Scholarly:
         """
         self.__nav.set_logger(enable)
 
+    def set_timeout(self, timeout: int):
+        """Set timeout period in seconds for scholarly"""
+        self.__nav.set_timeout(timeout)
+
 
     def search_pubs(self,
                     query: str, patents: bool = True,
@@ -317,3 +321,20 @@ class _Scholarly:
         del to_print['container_type']
         print(pprint.pformat(to_print))
 
+    def search_org(self, name: str, fromauthor: bool = False) -> list:
+        """Search by organization name and return a list of possible disambiguations
+        :Example::
+            .. testcode::
+                search_query = scholarly.search_org('ucla')
+                print(search_query)
+        :Output::
+            .. testoutput::
+                [{'Organization': 'University of California, Los Angeles',
+                  'id': '14108176128635076915'},
+                 {'Organization': 'Universidad Centroccidental Lisandro Alvarado',
+                  'id': '9670678584336165373'}
+                ]
+        """
+
+        url = _AUTHSEARCH.format(requests.utils.quote(name))
+        return self.__nav.search_organization(url, fromauthor)

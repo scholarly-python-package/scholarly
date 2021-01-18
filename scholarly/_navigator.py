@@ -65,6 +65,10 @@ class Navigator(object, metaclass=Singleton):
 
         self.logger.setLevel((logging.INFO if enable else logging.CRITICAL))
 
+    def set_timeout(self, timeout: int):
+        """Set timeout period in seconds for scholarly"""
+        if timeout >= 0:
+            self._TIMEOUT = timeout
 
     def use_proxy(self, pg: ProxyGenerator):
         if pg is not None:
@@ -91,6 +95,7 @@ class Navigator(object, metaclass=Singleton):
         resp = None
         tries = 0
         timeout=self._TIMEOUT
+        err =""
         while tries < self._max_retries:
             try:
                 w = random.uniform(1,2)
@@ -149,7 +154,7 @@ class Navigator(object, metaclass=Singleton):
 
             tries += 1
             self._session, timeout = self.pm.get_next_proxy(num_tries = tries, old_timeout = timeout)
-        raise Exception("Cannot fetch the page from Google Scholar.")
+        raise Exception(f"Cannot Fetch from Google Scholar. {err}")
 
 
     def _set_retries(self, num_retries: int) -> None:
@@ -270,4 +275,29 @@ class Navigator(object, metaclass=Singleton):
             res = author_parser.fill(res)
         else:
             res = author_parser.fill(res, sections=['basics'])
+        return res
+
+    def search_organization(self, url: str, fromauthor: bool) -> list:
+        """Generate instiution object from author search page.
+           if no results are found and `fromuthor` is True, then use the first author from the search
+           to get institution/organization name.
+        """
+        soup = self._get_soup(url)
+        rows = soup.find_all('h3', 'gsc_inst_res')
+        if rows:
+            self.logger.info("Found institution")
+
+        res = []
+        for row in rows:
+            res.append({'Organization': row.a.text, 'id': row.a['href'].split('org=', 1)[1]})
+
+        if rows == [] and fromauthor is True:
+            try:
+                auth = next(self.search_authors(url))
+                authorg = self.search_author_id(auth.id).organization
+                authorg['fromauthor'] = True
+                res.append(authorg)
+            except Exception:
+                res = []
+
         return res
