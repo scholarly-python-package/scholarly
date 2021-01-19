@@ -51,11 +51,15 @@ class _Scholarly:
         """
         self.__nav.set_logger(enable)
 
+    def set_timeout(self, timeout: int):
+        """Set timeout period in seconds for scholarly"""
+        self.__nav.set_timeout(timeout)
+
 
     def search_pubs(self,
                     query: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,
-                    year_high: int = None)->_SearchScholarIterator:
+                    year_high: int = None, sortby_date: str = None)->_SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
 
         :param query: terms to be searched
@@ -68,6 +72,8 @@ class _Scholarly:
         :type year_low: int, optional
         :param year_high: maximum year of publication, defaults to None
         :type year_high: int, optional
+        :param sortby_date: 'abstracts' for abstracts, 'everything' for all results
+        :type sortyby_date: string, optional
         :returns: Generator of Publication objects
         :rtype: Iterator[:class:`Publication`]
 
@@ -116,8 +122,14 @@ class _Scholarly:
         yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
         citations = '&as_vis={0}'.format(1 - int(citations))
         patents = '&as_sdt={0},33'.format(1 - int(patents))
+        sortby = ''
+
+        if sortby_date == 'abstract':
+            sortby = '&scisbd=1'
+        elif sortby_date == 'everything':
+            sortby = '&scisbd=2'
         # improve str below
-        url = url + yr_lo + yr_hi + citations + patents
+        url = url + yr_lo + yr_hi + citations + patents + sortby
         return self.__nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False)->PublicationParser:
@@ -317,3 +329,20 @@ class _Scholarly:
         del to_print['container_type']
         print(pprint.pformat(to_print))
 
+    def search_org(self, name: str, fromauthor: bool = False) -> list:
+        """Search by organization name and return a list of possible disambiguations
+        :Example::
+            .. testcode::
+                search_query = scholarly.search_org('ucla')
+                print(search_query)
+        :Output::
+            .. testoutput::
+                [{'Organization': 'University of California, Los Angeles',
+                  'id': '14108176128635076915'},
+                 {'Organization': 'Universidad Centroccidental Lisandro Alvarado',
+                  'id': '9670678584336165373'}
+                ]
+        """
+
+        url = _AUTHSEARCH.format(requests.utils.quote(name))
+        return self.__nav.search_organization(url, fromauthor)
