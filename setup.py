@@ -36,6 +36,7 @@ setuptools.setup(
                       'python-dotenv',
                       'free-proxy',
                       'sphinx_rtd_theme',
+                      'typing_extensions'
                       ],
     test_suite="test_module.py"
 )
