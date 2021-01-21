@@ -59,7 +59,8 @@ class _Scholarly:
     def search_pubs(self,
                     query: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,
-                    year_high: int = None, sortby_date: str = None)->_SearchScholarIterator:
+                    year_high: int = None, sort_by: str = "relevance",
+                    include_last_year: str = "abstracts")->_SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
 
         :param query: terms to be searched
@@ -72,8 +73,10 @@ class _Scholarly:
         :type year_low: int, optional
         :param year_high: maximum year of publication, defaults to None
         :type year_high: int, optional
-        :param sortby_date: 'abstracts' for abstracts, 'everything' for all results
-        :type sortyby_date: string, optional
+        :param sort_by: 'relevance' or 'date', defaults to 'relevance'
+        :type sort_by: string, optional
+        :param include_last_year: 'abstracts' or 'everything', defaults to 'abstracts' and only applies if 'sort_by' is 'date'
+        :type include_last_year: string, optional
         :returns: Generator of Publication objects
         :rtype: Iterator[:class:`Publication`]
 
@@ -124,10 +127,18 @@ class _Scholarly:
         patents = '&as_sdt={0},33'.format(1 - int(patents))
         sortby = ''
 
-        if sortby_date == 'abstract':
-            sortby = '&scisbd=1'
-        elif sortby_date == 'everything':
-            sortby = '&scisbd=2'
+        if sort_by == "date":
+            if include_last_year == "abstracts":
+                sortby = '&scisbd=1'
+            elif include_last_year == "everything":
+                sortby = '&scisbd=2'
+            else:
+                print("Invalid option for 'include_last_year', available options: 'everything', 'abstracts'")
+                return
+        elif sort_by != "relevance":
+            print("Invalid option for 'sort_by', available options: 'relevance', 'date'")
+            return
+            
         # improve str below
         url = url + yr_lo + yr_hi + citations + patents + sortby
         return self.__nav.search_publications(url)
