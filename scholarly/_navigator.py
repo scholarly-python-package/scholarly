@@ -261,7 +261,7 @@ class Navigator(object, metaclass=Singleton):
         """
         return _SearchScholarIterator(self, url)
 
-    def search_author_id(self, id: str, filled: bool = False) -> Author:
+    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby") -> Author:
         """Search by author ID and return a Author object
         :param id: the Google Scholar id of a particular author
         :type url: str
@@ -273,9 +273,9 @@ class Navigator(object, metaclass=Singleton):
         author_parser = AuthorParser(self)
         res = author_parser.get_author(id)
         if filled:
-            res = author_parser.fill(res)
+            res = author_parser.fill(res, sortby=sortby)
         else:
-            res = author_parser.fill(res, sections=['basics'])
+            res = author_parser.fill(res, sections=['basics'], sortby=sortby)
         return res
 
     def search_organization(self, url: str, fromauthor: bool) -> list:

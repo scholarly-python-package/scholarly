@@ -4,7 +4,7 @@ import random
 import os
 import copy
 import pprint
-from typing import Callable
+from typing import Callable, List
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -14,6 +14,7 @@ from .data_types import Author, AuthorSource, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
+_KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 
 
@@ -181,7 +182,7 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
     
-    def fill(self, object: dict, sections=[]) -> Author or Publication:
+    def fill(self, object: dict, sections=[], sortby: str = "citedby") -> Author or Publication:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.
@@ -190,11 +191,13 @@ class _Scholarly:
         :type object: Author or Publication
         :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications']
         :type sections: list
+        :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
+        :type sortby: string
         """
 
         if object['container_type'] == "Author":
             author_parser = AuthorParser(self.__nav)
-            object = author_parser.fill(object, sections)
+            object = author_parser.fill(object, sections, sortby)
             if object is False:
                 raise ValueError("Incorrect input")
         elif object['container_type'] == "Publication":
@@ -231,8 +234,10 @@ class _Scholarly:
             return
 
 
-    def search_author_id(self, id: str, filled: bool = False)->Author:
+    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby")->Author:
         """Search by author id and return a single Author object
+        :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
+        :type sortby: string
 
         :Example::
 
@@ -252,7 +257,7 @@ class _Scholarly:
                  'scholar_id': 'EmD_lTEAAAAJ',
                  'source': 'AUTHOR_PROFILE_PAGE'}
         """
-        return self.__nav.search_author_id(id, filled)
+        return self.__nav.search_author_id(id, filled, sortby)
 
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
@@ -286,6 +291,45 @@ class _Scholarly:
         """
         url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
         return self.__nav.search_authors(url)
+
+    def search_keywords(self, keywords: List[str]):
+        """Search by keywords and return a generator of Author objects
+        
+        :param keywords: a list of keywords to be searched
+        :type keyword: List[str]
+
+        :Example::
+
+        .. testcode::
+
+            search_query = scholarly.search_keywords(['crowdsourcing', 'privacy'])
+            scholarly.pprint(next(search_query))
+
+        :Output::
+
+        .. testoutput::
+                {'affiliation': 'Cornell University',
+                 'citedby': 40976,
+                 'email_domain': '',
+                 'filled': False,
+                 'interests': ['Crowdsourcing',
+                               'privacy',
+                               'social computing',
+                               'game theory',
+                               'user-generated content'],
+                 'name': 'Arpita Ghosh',
+                 'scholar_id': '_cMw1IUAAAAJ',
+                 'source': 'SEARCH_AUTHOR_SNIPPETS',
+                 'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=_cMw1IUAAAAJ'}
+
+        """
+
+        formated_keywords = ['label:'+requests.utils.quote(keyword) for keyword in keywords]
+        formated_keywords = '+'.join(formated_keywords)
+        url = _KEYWORDSEARCHBASE.format(formated_keywords)
+        return self.__nav.search_authors(url)
+
+        
 
     def search_pubs_custom_url(self, url: str)->_SearchScholarIterator:
         """Search by custom URL and return a generator of Publication objects

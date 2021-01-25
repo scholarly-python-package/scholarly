@@ -137,7 +137,7 @@ class AuthorParser:
             new_coauthor['source'] = AuthorSource.CO_AUTHORS_LIST
             author['coauthors'].append(new_coauthor)
 
-    def fill(self, author, sections: list = []):
+    def fill(self, author, sections: list = [], sortby="citedby"):
         """Populate the Author with information from their profile
 
         The `sections` argument allows for finer granularity of the profile
@@ -152,6 +152,8 @@ class AuthorParser:
             * ``publications``: fills publications;
             * ``[]``: fills all of the above
         :type sections: ['basics','citations','counts','coauthors','publications',[]] list, optional
+        :param sortby: Select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
+        :type sortby: string
         :returns: The filled object if fill was successfull, False otherwise.
         :rtype: Author or bool
 
@@ -296,7 +298,13 @@ class AuthorParser:
         """
         try:
             sections = [section.lower() for section in sections]
+            sortby_str = ''
+            if sortby == "year":
+                sortby_str = '&view_op=list_works&sortby=pubdate'
+            elif sortby != "citedby":
+                print("Please enter a valid sortby parameter. Options: 'year', 'citedby'")
             url_citations = _CITATIONAUTH.format(author['scholar_id'])
+            url_citations += sortby_str
             url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)
             soup = self.nav._get_soup(url)
 
