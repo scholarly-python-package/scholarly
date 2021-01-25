@@ -182,7 +182,7 @@ class _Scholarly:
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
     
-    def fill(self, object: dict, sections=[], sortby: str = "citedby") -> Author or Publication:
+    def fill(self, object: dict, sections=[], sortby: str = "citedby", publication_limit: int = 0) -> Author or Publication:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.
@@ -193,11 +193,13 @@ class _Scholarly:
         :type sections: list
         :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
+        :param publication_limit: if the object is an author, select the max number of publications you want you want to fill for the author. Defaults to no limit.
+        :type publication_limit: int
         """
 
         if object['container_type'] == "Author":
             author_parser = AuthorParser(self.__nav)
-            object = author_parser.fill(object, sections, sortby)
+            object = author_parser.fill(object, sections, sortby, publication_limit)
             if object is False:
                 raise ValueError("Incorrect input")
         elif object['container_type'] == "Publication":

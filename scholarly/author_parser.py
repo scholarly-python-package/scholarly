@@ -108,16 +108,19 @@ class AuthorParser:
                  for c in soup.find_all('span', class_='gsc_g_al')]
         author['cites_per_year'] = dict(zip(years, cites))
 
-    def _fill_publications(self, soup, author):
+    def _fill_publications(self, soup, author, publication_limit: int = 0):
         author['publications'] = list()
         pubstart = 0
         url_citations = _CITATIONAUTH.format(author['scholar_id'])
 
         pub_parser = PublicationParser(self.nav)
         while True:
+            print(len(author['publications']))
             for row in soup.find_all('tr', class_='gsc_a_tr'):
                 new_pub = pub_parser.get_publication(row, PublicationSource.AUTHOR_PUBLICATION_ENTRY)
                 author['publications'].append(new_pub)
+                if (publication_limit) and (len(author['publications']) >= publication_limit):
+                    break
             if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
                 pubstart += _PAGESIZE
                 url = '{0}&cstart={1}&pagesize={2}'.format(
@@ -137,7 +140,7 @@ class AuthorParser:
             new_coauthor['source'] = AuthorSource.CO_AUTHORS_LIST
             author['coauthors'].append(new_coauthor)
 
-    def fill(self, author, sections: list = [], sortby="citedby"):
+    def fill(self, author, sections: list = [], sortby="citedby", publication_limit: int = 0):
         """Populate the Author with information from their profile
 
         The `sections` argument allows for finer granularity of the profile
@@ -154,6 +157,8 @@ class AuthorParser:
         :type sections: ['basics','citations','counts','coauthors','publications',[]] list, optional
         :param sortby: Select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
+        :param publication_limit: Select the max number of publications you want you want to fill for the author. Defaults to no limit.
+        :type publication_limit: int
         :returns: The filled object if fill was successfull, False otherwise.
         :rtype: Author or bool
 
@@ -311,12 +316,12 @@ class AuthorParser:
             if sections == []:
                 for i in self._sections:
                     if i not in author['filled']:
-                        getattr(self, f'_fill_{i}')(soup, author)
+                        (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit))
                         author['filled'].add(i)
             else:
                 for i in sections:
                     if i in self._sections and i not in author['filled']:
-                        getattr(self, f'_fill_{i}')(soup, author)
+                        (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit))
                         author['filled'].add(i)
         except Exception as e:
             raise(e)

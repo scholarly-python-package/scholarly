@@ -261,21 +261,25 @@ class Navigator(object, metaclass=Singleton):
         """
         return _SearchScholarIterator(self, url)
 
-    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby") -> Author:
+    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0) -> Author:
         """Search by author ID and return a Author object
         :param id: the Google Scholar id of a particular author
         :type url: str
         :param filled: If the returned Author object should be filled
         :type filled: bool, optional
+        :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
+        :type sortby: string
+        :param publication_limit: Select the max number of publications you want you want to fill for the author. Defaults to no limit.
+        :type publication_limit: int
         :returns: an Author object
         :rtype: {Author}
         """
         author_parser = AuthorParser(self)
         res = author_parser.get_author(id)
         if filled:
-            res = author_parser.fill(res, sortby=sortby)
+            res = author_parser.fill(res, sortby=sortby, publication_limit=publication_limit)
         else:
-            res = author_parser.fill(res, sections=['basics'], sortby=sortby)
+            res = author_parser.fill(res, sections=['basics'], sortby=sortby, publication_limit=publication_limit)
         return res
 
     def search_organization(self, url: str, fromauthor: bool) -> list:
