@@ -115,7 +115,6 @@ class AuthorParser:
 
         pub_parser = PublicationParser(self.nav)
         while True:
-            print(len(author['publications']))
             for row in soup.find_all('tr', class_='gsc_a_tr'):
                 new_pub = pub_parser.get_publication(row, PublicationSource.AUTHOR_PUBLICATION_ENTRY)
                 author['publications'].append(new_pub)

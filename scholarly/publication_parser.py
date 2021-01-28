@@ -257,7 +257,7 @@ class PublicationParser(object):
             for item in soup.find_all('div', class_='gs_scl'):
                 key = item.find(class_='gsc_vcd_field').text.strip().lower()
                 val = item.find(class_='gsc_vcd_value')
-                if key == 'authors':
+                if key == 'authors' or key == 'inventors':
                     publication['bib']['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])
                 elif key == 'journal':

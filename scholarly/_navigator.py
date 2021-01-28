@@ -29,7 +29,7 @@ from fake_useragent import UserAgent
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
-from .data_types import Author
+from .data_types import Author, PublicationSource
 
 class DOSException(Exception):
     """DOS attack was detected."""
@@ -246,10 +246,11 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {Publication}
         """
         soup = self._get_soup(url)
-        res = PublicationParser(self, soup.find_all('div', 'gs_or')[0], 'scholar')
+        publication_parser = PublicationParser(self)
+        pub = publication_parser.get_publication(soup.find_all('div', 'gs_or')[0], PublicationSource.PUBLICATION_SEARCH_SNIPPET)
         if filled:
-            res.fill()
-        return res
+            pub = publication_parser.fill(pub)
+        return pub
 
     def search_publications(self, url: str) -> _SearchScholarIterator:
         """Returns a Publication Generator given a url
