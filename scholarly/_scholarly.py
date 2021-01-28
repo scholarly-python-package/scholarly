@@ -350,7 +350,19 @@ class _Scholarly:
         :type url: string
         """
         return self.__nav.search_authors(url)
-
+    
+    def get_related_articles(self, object: Publication)->_SearchScholarIterator:
+        if object['container_type'] != 'Publication':
+            print("Not a publication object")
+            return
+        
+        if object['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
+            if 'url_related_articles' not in object.keys():
+                object = self.fill(object)
+            return self.__nav.search_publications(object['url_related_articles'])
+        elif object['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
+            return self.__nav.search_publications(object['url_related_articles'])
+        
     def pprint(self, object: Author or Publication)->None:
         """Pretty print an Author or Publication container object
         
