@@ -262,6 +262,8 @@ class PublicationParser(object):
                         [i.strip() for i in val.text.split(',')])
                 elif key == 'journal':
                     publication['bib']['journal'] = val.text
+                elif key == 'conference':
+                    publication['bib']['conference'] = val.text
                 elif key == 'volume':
                     publication['bib']['volume'] = val.text
                 elif key == 'issue':
@@ -270,7 +272,7 @@ class PublicationParser(object):
                     publication['bib']['pages'] = val.text
                 elif key == 'publisher':
                     publication['bib']['publisher'] = val.text
-                elif key == 'Publication date':
+                elif key == 'publication date':
 
                     patterns = ['YYYY/M',
                                 'YYYY/MM/DD',
