@@ -238,7 +238,7 @@ class _Scholarly:
 
     def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby")->Author:
         """Search by author id and return a single Author object
-        :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
+        :param sortby: select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
 
         :Example::
@@ -352,6 +352,12 @@ class _Scholarly:
         return self.__nav.search_authors(url)
     
     def get_related_articles(self, object: Publication)->_SearchScholarIterator:
+        """
+        Search google scholar for related articles to a specific publication.
+        
+        :param object: Publication object used to get the related articles
+        :type object: Publication
+        """
         if object['container_type'] != 'Publication':
             print("Not a publication object")
             return
