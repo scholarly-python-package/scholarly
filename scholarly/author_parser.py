@@ -306,7 +306,7 @@ class AuthorParser:
             if sortby == "year":
                 sortby_str = '&view_op=list_works&sortby=pubdate'
             elif sortby != "citedby":
-                print("Please enter a valid sortby parameter. Options: 'year', 'citedby'")
+                raise Exception("Please enter a valid sortby parameter. Options: 'year', 'citedby'")
             url_citations = _CITATIONAUTH.format(author['scholar_id'])
             url_citations += sortby_str
             url = '{0}&pagesize={1}'.format(url_citations, _PAGESIZE)

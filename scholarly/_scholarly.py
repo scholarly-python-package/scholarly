@@ -236,10 +236,12 @@ class _Scholarly:
             return
 
 
-    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby")->Author:
+    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0)->Author:
         """Search by author id and return a single Author object
         :param sortby: select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
+        :param publication_limit: if the object is an author, select the max number of publications you want you want to fill for the author. Defaults to no limit.
+        :type publication_limit: int
 
         :Example::
 
@@ -259,7 +261,7 @@ class _Scholarly:
                  'scholar_id': 'EmD_lTEAAAAJ',
                  'source': 'AUTHOR_PROFILE_PAGE'}
         """
-        return self.__nav.search_author_id(id, filled, sortby)
+        return self.__nav.search_author_id(id, filled, sortby, publication_limit)
 
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
