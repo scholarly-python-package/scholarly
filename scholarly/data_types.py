@@ -149,6 +149,7 @@ class Publication(TypedDict, total=False):
                           of multiple publications, and therefore may have multiple "citedby_id"
                           values.
                           (source: AUTHOR_PUBLICATION_ENTRY)
+    :param url_related_articles: the url containing link for related articles of a publication (needs fill() for AUTHOR_PUBLICATION_ENTRIES)
     :param url_add_sclib: (source: PUBLICATION_SEARCH_SNIPPET)
     :param url_scholarbib: the url containing links for 
                            the BibTeX entry, EndNote, RefMan and RefWorks (source: PUBLICATION_SEARCH_SNIPPET)
@@ -169,6 +170,7 @@ class Publication(TypedDict, total=False):
     eprint_url: str
     pub_url: str
     url_add_sclib: str
+    url_related_articles: str
     url_scholarbib: str
     filled: bool
     source: PublicationSource
