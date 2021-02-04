@@ -29,7 +29,7 @@ from fake_useragent import UserAgent
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
-from .data_types import Author
+from .data_types import Author, PublicationSource
 
 class DOSException(Exception):
     """DOS attack was detected."""
@@ -246,10 +246,11 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {Publication}
         """
         soup = self._get_soup(url)
-        res = PublicationParser(self, soup.find_all('div', 'gs_or')[0], 'scholar')
+        publication_parser = PublicationParser(self)
+        pub = publication_parser.get_publication(soup.find_all('div', 'gs_or')[0], PublicationSource.PUBLICATION_SEARCH_SNIPPET)
         if filled:
-            res.fill()
-        return res
+            pub = publication_parser.fill(pub)
+        return pub
 
     def search_publications(self, url: str) -> _SearchScholarIterator:
         """Returns a Publication Generator given a url
@@ -261,21 +262,25 @@ class Navigator(object, metaclass=Singleton):
         """
         return _SearchScholarIterator(self, url)
 
-    def search_author_id(self, id: str, filled: bool = False) -> Author:
+    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0) -> Author:
         """Search by author ID and return a Author object
         :param id: the Google Scholar id of a particular author
         :type url: str
         :param filled: If the returned Author object should be filled
         :type filled: bool, optional
+        :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
+        :type sortby: string
+        :param publication_limit: Select the max number of publications you want you want to fill for the author. Defaults to no limit.
+        :type publication_limit: int
         :returns: an Author object
         :rtype: {Author}
         """
         author_parser = AuthorParser(self)
         res = author_parser.get_author(id)
         if filled:
-            res = author_parser.fill(res)
+            res = author_parser.fill(res, sortby=sortby, publication_limit=publication_limit)
         else:
-            res = author_parser.fill(res, sections=['basics'])
+            res = author_parser.fill(res, sections=['basics'], sortby=sortby, publication_limit=publication_limit)
         return res
 
     def search_organization(self, url: str, fromauthor: bool) -> list:
