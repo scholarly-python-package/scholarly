@@ -188,7 +188,7 @@ class TestScholarly(unittest.TestCase):
         Check that the total results for that search term equals 32.
         """
         pubs = scholarly.search_pubs('"naive physics" stability "3d shape"')
-        self.assertEqual(pubs.total_results, 32)
+        self.assertGreaterEqual(pubs.total_results, 32)
 
     def test_search_pubs_filling_publication_contents(self):
         '''
