@@ -108,19 +108,22 @@ class AuthorParser:
                  for c in soup.find_all('span', class_='gsc_g_al')]
         author['cites_per_year'] = dict(zip(years, cites))
 
-    def _fill_publications(self, soup, author, publication_limit: int = 0):
+    def _fill_publications(self, soup, author, publication_limit: int = 0, sortby_str: str = ''):
         author['publications'] = list()
         pubstart = 0
         url_citations = _CITATIONAUTH.format(author['scholar_id'])
+        url_citations += sortby_str
 
         pub_parser = PublicationParser(self.nav)
+        flag = False
         while True:
             for row in soup.find_all('tr', class_='gsc_a_tr'):
                 new_pub = pub_parser.get_publication(row, PublicationSource.AUTHOR_PUBLICATION_ENTRY)
                 author['publications'].append(new_pub)
                 if (publication_limit) and (len(author['publications']) >= publication_limit):
+                    flag = True
                     break
-            if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs:
+            if 'disabled' not in soup.find('button', id='gsc_bpf_more').attrs and not flag:
                 pubstart += _PAGESIZE
                 url = '{0}&cstart={1}&pagesize={2}'.format(
                     url_citations, pubstart, _PAGESIZE)
@@ -315,12 +318,12 @@ class AuthorParser:
             if sections == []:
                 for i in self._sections:
                     if i not in author['filled']:
-                        (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit))
+                        (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit, sortby_str))
                         author['filled'].add(i)
             else:
                 for i in sections:
                     if i in self._sections and i not in author['filled']:
-                        (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit))
+                        (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit, sortby_str))
                         author['filled'].add(i)
         except Exception as e:
             raise(e)
