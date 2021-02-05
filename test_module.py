@@ -180,6 +180,16 @@ class TestScholarly(unittest.TestCase):
 
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
+    def test_search_pubs_total_results(self):
+        """
+        As of February 4, 2021 there are 32 pubs that fit the search term:
+        ["naive physics" stability "3d shape"].
+
+        Check that the total results for that search term equals 32.
+        """
+        pubs = scholarly.search_pubs('"naive physics" stability "3d shape"')
+        self.assertEqual(pubs.total_results, 32)
+
     def test_search_pubs_filling_publication_contents(self):
         '''
         This process  checks the process of filling a publication that is derived
