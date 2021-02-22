@@ -51,6 +51,7 @@ class _SearchScholarIterator(object):
         self._url = url
         self._nav = nav
         self._load_url(url)
+        self.total_results = self._get_total_results()
         self.pub_parser = PublicationParser(self._nav)
 
     def _load_url(self, url: str):
@@ -58,6 +59,14 @@ class _SearchScholarIterator(object):
         self._soup = self._nav._get_soup(url)
         self._pos = 0
         self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
+
+    def _get_total_results(self):
+        for x in self._soup.find_all('div', class_='gs_ab_mdw'):
+            # Decimal separator is set by Google independent of language setting
+            match = re.match(pattern=r'(^|\s*About)\s*([0-9,\.]+)', string=x.text)
+            if match:
+                return int(re.sub(pattern=r'[,\.]',repl='', string=match.group(2)))
+        return None
 
     # Iterator protocol
 

@@ -85,7 +85,10 @@ class AuthorParser:
             if "avatar_scholar" in picture:
                 picture = _HOST.format(picture)
             author['url_picture'] = picture
-        
+        index = soup.find_all('td', class_='gsc_rsb_std')
+        if index:
+            author['citedby'] = int(index[0].text)
+
     def _fill_indices(self, soup, author):
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
