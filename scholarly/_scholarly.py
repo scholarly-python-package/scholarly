@@ -407,11 +407,14 @@ class _Scholarly:
         print(pprint.pformat(to_print))
 
     def search_org(self, name: str, fromauthor: bool = False) -> list:
-        """Search by organization name and return a list of possible disambiguations
+        """
+        Search by organization name and return a list of possible disambiguations
+
         :Example::
             .. testcode::
                 search_query = scholarly.search_org('ucla')
                 print(search_query)
+
         :Output::
             .. testoutput::
                 [{'Organization': 'University of California, Los Angeles',
