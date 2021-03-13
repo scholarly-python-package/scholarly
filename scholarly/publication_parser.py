@@ -7,7 +7,7 @@ from .data_types import BibEntry, Publication, PublicationSource
 
 
 _HOST = 'https://scholar.google.com{0}'
-_SCHOLARPUBRE = r'cites=([\w-]*)'
+_SCHOLARPUBRE = r'cites=([\d,]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
 _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
