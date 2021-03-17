@@ -82,6 +82,7 @@ class _SearchScholarIterator(object):
         elif self._soup.find(class_='gs_ico gs_ico_nav_next'):
             url = self._soup.find(
                 class_='gs_ico gs_ico_nav_next').parent['href']
+            self._url = url
             self._load_url(url)
             return self.__next__()
         else:
