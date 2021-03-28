@@ -228,7 +228,13 @@ class TestScholarly(unittest.TestCase):
         author_id_list = pub_parser._get_author_id_list(author_html_partial)
         self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
 
+    def test_ScraperAPI(self):
+        proxy_generator = ProxyGenerator()
+        proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
+        scholarly.set_timeout(60)
 
+        ## Uses another method to test that proxy is working.
+        self.test_search_keyword()
 
 
 if __name__ == '__main__':
