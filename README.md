@@ -25,7 +25,7 @@ pip3 install scholarly
 or `pip` to install from github:
 
 ```bash
-pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
+pip3 install -U git+https://github.com/scholarly-python-package/scholarly.git
 ```
 
 ## Tests
