@@ -45,6 +45,7 @@ class ProxyGenerator(object):
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         self._use_luminati = False
+        self._ScraperAPI_KEY = None
         # If we h:ve a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
@@ -366,7 +367,7 @@ class ProxyGenerator(object):
         _HEADERS = {
             'accept-language': 'en-US,en',
             'accept': 'text/html,application/xhtml+xml,application/xml',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+            'User-Agent': UserAgent().random,
         }
         self._session.headers.update(_HEADERS)
 
@@ -395,6 +396,22 @@ class ProxyGenerator(object):
             proxy_works = self._use_proxy(http=proxy, https=proxy)
             if proxy_works:
                 break
+
+    def ScraperAPI(self, API_KEY):
+        """
+        Sets up a proxy using ScraperAPI
+
+        :Example::
+            pg = ProxyGenerator()
+            pg.ScraperAPI(API_KEY)
+
+        :param API_KEY: ScraperAPI API Key value. 
+        :type API_KEY: string
+        """
+        assert API_KEY is not None
+        self._ScraperAPI_KEY = API_KEY
+
+        self._use_proxy(http='http://api.scraperapi.com/?api_key='+API_KEY)
 
     def has_proxy(self)-> bool:
         return self._proxy_gen or self._can_refresh_tor
