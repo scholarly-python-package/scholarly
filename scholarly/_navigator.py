@@ -52,7 +52,6 @@ class Navigator(object, metaclass=Singleton):
 
     def __init__(self):
         super(Navigator, self).__init__()
-        logging.basicConfig(filename='scholar.log', level=logging.CRITICAL)
         self.logger = logging.getLogger('scholarly')
         self._TIMEOUT = 5
         self._max_retries = 5
