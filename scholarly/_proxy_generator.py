@@ -36,9 +36,7 @@ class Singleton(type):
 
 class ProxyGenerator(object):
     def __init__(self):
-
         # setting up logger 
-        logging.basicConfig(filename='scholar.log', level=logging.INFO)
         self.logger = logging.getLogger('scholarly')
 
         self._proxy_gen = None
