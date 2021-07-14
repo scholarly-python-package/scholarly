@@ -108,7 +108,7 @@ class PublicationParser(object):
         # create the bib entry in the dictionary
         publication['bib']['title'] = __data.find('a', class_='gsc_a_at').text
         publication['author_pub_id'] = re.findall(_CITATIONPUBRE, __data.find(
-            'a', class_='gsc_a_at')['data-href'])[0]
+            'a', class_='gsc_a_at')['href'])[0]
         citedby = __data.find(class_='gsc_a_ac')
 
         publication["num_citations"] = 0
