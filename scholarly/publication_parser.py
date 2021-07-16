@@ -108,7 +108,7 @@ class PublicationParser(object):
         # create the bib entry in the dictionary
         publication['bib']['title'] = __data.find('a', class_='gsc_a_at').text
         publication['author_pub_id'] = re.findall(_CITATIONPUBRE, __data.find(
-            'a', class_='gsc_a_at')['data-href'])[0]
+            'a', class_='gsc_a_at')['href'])[0]
         citedby = __data.find(class_='gsc_a_ac')
 
         publication["num_citations"] = 0
@@ -263,13 +263,13 @@ class PublicationParser(object):
         if publication['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
             url = _CITATIONPUB.format(publication['author_pub_id'])
             soup = self.nav._get_soup(url)
-            publication['bib']['title'] = soup.find('div', id='gsc_vcd_title').text
-            if soup.find('a', class_='gsc_vcd_title_link'):
+            publication['bib']['title'] = soup.find('div', id='gsc_oci_title').text
+            if soup.find('a', class_='gsc_oci_title_link'):
                 publication['pub_url'] = soup.find(
-                    'a', class_='gsc_vcd_title_link')['href']
+                    'a', class_='gsc_oci_title_link')['href']
             for item in soup.find_all('div', class_='gs_scl'):
-                key = item.find(class_='gsc_vcd_field').text.strip().lower()
-                val = item.find(class_='gsc_vcd_value')
+                key = item.find(class_='gsc_oci_field').text.strip().lower()
+                val = item.find(class_='gsc_oci_value')
                 if key == 'authors' or key == 'inventors':
                     publication['bib']['author'] = ' and '.join(
                         [i.strip() for i in val.text.split(',')])
@@ -326,9 +326,9 @@ class PublicationParser(object):
                         if entry.text.lower() == 'related articles':
                             publication['url_related_articles'] = entry.get('href')[26:]
             # number of citation per year
-            years = [int(y.text) for y in soup.find_all(class_='gsc_vcd_g_t')]
-            cites = [int(c.text) for c in soup.find_all(class_='gsc_vcd_g_al')]
-            cites_year = [int(c.get('href')[-4:]) for c in soup.find_all(class_='gsc_vcd_g_a')]
+            years = [int(y.text) for y in soup.find_all(class_='gsc_oci_g_t')]
+            cites = [int(c.text) for c in soup.find_all(class_='gsc_oci_g_al')]
+            cites_year = [int(c.get('href')[-4:]) for c in soup.find_all(class_='gsc_oci_g_a')]
             nonzero_cites_per_year = dict(zip(cites_year, cites))
             res_dict = {}
             for year in years:
