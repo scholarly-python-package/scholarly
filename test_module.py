@@ -202,7 +202,7 @@ class TestScholarly(unittest.TestCase):
         f = scholarly.fill(pubs[0])
         self.assertTrue(f['bib']['author'] == u'Cholewiak, Steven A and Love, Gordon D and Banks, Martin S')
         self.assertTrue(f['author_id'] == ['4bahYMkAAAAJ', '3xJXtlwAAAAJ', 'Smr99uEAAAAJ'])
-        self.assertTrue(f['bib']['journal'] == u'Journal of vision')
+        self.assertTrue(f['bib']['journal'] == u'Journal of Vision')
         self.assertTrue(f['bib']['number'] == '9')
         self.assertTrue(f['bib']['pages'] == u'1--1')
         self.assertTrue(f['bib']['publisher'] == u'The Association for Research in Vision and Ophthalmology')
