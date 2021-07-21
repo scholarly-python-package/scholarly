@@ -101,12 +101,7 @@ class Navigator(object, metaclass=Singleton):
                 w = random.uniform(1,2)
                 time.sleep(w)
                 
-                params = {}
-                if self.pm._ScraperAPI_KEY:
-                    params = { 'api_key': self.pm._ScraperAPI_KEY, 'url': pagerequest }
-                    pagerequest = 'http://api.scraperapi.com'
-                
-                resp = self._session.get(pagerequest, params=params, timeout=timeout)
+                resp = self._session.get(pagerequest, timeout=timeout)
                 self.logger.info("Session proxy config is {}".format(self._session.proxies))
 
                 has_captcha = self._requests_has_captcha(resp.text)
