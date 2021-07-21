@@ -49,10 +49,7 @@ class TestScholarly(unittest.TestCase):
             proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
             scholarly.use_proxy(proxy_generator)
         else:
-            scholarly.use_proxy(None)
-
-        ## Uses another method to test that proxy is working.
-        self.test_search_keyword()            
+            scholarly.use_proxy(None)      
 
     def test_tor_launch_own_process(self):
         """
