@@ -409,7 +409,7 @@ class ProxyGenerator(object):
         assert API_KEY is not None
         self._ScraperAPI_KEY = API_KEY
 
-        self._use_proxy(http='http://api.scraperapi.com/?api_key='+API_KEY)
+        self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001')
 
     def has_proxy(self)-> bool:
         return self._proxy_gen or self._can_refresh_tor
