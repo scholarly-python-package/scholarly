@@ -117,6 +117,19 @@ class TestScholarly(unittest.TestCase):
         cites = [c for c in scholarly.citedby(filled)]
         self.assertEqual(len(cites), filled['num_citations'])
 
+    def test_search_pubs_citedby_id(self):
+        """
+        Test querying for citations by paper ID.
+
+        The 'Machine-learned epidemiology' paper had 11 citations as of
+        June 1, 2020.
+        """
+        # Machine-learned epidemiology: real-time detection of foodborne illness at scale
+        publication_id = 2244396665447968936
+        
+        pubs = [p for p in scholarly.search_citedby(publication_id)]
+        self.assertGreaterEqual(len(pubs), 11)
+
     def test_search_keyword(self):
         """
         When we search for the keyword "3d_shape" the author
@@ -230,8 +243,6 @@ class TestScholarly(unittest.TestCase):
         pub_parser = PublicationParser(None)
         author_id_list = pub_parser._get_author_id_list(author_html_partial)
         self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
-
-
 
 
 if __name__ == '__main__':
