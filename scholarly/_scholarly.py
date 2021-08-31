@@ -124,7 +124,9 @@ class _Scholarly:
              'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 
         """
-        url = _construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents, citations=citations, year_low=year_low, year_high=year_high)
+        url = _construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
+                             citations=citations, year_low=year_low, year_high=year_high,
+                             sort_by=sort_by, start_index=start_index)
         return self.__nav.search_publications(url)
 
     def search_citedby(self, publication_id: int, **kwargs):
