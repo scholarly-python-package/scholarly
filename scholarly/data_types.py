@@ -163,7 +163,7 @@ class Publication(TypedDict, total=False):
     gsrank: int
     author_id: List[str]
     num_citations: int
-    cites_id: int
+    cites_id: List[str]
     citedby_url: str
     cites_per_year: CitesPerYear
     author_pub_id: str

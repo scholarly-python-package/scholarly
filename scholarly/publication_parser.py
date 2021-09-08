@@ -320,8 +320,8 @@ class PublicationParser(object):
                     publication['bib']['abstract'] = result
                 elif key == 'total citations':
                     publication['cites_id'] = re.findall(
-                        _SCHOLARPUBRE, val.a['href'])[0]
-                    publication['citedby_url'] = _CITEDBYLINK.format(publication['cites_id'])
+                        _SCHOLARPUBRE, val.a['href'])[0].split(',')
+                    publication['citedby_url'] = _CITEDBYLINK.format(','.join(publication['cites_id']))
                 elif key == 'scholar articles':
                     for entry in val.find_all('a'):
                         if entry.text.lower() == 'related articles':
