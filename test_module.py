@@ -53,6 +53,8 @@ class TestScholarly(unittest.TestCase):
         else:
             scholarly.use_proxy(None)      
 
+    @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
+                          if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
