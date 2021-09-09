@@ -32,10 +32,12 @@ class TestScholarly(unittest.TestCase):
             scholarly.use_proxy(proxy_generator)
 
         elif self.connection_method == "tor_internal":
-            if sys.platform.startswith("linux"):
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
                 tor_cmd = 'tor'
             elif sys.platform.startswith("win"):
                 tor_cmd = 'tor.exe'
+            else:
+                tor_cmd = None
             proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "luminati":
@@ -51,15 +53,19 @@ class TestScholarly(unittest.TestCase):
         else:
             scholarly.use_proxy(None)      
 
+    @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
+                          if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
         """
         proxy_generator = ProxyGenerator()
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):
             tor_cmd = 'tor.exe'
+        else:
+            tor_cmd = None
 
         tor_sock_port = random.randrange(9000, 9500)
         tor_control_port = random.randrange(9500, 9999)
