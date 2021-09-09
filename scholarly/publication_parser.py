@@ -7,7 +7,7 @@ from .data_types import BibEntry, Publication, PublicationSource
 
 
 _HOST = 'https://scholar.google.com{0}'
-_SCHOLARPUBRE = r'cites=([\w-]*)'
+_SCHOLARPUBRE = r'cites=([\d,]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
 _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
@@ -320,8 +320,8 @@ class PublicationParser(object):
                     publication['bib']['abstract'] = result
                 elif key == 'total citations':
                     publication['cites_id'] = re.findall(
-                        _SCHOLARPUBRE, val.a['href'])[0]
-                    publication['citedby_url'] = _CITEDBYLINK.format(publication['cites_id'])
+                        _SCHOLARPUBRE, val.a['href'])[0].split(',')
+                    publication['citedby_url'] = _CITEDBYLINK.format(','.join(publication['cites_id']))
                 elif key == 'scholar articles':
                     for entry in val.find_all('a'):
                         if entry.text.lower() == 'related articles':
