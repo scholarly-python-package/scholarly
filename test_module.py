@@ -146,6 +146,7 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')        
+        self.assertGreaterEqual(len(author['coauthors']), 33)
         pub = scholarly.fill(author['publications'][2])
         self.assertEqual(pub['author_pub_id'],u'4bahYMkAAAAJ:LI9QrySNdTsC')
 
