@@ -1,7 +1,7 @@
 import sys
 
 from enum import Enum
-from typing import List, Dict, Set
+from typing import List, Dict
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict 
@@ -9,7 +9,7 @@ else:
     from typing_extensions import TypedDict
 
 
-class PublicationSource(Enum):
+class PublicationSource(int, Enum):
     '''
     Defines the source of the publication. In general, a publication 
     on Google Scholar has two forms:
@@ -62,7 +62,7 @@ class PublicationSource(Enum):
     PUBLICATION_SEARCH_SNIPPET = 1
     AUTHOR_PUBLICATION_ENTRY = 2
     
-class AuthorSource(Enum):
+class AuthorSource(int, Enum):
     '''
     Defines the source of the HTML that will be parsed.
     
@@ -187,7 +187,7 @@ class Author(TypedDict, total=False):
     :param email_domain: The email domain of the author (source: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
     :param url_picture: The URL for the picture of the author
     :param citedby: The number of citations to all publications. (source: SEARCH_AUTHOR_SNIPPETS)
-    :param filled: The set of sections filled out of the total set of sections that can be filled
+    :param filled: The list of sections filled out of the total set of sections that can be filled
     :param interests: Fields of interest of this Author (sources: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
     :param citedby5y: The number of new citations in the last 5 years to all publications. (source: SEARCH_AUTHOR_SNIPPETS)
     :param hindex: The h-index is the largest number h such that h publications have at least h citations. (source: SEARCH_AUTHOR_SNIPPETS)
@@ -208,7 +208,7 @@ class Author(TypedDict, total=False):
     email_domain: str
     url_picture: str
     citedby: int
-    filled: Set
+    filled: List[str]
     interests: List[str]
     citedby5y: int
     hindex: int

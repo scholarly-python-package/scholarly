@@ -24,7 +24,7 @@ class AuthorParser:
         """ Fills the information for an author container
         """
         author: Author = {'container_type': 'Author'}
-        author['filled'] = set()
+        author['filled'] = []
         if isinstance(__data, str):
             author['scholar_id'] = __data
             author['source'] = AuthorSource.AUTHOR_PROFILE_PAGE
@@ -322,12 +322,12 @@ class AuthorParser:
                 for i in self._sections:
                     if i not in author['filled']:
                         (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit, sortby_str))
-                        author['filled'].add(i)
+                        author['filled'].append(i)
             else:
                 for i in sections:
                     if i in self._sections and i not in author['filled']:
                         (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit, sortby_str))
-                        author['filled'].add(i)
+                        author['filled'].append(i)
         except Exception as e:
             raise(e)
 
