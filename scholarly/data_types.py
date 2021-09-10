@@ -9,7 +9,7 @@ else:
     from typing_extensions import TypedDict
 
 
-class PublicationSource(int, Enum):
+class PublicationSource(str, Enum):
     '''
     Defines the source of the publication. In general, a publication 
     on Google Scholar has two forms:
@@ -59,10 +59,10 @@ class PublicationSource(int, Enum):
     
     Detailed view page: https://scholar.google.com/citations?view_op=view_citation&hl=en&citation_for_view=-Km63D4AAAAJ:d1gkVwhDpl0C
     '''
-    PUBLICATION_SEARCH_SNIPPET = 1
-    AUTHOR_PUBLICATION_ENTRY = 2
+    PUBLICATION_SEARCH_SNIPPET = "PUBLICATION_SEARCH_SNIPPET"
+    AUTHOR_PUBLICATION_ENTRY = "AUTHOR_PUBLICATION_ENTRY"
     
-class AuthorSource(int, Enum):
+class AuthorSource(str, Enum):
     '''
     Defines the source of the HTML that will be parsed.
     
@@ -72,9 +72,9 @@ class AuthorSource(int, Enum):
     
     Coauthors: From the list of co-authors from an Author page
     '''
-    AUTHOR_PROFILE_PAGE = 1
-    SEARCH_AUTHOR_SNIPPETS = 2
-    CO_AUTHORS_LIST = 3
+    AUTHOR_PROFILE_PAGE = "AUTHOR_PROFILE_PAGE"
+    SEARCH_AUTHOR_SNIPPETS = "SEARCH_AUTHOR_SNIPPETS"
+    CO_AUTHORS_LIST = "CO_AUTHORS_LIST"
     
 
 ''' Lightweight Data Structure to keep distribution of citations of the years '''
