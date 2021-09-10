@@ -6,6 +6,7 @@ from scholarly import scholarly, ProxyGenerator
 from scholarly.publication_parser import PublicationParser
 import random
 from fp.fp import FreeProxy
+import json
 
 
 class TestScholarly(unittest.TestCase):
@@ -254,6 +255,37 @@ class TestScholarly(unittest.TestCase):
         pub_parser = PublicationParser(None)
         author_id_list = pub_parser._get_author_id_list(author_html_partial)
         self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
+
+    def test_serialiazation(self):
+        """
+        Test that we can serialize the Author and Publication types
+
+        Note: JSON converts integer keys to strings, resulting in the years
+        in `cites_per_year` dictionary as `str` type instead of `int`.
+        To ensure consistency with the typing, use `object_hook` option
+        when loading to convert the keys to integers.
+        """
+        # Test that a filled Author with unfilled Publication
+        # is serializable.
+        def cpy_decoder(di):
+            """A utility function to convert the keys in `cites_per_year` to `int` type.
+
+              This ensures consistency with `CitesPerYear` typing.
+            """
+            if "cites_per_year" in di:
+                di["cites_per_year"] = {int(k): v for k,v in di["cites_per_year"].items()}
+            return di
+
+        author = scholarly.search_author_id('EmD_lTEAAAAJ', filled=True)
+        serialized = json.dumps(author)
+        author_loaded = json.loads(serialized, object_hook=cpy_decoder)
+        self.assertEqual(author, author_loaded)
+        # Test that a loaded publication is still fillable and serializable.
+        pub = author_loaded['publications'][0]
+        scholarly.fill(pub)
+        serialized = json.dumps(pub)
+        pub_loaded = json.loads(serialized, object_hook=cpy_decoder)
+        self.assertEqual(pub, pub_loaded)
 
 
 if __name__ == '__main__':
