@@ -207,9 +207,9 @@ class TestScholarly(unittest.TestCase):
 
     def test_search_pubs_total_results(self):
         """
-        As of February 4, 2021 there are 32 pubs that fit the search term:
+        As of September 16, 2021 there are 32 pubs that fit the search term:
         ["naive physics" stability "3d shape"], and 17'000 results that fit
-        the search term ["WIEN2k Blaha"].
+        the search term ["WIEN2k Blaha"] and none for ["sdfsdf+24r+asdfasdf"].
 
         Check that the total results for that search term equals 32.
         """
@@ -218,6 +218,9 @@ class TestScholarly(unittest.TestCase):
 
         pubs = scholarly.search_pubs('WIEN2k Blaha')
         self.assertGreaterEqual(pubs.total_results, 10000)
+
+        pubs = scholarly.search_pubs('sdfsdf+24r+asdfasdf')
+        self.assertEqual(pubs.total_results, 0)
 
     def test_search_pubs_filling_publication_contents(self):
         '''
