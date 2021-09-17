@@ -6,6 +6,7 @@ from scholarly import scholarly, ProxyGenerator
 from scholarly.publication_parser import PublicationParser
 import random
 from fp.fp import FreeProxy
+import json
 
 
 class TestScholarly(unittest.TestCase):
@@ -32,10 +33,12 @@ class TestScholarly(unittest.TestCase):
             scholarly.use_proxy(proxy_generator)
 
         elif self.connection_method == "tor_internal":
-            if sys.platform.startswith("linux"):
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
                 tor_cmd = 'tor'
             elif sys.platform.startswith("win"):
                 tor_cmd = 'tor.exe'
+            else:
+                tor_cmd = None
             proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "luminati":
@@ -51,15 +54,19 @@ class TestScholarly(unittest.TestCase):
         else:
             scholarly.use_proxy(None)      
 
+    @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
+                          if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
         """
         proxy_generator = ProxyGenerator()
-        if sys.platform.startswith("linux"):
+        if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
             tor_cmd = 'tor'
         elif sys.platform.startswith("win"):
             tor_cmd = 'tor.exe'
+        else:
+            tor_cmd = None
 
         tor_sock_port = random.randrange(9000, 9500)
         tor_control_port = random.randrange(9500, 9999)
@@ -146,8 +153,11 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')        
-        pub = scholarly.fill(author['publications'][2])
-        self.assertEqual(pub['author_pub_id'],u'4bahYMkAAAAJ:LI9QrySNdTsC')
+        self.assertGreaterEqual(len(author['coauthors']), 33)
+        self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
+        pub = author['publications'][2]
+        self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
+        self.assertTrue('5738786554683183717' in pub['cites_id'])
 
     def test_search_author_multiple_authors(self):
         """
@@ -181,6 +191,9 @@ class TestScholarly(unittest.TestCase):
                          u'Institut du radium, University of Paris')
         self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
         self.assertGreaterEqual(len(author['publications']), 179)
+        pub = author['publications'][1]
+        self.assertEqual(pub["citedby_url"],
+                         "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
 
     def test_search_pubs(self):
         """
@@ -198,9 +211,9 @@ class TestScholarly(unittest.TestCase):
 
     def test_search_pubs_total_results(self):
         """
-        As of February 4, 2021 there are 32 pubs that fit the search term:
+        As of September 16, 2021 there are 32 pubs that fit the search term:
         ["naive physics" stability "3d shape"], and 17'000 results that fit
-        the search term ["WIEN2k Blaha"].
+        the search term ["WIEN2k Blaha"] and none for ["sdfsdf+24r+asdfasdf"].
 
         Check that the total results for that search term equals 32.
         """
@@ -209,6 +222,9 @@ class TestScholarly(unittest.TestCase):
 
         pubs = scholarly.search_pubs('WIEN2k Blaha')
         self.assertGreaterEqual(pubs.total_results, 10000)
+
+        pubs = scholarly.search_pubs('sdfsdf+24r+asdfasdf')
+        self.assertEqual(pubs.total_results, 0)
 
     def test_search_pubs_filling_publication_contents(self):
         '''
@@ -247,6 +263,37 @@ class TestScholarly(unittest.TestCase):
         pub_parser = PublicationParser(None)
         author_id_list = pub_parser._get_author_id_list(author_html_partial)
         self.assertTrue(author_id_list[3] == 'TEndP-sAAAAJ')
+
+    def test_serialiazation(self):
+        """
+        Test that we can serialize the Author and Publication types
+
+        Note: JSON converts integer keys to strings, resulting in the years
+        in `cites_per_year` dictionary as `str` type instead of `int`.
+        To ensure consistency with the typing, use `object_hook` option
+        when loading to convert the keys to integers.
+        """
+        # Test that a filled Author with unfilled Publication
+        # is serializable.
+        def cpy_decoder(di):
+            """A utility function to convert the keys in `cites_per_year` to `int` type.
+
+              This ensures consistency with `CitesPerYear` typing.
+            """
+            if "cites_per_year" in di:
+                di["cites_per_year"] = {int(k): v for k,v in di["cites_per_year"].items()}
+            return di
+
+        author = scholarly.search_author_id('EmD_lTEAAAAJ', filled=True)
+        serialized = json.dumps(author)
+        author_loaded = json.loads(serialized, object_hook=cpy_decoder)
+        self.assertEqual(author, author_loaded)
+        # Test that a loaded publication is still fillable and serializable.
+        pub = author_loaded['publications'][0]
+        scholarly.fill(pub)
+        serialized = json.dumps(pub)
+        pub_loaded = json.loads(serialized, object_hook=cpy_decoder)
+        self.assertEqual(pub, pub_loaded)
 
 
 if __name__ == '__main__':

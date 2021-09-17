@@ -5,9 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='scholarly',
-    version='1.3.1',
-    author='Steven A. Cholewiak, Panos Ipeirotis, Victor Silva',
-    author_email='steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca',
+    version='1.4.0',
+    author='Steven A. Cholewiak, Panos Ipeirotis, Victor Silva, Arun Kannawadi',
+    author_email='steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca, arunkannawadi@astro.princeton.edu',
     description='Simple access to Google Scholar authors and citations',
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -7,6 +7,9 @@ _HOST = 'https://scholar.google.com{0}'
 _PAGESIZE = 100
 _EMAILAUTHORRE = r'Verified email at '
 _CITATIONAUTH = '/citations?hl=en&user={0}'
+_COAUTH = ('https://scholar.google.com/citations?user={0}&hl=en'
+           '#d=gsc_md_cod&u=%2Fcitations%3Fview_op%3Dlist_colleagues'
+           '%26hl%3Den%26json%3D%26user%3D{0}%23t%3Dgsc_cod_lc')
 
 
 class AuthorParser:
@@ -19,12 +22,12 @@ class AuthorParser:
                           'counts',
                           'coauthors',
                           'publications'}
-    
+
     def get_author(self, __data)->Author:
         """ Fills the information for an author container
         """
         author: Author = {'container_type': 'Author'}
-        author['filled'] = set()
+        author['filled'] = []
         if isinstance(__data, str):
             author['scholar_id'] = __data
             author['source'] = AuthorSource.AUTHOR_PROFILE_PAGE
@@ -135,13 +138,40 @@ class AuthorParser:
                 break
 
     def _fill_coauthors(self, soup, author):
+        if not soup.find_all('button', id='gsc_coauth_opn'):
+            # If "View All" is not found, scrape the page for coauthors
+            coauthors = soup.find_all('span', class_='gsc_rsb_a_desc')
+            coauthor_ids = [re.findall(_CITATIONAUTHRE,
+                            coauth('a')[0].get('href'))[0]
+                            for coauth in coauthors]
+
+            coauthor_names = [coauth.find(tabindex="-1").text
+                              for coauth in coauthors]
+            coauthor_affils = [coauth.find(class_="gsc_rsb_a_ext").text
+                               for coauth in coauthors]
+        else:
+            # Open the dialog box to get all coauthors
+            wd = self.nav.pm._get_webdriver()
+            wd.get(_COAUTH.format(author['scholar_id']))
+            # Wait up to 30 seconds for the various elements to be available.
+            # The wait may be better set elsewhere.
+            wd.implicitly_wait(30)
+            coauthors = wd.find_elements_by_class_name('gs_ai_pho')
+            coauthor_ids = [re.findall(_CITATIONAUTHRE,
+                            coauth.get_attribute('href'))[0]
+                            for coauth in coauthors]
+            coauthor_names = [name.text for name in
+                              wd.find_elements_by_class_name('gs_ai_name')]
+            coauthor_affils = [affil.text for affil in
+                               wd.find_elements_by_class_name('gs_ai_aff')]
+
         author['coauthors'] = []
-        for row in soup.find_all('span', class_='gsc_rsb_a_desc'):
-            new_coauthor = self.get_author(re.findall(
-                _CITATIONAUTHRE, row('a')[0]['href'])[0])
-            new_coauthor['name'] = row.find(tabindex="-1").text
-            new_coauthor['affiliation'] = row.find(
-                class_="gsc_rsb_a_ext").text
+        for coauth_id, coauth_name, coauth_affil in zip(coauthor_ids,
+                                                        coauthor_names,
+                                                        coauthor_affils):
+            new_coauthor = self.get_author(coauth_id)
+            new_coauthor['name'] = coauth_name
+            new_coauthor['affiliation'] = coauth_affil
             new_coauthor['source'] = AuthorSource.CO_AUTHORS_LIST
             author['coauthors'].append(new_coauthor)
 
@@ -322,12 +352,12 @@ class AuthorParser:
                 for i in self._sections:
                     if i not in author['filled']:
                         (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit, sortby_str))
-                        author['filled'].add(i)
+                        author['filled'].append(i)
             else:
                 for i in sections:
                     if i in self._sections and i not in author['filled']:
                         (getattr(self, f'_fill_{i}')(soup, author) if i != 'publications' else getattr(self, f'_fill_{i}')(soup, author, publication_limit, sortby_str))
-                        author['filled'].add(i)
+                        author['filled'].append(i)
         except Exception as e:
             raise(e)
 
