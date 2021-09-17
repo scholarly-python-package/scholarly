@@ -61,13 +61,16 @@ class _SearchScholarIterator(object):
         self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
 
     def _get_total_results(self):
+        if self._soup.find("div", class_="gs_pda"):
+            return None
+
         for x in self._soup.find_all('div', class_='gs_ab_mdw'):
             # Accounting for different thousands separators: 
             # comma, dot, space, apostrophe
             match = re.match(pattern=r'(^|\s*About)\s*([0-9,\.\s’]+)', string=x.text)
             if match:
                 return int(re.sub(pattern=r'[,\.\s’]',repl='', string=match.group(2)))
-        return None
+        return 0
 
     # Iterator protocol
 
@@ -115,6 +118,8 @@ class PublicationParser(object):
         publication["num_citations"] = 0
         if citedby and not (citedby.text.isspace() or citedby.text == ''):
             publication["num_citations"] = int(citedby.text.strip())
+            publication["citedby_url"] = citedby["href"]
+            publication["cites_id"] = re.findall(_SCHOLARPUBRE, citedby["href"])[0].split(',')
 
         year = __data.find(class_='gsc_a_h')
         if (year and year.text
