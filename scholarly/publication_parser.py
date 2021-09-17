@@ -118,6 +118,8 @@ class PublicationParser(object):
         publication["num_citations"] = 0
         if citedby and not (citedby.text.isspace() or citedby.text == ''):
             publication["num_citations"] = int(citedby.text.strip())
+            publication["citedby_url"] = citedby["href"]
+            publication["cites_id"] = re.findall(_SCHOLARPUBRE, citedby["href"])[0].split(',')
 
         year = __data.find(class_='gsc_a_h')
         if (year and year.text
