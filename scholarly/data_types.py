@@ -180,12 +180,13 @@ class Author(TypedDict, total=False):
     """
     :class:`Author <Author>` object used to represent an author entry on Google Scholar.
            (When source is not specified, the field is present in all sources)
-    
+
     :param scholar_id: The id of the author on Google Scholar
     :param name: The name of the author
     :param affiliation: The affiliation of the author
     :param email_domain: The email domain of the author (source: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
     :param url_picture: The URL for the picture of the author
+    :param homepage: URL of the homepage of the author
     :param citedby: The number of citations to all publications. (source: SEARCH_AUTHOR_SNIPPETS)
     :param filled: The list of sections filled out of the total set of sections that can be filled
     :param interests: Fields of interest of this Author (sources: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
@@ -199,7 +200,7 @@ class Author(TypedDict, total=False):
     :param coauthors: A list of coauthors (list of Author objects) (source: SEARCH_AUTHOR_SNIPPETS)
     :param container_type: Used from the source code to identify if this container object
                            is an Author or a Publication object.
-    :param source: The place where the author information are derived 
+    :param source: The place where the author information are derived
     """
 
     scholar_id: str
@@ -207,6 +208,7 @@ class Author(TypedDict, total=False):
     affiliation: str
     email_domain: str
     url_picture: str
+    homepage: str
     citedby: int
     filled: List[str]
     interests: List[str]
