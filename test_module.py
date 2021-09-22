@@ -21,8 +21,8 @@ class TestScholarly(unittest.TestCase):
             tor_sock_port = None
             tor_control_port = None
             tor_password = "scholarly_password"
-            # Tor uses the 9050 port as the default socks port 
-            # on windows 9150 for socks and 9151 for control 
+            # Tor uses the 9050 port as the default socks port
+            # on windows 9150 for socks and 9151 for control
             if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
                 tor_sock_port = 9050
                 tor_control_port = 9051
@@ -48,11 +48,11 @@ class TestScholarly(unittest.TestCase):
         elif self.connection_method == "freeproxy":
             proxy_generator.FreeProxies()
             scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "scraperapi":   
+        elif self.connection_method == "scraperapi":
             proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
             scholarly.use_proxy(proxy_generator)
         else:
-            scholarly.use_proxy(None)      
+            scholarly.use_proxy(None)
 
     @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
                           if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
@@ -133,7 +133,7 @@ class TestScholarly(unittest.TestCase):
         """
         # Machine-learned epidemiology: real-time detection of foodborne illness at scale
         publication_id = 2244396665447968936
-        
+
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
@@ -152,7 +152,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 1)
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
-        self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')        
+        self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')
         self.assertGreaterEqual(len(author['coauthors']), 33)
         self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
         pub = author['publications'][2]
