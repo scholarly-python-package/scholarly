@@ -77,7 +77,7 @@ class AuthorParser:
         author['name'] = soup.find('div', id='gsc_prf_in').text
         if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
             res = soup.find('img', id='gsc_prf_pup-img')
-            if res != None:
+            if res is not None:
                 if "avatar_scholar" not in res['src']:
                     author['url_picture'] = res['src']
         elif author['source'] == AuthorSource.CO_AUTHORS_LIST:
@@ -285,7 +285,8 @@ class AuthorParser:
 
             search_query = scholarly.search_author('Steven A Cholewiak')
             author = next(search_query)
-            scholarly.pprint(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
+            author = scholarly.fill(author, sections=['basics', 'citations', 'coauthors'])
+            scholarly.pprint(author)
 
         :Output::
 
