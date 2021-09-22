@@ -81,6 +81,11 @@ class AuthorSource(str, Enum):
 CitesPerYear = Dict[int, int]
 
 
+''' Lightweight Data Structure to hold the numbers articles available or
+    not available publicly according to funding mandates
+'''
+PublicAccess = TypedDict('PublicAccess', {"available": int, "not_available": int})
+
 class BibEntry(TypedDict, total=False):
     """
     :class:`BibEntry <BibEntry>` The bibliographic entry for a publication
@@ -196,6 +201,7 @@ class Author(TypedDict, total=False):
     :param i10index: This is the number of publications with at least 10 citations.  (source: SEARCH_AUTHOR_SNIPPETS)
     :param i10index5y: The number of publications that have received at least 10 new citations in the last 5 years. (source: SEARCH_AUTHOR_SNIPPETS)
     :param cites_per_year: Breakdown of the number of citations to all publications over the years (source: SEARCH_AUTHOR_SNIPPETS)
+    :param public_access: Number of articles that are available and not available in accordance with public access mandates. (source: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
     :param publications: A list of publications objects. (source: SEARCH_AUTHOR_SNIPPETS)
     :param coauthors: A list of coauthors (list of Author objects) (source: SEARCH_AUTHOR_SNIPPETS)
     :param container_type: Used from the source code to identify if this container object
@@ -219,6 +225,7 @@ class Author(TypedDict, total=False):
     i10index: int
     i10index5y: int
     cites_per_year: CitesPerYear
+    public_access: PublicAccess
     publications: List[Publication]
     coauthors: List # List of authors. No self dict functionality available
     container_type: str

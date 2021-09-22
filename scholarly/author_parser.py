@@ -21,6 +21,7 @@ class AuthorParser:
         self._sections = {'basics',
                           'indices',
                           'counts',
+                          'public_access',
                           'coauthors',
                           'publications'}
 
@@ -124,6 +125,15 @@ class AuthorParser:
                  for c in soup.find_all('span', class_='gsc_g_al')]
         author['cites_per_year'] = dict(zip(years, cites))
 
+    def _fill_public_access(self, soup, author):
+        author["public_access"] = dict.fromkeys(("available", "not_available"), 0)
+        available = soup.find('div', class_='gsc_rsb_m_a')
+        not_available = soup.find('div', class_='gsc_rsb_m_na')
+        if available:
+            author["public_access"]["available"] = int(available.text.split(" ")[0])
+        if not_available:
+            author["public_access"]["not_available"] = int(not_available.text.split(" ")[0])
+
     def _fill_publications(self, soup, author, publication_limit: int = 0, sortby_str: str = ''):
         author['publications'] = list()
         pubstart = 0
@@ -222,10 +232,11 @@ class AuthorParser:
             * ``basics``: fills name, affiliation, and interests;
             * ``citations``: fills h-index, i10-index, and 5-year analogues;
             * ``counts``: fills number of citations per year;
+            * ``public_access``: fills number of articles with public access mandates;
             * ``coauthors``: fills co-authors;
             * ``publications``: fills publications;
             * ``[]``: fills all of the above
-        :type sections: ['basics','citations','counts','coauthors','publications',[]] list, optional
+        :type sections: ['basics','citations','counts','public_access','coauthors','publications',[]] list, optional
         :param sortby: Select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
         :param publication_limit: Select the max number of publications you want you want to fill for the author. Defaults to no limit.
