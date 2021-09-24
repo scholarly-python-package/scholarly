@@ -122,8 +122,13 @@ class ProxyGenerator(object):
                     self.logger.info("Proxy works! IP address: %s",
                                      resp.json()["origin"])
                     return True
+                elif resp.status_code == 401:
+                    self.logger.warning("Incorrect credentials for proxy!")
+                    return False
             except Exception as e:
                 self.logger.warning("Exception while testing proxy: %s", e)
+                if ('lum' in proxies['http']) or ('scraperapi' in proxies['http']):
+                    self.logger.warning("Double check your credentials and try increasing the timeout")
 
             return False
 
