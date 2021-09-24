@@ -43,7 +43,7 @@ class ProxyGenerator(object):
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         self._use_luminati = False
-        self._ScraperAPI_KEY = None
+        self._use_scraperapi = False
         # If we h:ve a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
@@ -152,8 +152,6 @@ class ProxyGenerator(object):
         :returns: if the proxy works
         :rtype: {bool}
         """
-        # check if the proxy url contains luminati
-        self._use_luminati = (True if "lum" in http else False)
         if https is None:
             https = http
 
@@ -163,6 +161,9 @@ class ProxyGenerator(object):
             self.logger.info(f"Enabling proxies: http={http} https={https}")
             self._session.proxies = proxies
             self._new_session()
+            # check if the proxy url contains luminati or scraperapi
+            self._use_luminati = (True if "lum" in http else False)
+            self._use_scraperapi = (True if "scraperapi" in http else False)
         else:
             self.logger.info(f"Proxy {http} does not seem to work.")
         return self._proxy_works
@@ -406,8 +407,13 @@ class ProxyGenerator(object):
         :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
         """
-        assert API_KEY is not None
-        self._ScraperAPI_KEY = API_KEY
+        if API_KEY is None:
+            raise ValueError("ScraperAPI API Key is required.")
+        self._TIMEOUT = 30
+
+        for _ in range(3):
+            if self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001'):
+                return
 
         self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001')
 
