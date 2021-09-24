@@ -6,7 +6,7 @@ import time
 import requests
 import stem.process
 import tempfile
-import os 
+import os
 
 from requests.exceptions import Timeout
 from selenium import webdriver
@@ -36,7 +36,7 @@ class Singleton(type):
 
 class ProxyGenerator(object):
     def __init__(self):
-        # setting up logger 
+        # setting up logger
         self.logger = logging.getLogger('scholarly')
 
         self._proxy_gen = None
@@ -71,7 +71,7 @@ class ProxyGenerator(object):
         :type passwd: string
         :param proxy_port: port for the proxy,optional by default None
         :type proxy_port: integer
-        
+
         :Example::
             pg = ProxyGenerator()
             pg.Luminati(usr = foo, passwd = bar, port = 1200)
@@ -79,7 +79,7 @@ class ProxyGenerator(object):
         if (usr != None and passwd != None and proxy_port != None):
             username = usr
             password = passwd
-            port = proxy_port 
+            port = proxy_port
         else:
             self.logger.info("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
             return
@@ -92,7 +92,7 @@ class ProxyGenerator(object):
         Use proxy of your choice
         :param http: http proxy address
         type http: string
-        :param https: https proxy adress 
+        :param https: https proxy adress
         :type https: string
 
         :Example::
@@ -177,7 +177,7 @@ class ProxyGenerator(object):
         :type tor_control_port: int
         :param tor_password: the password for the Tor control server
         :type tor_password: str
-    
+
         :Example::
             pg = ProxyGenerator()
             pg.Tor_External(tor_sock_port = 9050, tor_control_port = 9051, tor_password = "scholarly_password")
@@ -213,7 +213,7 @@ class ProxyGenerator(object):
 
         :param tor_cmd: tor executable location (absolute path if its not exported in PATH)
         :type tor_cmd: string
-        :param tor_sock_port: tor socket port 
+        :param tor_sock_port: tor socket port
         :type tor_sock_port: int
         :param tor_control_port: tor control port
         :type tor_control_port: int
@@ -292,7 +292,7 @@ class ProxyGenerator(object):
                 "sslProxy": self._session.proxies['https'],
                 "proxyType":"MANUAL",
             }
-        
+
         self._webdriver = webdriver.Firefox()
         self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
 
@@ -380,7 +380,7 @@ class ProxyGenerator(object):
             self._session.close()
         if self._webdriver:
             self._webdriver.quit()
-    
+
     def FreeProxies(self):
         """
         Sets up a proxy from the free-proxy library
@@ -403,7 +403,7 @@ class ProxyGenerator(object):
             pg = ProxyGenerator()
             pg.ScraperAPI(API_KEY)
 
-        :param API_KEY: ScraperAPI API Key value. 
+        :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
         """
         assert API_KEY is not None
@@ -438,4 +438,3 @@ class ProxyGenerator(object):
             self._new_session()
 
         return self._session, new_timeout
-

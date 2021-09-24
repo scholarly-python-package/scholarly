@@ -35,7 +35,7 @@ class DOSException(Exception):
     """DOS attack was detected."""
 
 class MaxTriesExceededException(Exception):
-    pass
+    """Maximum number of tries by scholarly reached"""
 
 class Singleton(type):
     _instances = {}
@@ -82,7 +82,7 @@ class Navigator(object, metaclass=Singleton):
         self.got_403 = False
         self._session = self.pm._new_session()
 
-    
+
     def _get_page(self, pagerequest: str) -> str:
         """Return the data from a webpage
 
@@ -90,7 +90,7 @@ class Navigator(object, metaclass=Singleton):
         :type pagerequest: str
         :returns: the text from a webpage
         :rtype: {str}
-        :raises: Exception
+        :raises: MaxTriesExceededException, DOSException
         """
         self.logger.info("Getting %s", pagerequest)
         resp = None
@@ -100,7 +100,6 @@ class Navigator(object, metaclass=Singleton):
             try:
                 w = random.uniform(1,2)
                 time.sleep(w)
-                
                 resp = self._session.get(pagerequest, timeout=timeout)
                 self.logger.info("Session proxy config is {}".format(self._session.proxies))
 
@@ -125,7 +124,7 @@ class Navigator(object, metaclass=Singleton):
                                 time.sleep(w)
                         self._new_session()
                         self.got_403 = True
-                        
+
                         continue # Retry request within same session
                     else:
                         self.logger.info("We can use another connection... let's try that.")
@@ -215,7 +214,7 @@ class Navigator(object, metaclass=Singleton):
     def search_authors(self, url: str)->Author:
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
-         
+
         author_parser = AuthorParser(self)
         while True:
             rows = soup.find_all('div', 'gsc_1usr')
