@@ -95,6 +95,8 @@ class Navigator(object, metaclass=Singleton):
         self.logger.info("Getting %s", pagerequest)
         resp = None
         tries = 0
+        if self.pm._use_scraperapi:
+            self.set_timeout(60)
         timeout=self._TIMEOUT
         while tries < self._max_retries:
             try:

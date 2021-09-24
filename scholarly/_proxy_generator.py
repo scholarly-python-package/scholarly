@@ -414,7 +414,10 @@ class ProxyGenerator(object):
         """
         if API_KEY is None:
             raise ValueError("ScraperAPI API Key is required.")
-        self._TIMEOUT = 30
+        # ScraperAPI documentation recommends setting the timeout to 60 seconds
+        # so it has had a chance to try out all the retries.
+        # https://www.scraperapi.com/documentation/
+        self._TIMEOUT = 60
 
         for _ in range(3):
             if self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001'):
