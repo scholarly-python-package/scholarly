@@ -111,10 +111,10 @@ class ProxyGenerator(object):
         with requests.Session() as session:
             session.proxies = proxies
             try:
-                # Netflix assets CDN should have very low latency for about everybody
-                resp = session.get("http://assets.nflxext.com", timeout=self._TIMEOUT)
+                resp = session.get("http://httpbin.org/ip", timeout=self._TIMEOUT)
                 if resp.status_code == 200:
-                    self.logger.info("Proxy works!")
+                    self.logger.info("Proxy works! IP address: %s",
+                                     resp.json()["origin"])
                     return True
             except Exception as e:
                 self.logger.info(f"Exception while testing proxy: {e}")
