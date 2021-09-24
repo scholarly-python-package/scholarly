@@ -123,7 +123,7 @@ class ProxyGenerator(object):
                                      resp.json()["origin"])
                     return True
             except Exception as e:
-                self.logger.info(f"Exception while testing proxy: {e}")
+                self.logger.warning("Exception while testing proxy: %s", e)
 
             return False
 
@@ -164,14 +164,14 @@ class ProxyGenerator(object):
         proxies = {'http': http, 'https': https}
         self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
-            self.logger.info(f"Enabling proxies: http={http} https={https}")
+            self.logger.info("Enabling proxies: http=%s https=%s", http, https)
             self._session.proxies = proxies
             self._new_session()
             # check if the proxy url contains luminati or scraperapi
             self._use_luminati = (True if "lum" in http else False)
             self._use_scraperapi = (True if "scraperapi" in http else False)
         else:
-            self.logger.info(f"Proxy {http} does not seem to work.")
+            self.logger.warning("Proxy %s does not seem to work.", http)
         return self._proxy_works
 
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
