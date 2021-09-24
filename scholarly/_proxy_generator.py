@@ -372,6 +372,11 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             self._session.proxies = proxies
+            if self._use_scraperapi:
+                # SSL Certificate verification must be disabled for
+                # ScraperAPI requests to work.
+                # https://www.scraperapi.com/documentation/
+                self._session.verify = False
         self._webdriver = None
 
         return self._session
