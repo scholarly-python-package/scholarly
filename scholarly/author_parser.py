@@ -1,6 +1,7 @@
 from .publication_parser import PublicationParser
 import re
 from .data_types import Author, AuthorSource, PublicationSource
+from selenium.common.exceptions import WebDriverException
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -137,38 +138,61 @@ class AuthorParser:
             else:
                 break
 
-    def _fill_coauthors(self, soup, author):
-        if not soup.find_all('button', id='gsc_coauth_opn'):
-            # If "View All" is not found, scrape the page for coauthors
-            coauthors = soup.find_all('span', class_='gsc_rsb_a_desc')
-            coauthor_ids = [re.findall(_CITATIONAUTHRE,
-                            coauth('a')[0].get('href'))[0]
-                            for coauth in coauthors]
+    def _get_coauthors_short(self, soup):
+        """Get the short list of coauthors from the profile page.
 
-            coauthor_names = [coauth.find(tabindex="-1").text
-                              for coauth in coauthors]
-            coauthor_affils = [coauth.find(class_="gsc_rsb_a_ext").text
-                               for coauth in coauthors]
+        To be called by _fill_coauthors method.
+        """
+        coauthors = soup.find_all('span', class_='gsc_rsb_a_desc')
+        coauthor_ids = [re.findall(_CITATIONAUTHRE,
+                        coauth('a')[0].get('href'))[0]
+                        for coauth in coauthors]
+
+        coauthor_names = [coauth.find(tabindex="-1").text
+                          for coauth in coauthors]
+        coauthor_affils = [coauth.find(class_="gsc_rsb_a_ext").text
+                           for coauth in coauthors]
+
+        return coauthor_ids, coauthor_names, coauthor_affils
+
+    def _get_coauthors_long(self, author):
+        """Get the long (>20) list of coauthors.
+
+        Opens the dialog box to get the complete list of coauthors.
+        To be called by _fill_coauthors method.
+        """
+        wd = self.nav.pm._get_webdriver()
+        wd.get(_COAUTH.format(author['scholar_id']))
+        # Wait up to 30 seconds for the various elements to be available.
+        # The wait may be better set elsewhere.
+        wd.implicitly_wait(30)
+        coauthors = wd.find_elements_by_class_name('gs_ai_pho')
+        coauthor_ids = [re.findall(_CITATIONAUTHRE,
+                        coauth.get_attribute('href'))[0]
+                        for coauth in coauthors]
+        coauthor_names = [name.text for name in
+                          wd.find_elements_by_class_name('gs_ai_name')]
+        coauthor_affils = [affil.text for affil in
+                           wd.find_elements_by_class_name('gs_ai_aff')]
+
+        return coauthor_ids, coauthor_names, coauthor_affils
+
+    def _fill_coauthors(self, soup, author):
+        # If "View All" is not found, scrape the page for coauthors
+        if not soup.find_all('button', id='gsc_coauth_opn'):
+            coauthor_info = self._get_coauthors_short(soup)
         else:
-            # Open the dialog box to get all coauthors
-            wd = self.nav.pm._get_webdriver()
-            wd.get(_COAUTH.format(author['scholar_id']))
-            # Wait up to 30 seconds for the various elements to be available.
-            # The wait may be better set elsewhere.
-            wd.implicitly_wait(30)
-            coauthors = wd.find_elements_by_class_name('gs_ai_pho')
-            coauthor_ids = [re.findall(_CITATIONAUTHRE,
-                            coauth.get_attribute('href'))[0]
-                            for coauth in coauthors]
-            coauthor_names = [name.text for name in
-                              wd.find_elements_by_class_name('gs_ai_name')]
-            coauthor_affils = [affil.text for affil in
-                               wd.find_elements_by_class_name('gs_ai_aff')]
+        # If "View All" is found, try opening the dialog box.
+        # If geckodriver is not installed, resort to a short list and warn.
+            try:
+                coauthor_info = self._get_coauthors_long(author)
+            except WebDriverException as err:
+                coauthor_info = self._get_coauthors_short(soup)
+                self.nav.logger.warning(err.msg)
+                self.nav.logger.warning("Fetching only the top 20 coauthors")
 
         author['coauthors'] = []
-        for coauth_id, coauth_name, coauth_affil in zip(coauthor_ids,
-                                                        coauthor_names,
-                                                        coauthor_affils):
+        for coauth_id, coauth_name, coauth_affil in zip(*coauthor_info):
             new_coauthor = self.get_author(coauth_id)
             new_coauthor['name'] = coauth_name
             new_coauthor['affiliation'] = coauth_affil

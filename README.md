@@ -8,7 +8,7 @@ scholarly is a module that allows you to retrieve author and publication informa
 
 ## Important Note
 
-This is version 1.3 of the `scholarly` library. There has been a major refactor in the way the library operates and it's code structure and it **will break** most existing code, based on the previous (v0.x) versions.
+This is version 1.4 of the `scholarly` library. There has been a major refactor in the way the library operates and it's code structure and it **will break** most existing code, based on the previous (v0.x) versions.
 
 ## Documentation
 
