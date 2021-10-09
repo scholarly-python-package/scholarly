@@ -168,15 +168,27 @@ class ProxyGenerator(object):
 
         proxies = {'http': http, 'https': https}
         self._proxy_works = self._check_proxy(proxies)
+        # check if the proxy url contains luminati or scraperapi
+        has_luminati = (True if "lum" in http else False)
+        has_scraperapi = (True if "scraperapi" in http else False)
         if self._proxy_works:
-            self.logger.info("Enabling proxies: http=%s https=%s", http, https)
+            if has_luminati:
+                self.logger.info("Enabling Luminati proxy")
+                self._use_luminati = has_luminati
+            elif has_scraperapi:
+                self.logger.info("Enabling ScraperAPI proxy")
+                self._use_scraperapi = has_scraperapi
+            else:
+                self.logger.info("Enabling proxies: http=%s https=%s", http, https)
             self._session.proxies = proxies
             self._new_session()
-            # check if the proxy url contains luminati or scraperapi
-            self._use_luminati = (True if "lum" in http else False)
-            self._use_scraperapi = (True if "scraperapi" in http else False)
         else:
-            self.logger.warning("Proxy %s does not seem to work.", http)
+            if has_luminati:
+                self.logger.warning("Luminati does not seem to work")
+            elif has_scraperapi:
+                self.logger.warning("ScraperAPI does not seem to work")
+            else:
+                self.logger.warning("Proxy %s does not seem to work.", http)
         return self._proxy_works
 
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
