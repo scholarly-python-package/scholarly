@@ -466,25 +466,6 @@ executable in your system.
     author = next(scholarly.search_author('Steven A Cholewiak'))
     scholarly.pprint(author)
 
-``FreeProxies``
-^^^^^^^^^^^^^^^^^^^^
-pg.FreeProxies()
-################
-
-This uses the ``free-proxy`` pip library to add a proxy to your
-configuration.
-
-.. code:: python
-
-    from scholarly import scholarly, ProxyGenerator
-
-    pg = ProxyGenerator()
-    pg.FreeProxies()
-    scholarly.use_proxy(pg)
-
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
 ``Luminati``
 ^^^^^^^^^^^^^^^^^
 pg.Luminati()
@@ -552,6 +533,25 @@ Finally, you can route your query through the ScraperAPI proxy
 
 .. code:: python
 
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
+``FreeProxies``
+^^^^^^^^^^^^^^^^^^^^
+pg.FreeProxies()
+################
+
+This uses the ``free-proxy`` pip library to add a proxy to your
+configuration.
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+    pg.FreeProxies()
     scholarly.use_proxy(pg)
 
     author = next(scholarly.search_author('Steven A Cholewiak'))
