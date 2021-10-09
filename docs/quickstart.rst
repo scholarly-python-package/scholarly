@@ -123,7 +123,7 @@ Search by keyword and return a generator of Author objects.
      'source': 'SEARCH_AUTHOR_SNIPPETS',
      'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
 
-``search_pubs`` 
+``search_pubs``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Search for articles/publications and return generator of Publication objects.
 #############################################################################
@@ -363,7 +363,8 @@ Using proxies
 -------------
 
 In general, Google Scholar does not like bots, and can often block
-scholarly. We are actively working towards making scholarly more robust
+scholarly, especially those pages that contain ``scholar?`` in the URL.
+We are actively working towards making scholarly more robust
 towards that front.
 
 The most common solution for avoiding network issues is to use proxies
@@ -390,6 +391,7 @@ come from the ProxyGenerator class:
 -  Tor\_Internal()
 -  Tor\_External()
 -  Luminati()
+-  ScraperAPI()
 -  FreeProxies()
 -  SingleProxy() Example:
 
@@ -519,6 +521,42 @@ file
     author = next(scholarly.search_author('Steven A Cholewiak'))
     scholarly.pprint(author)
 
+``ScraperAPI``
+^^^^^^^^^^^^^^
+pg.ScraperAPI()
+###############
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+
+You will have to provide your ScraperAPI key
+
+.. code:: python
+
+    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY)
+
+Or alternatively you can use the environment variables as in the case of Luminati example.
+
+If you have Startup or higher paid plans, you can use additional options that are allowed for your plan.
+
+.. code:: python
+
+    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY, country_code='fr', premium=True, render=True)
+
+See https://www.scraperapi.com/pricing/ to see which options are enable for your plan.
+
+Finally, you can route your query through the ScraperAPI proxy
+
+.. code:: python
+
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
 ``SingleProxy``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pg.SingleProxy(http: str, https:str)
@@ -556,7 +594,8 @@ the working directory of the ``test_module.py`` as:
 
 Define the connection method for the Tests, among these options:
 
--  luminati (if you have a luminati proxy service)
+-  luminati (if you have a Luminati proxy service)
+-  scraperapi (if you have a ScraperAPI proxy service)
 -  freeproxy
 -  tor
 -  tor\_internal
