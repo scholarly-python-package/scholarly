@@ -71,10 +71,12 @@ class ProxyGenerator(object):
         :type passwd: string
         :param proxy_port: port for the proxy,optional by default None
         :type proxy_port: integer
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
 
         :Example::
             pg = ProxyGenerator()
-            pg.Luminati(usr = foo, passwd = bar, port = 1200)
+            success = pg.Luminati(usr = foo, passwd = bar, port = 1200)
         """
         if (usr != None and passwd != None and proxy_port != None):
             username = usr
@@ -85,7 +87,8 @@ class ProxyGenerator(object):
             return
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-        self._use_proxy(http=proxy, https=proxy)
+        proxy_works = self._use_proxy(http=proxy, https=proxy)
+        return proxy_works
 
     def SingleProxy(self, http = None, https = None):
         """
@@ -94,12 +97,15 @@ class ProxyGenerator(object):
         type http: string
         :param https: https proxy adress
         :type https: string
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
 
         :Example::
             pg = ProxyGenerator()
-            pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+            success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
         """
-        self._use_proxy(http=http,https=https)
+        proxy_works = self._use_proxy(http=http,https=https)
+        return proxy_works
 
     def _check_proxy(self, proxies) -> bool:
         """Checks if a proxy is working.
@@ -149,7 +155,7 @@ class ProxyGenerator(object):
         :type http: str
         :param https: the https proxy (default to the same as http)
         :type https: str
-        :returns: if the proxy works
+        :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
         if https is None:
@@ -391,15 +397,18 @@ class ProxyGenerator(object):
         """
         Sets up a proxy from the free-proxy library
 
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
+
         :Example::
             pg = ProxyGenerator()
-            pg.FreeProxies()
+            success = pg.FreeProxies()
         """
         while True:
             proxy = FreeProxy(rand=True, timeout=1).get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)
             if proxy_works:
-                break
+                return proxy_works
 
     def ScraperAPI(self, API_KEY):
         """
@@ -407,10 +416,12 @@ class ProxyGenerator(object):
 
         :Example::
             pg = ProxyGenerator()
-            pg.ScraperAPI(API_KEY)
+            success = pg.ScraperAPI(API_KEY)
 
         :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
         """
         if API_KEY is None:
             raise ValueError("ScraperAPI API Key is required.")
@@ -420,8 +431,11 @@ class ProxyGenerator(object):
         self._TIMEOUT = 60
 
         for _ in range(3):
-            if self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001'):
-                return
+            proxy_works = self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001')
+            if proxy_works:
+                return proxy_works
+
+        return proxy_works
 
     def has_proxy(self)-> bool:
         return self._proxy_gen or self._can_refresh_tor
