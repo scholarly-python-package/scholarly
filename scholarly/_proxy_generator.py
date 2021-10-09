@@ -420,8 +420,6 @@ class ProxyGenerator(object):
             if self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001'):
                 return
 
-        self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001')
-
     def has_proxy(self)-> bool:
         return self._proxy_gen or self._can_refresh_tor
 
