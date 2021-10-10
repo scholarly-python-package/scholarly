@@ -450,6 +450,20 @@ class ProxyGenerator(object):
         """
         if API_KEY is None:
             raise ValueError("ScraperAPI API Key is required.")
+
+        # Get basic account information. This will NOT be counted towards successful API requests.
+        r = requests.get("http://api.scraperapi.com/account", params={'api_key': API_KEY}).json()
+        if "error" in r:
+            self.logger.warning(r["error"])
+            return False
+
+        r["requestLimit"] = int(r["requestLimit"])
+        self.logger.info("Successful ScraperAPI requests %d / %d",
+                         r["requestCount"], r["requestLimit"])
+        if r["requestCount"] == r["requestLimit"]:
+            self.logger.warning("ScraperAPI account limit reached.")
+            return False
+
         # ScraperAPI documentation recommends setting the timeout to 60 seconds
         # so it has had a chance to try out all the retries.
         # https://www.scraperapi.com/documentation/
