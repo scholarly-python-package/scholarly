@@ -429,9 +429,12 @@ class ProxyGenerator(object):
             if proxy_works:
                 return proxy_works
 
-    def ScraperAPI(self, API_KEY):
+    def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False):
         """
         Sets up a proxy using ScraperAPI
+
+        The optional parameters are only for Business and Enterprise plans with
+        ScraperAPI. For more details, https://www.scraperapi.com/documentation/
 
         :Example::
             pg = ProxyGenerator()
@@ -439,6 +442,9 @@ class ProxyGenerator(object):
 
         :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
+        :type country_code: string, optional by default None
+        :type premium: bool, optional by default False
+        :type render: bool, optional by default False
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
@@ -449,8 +455,16 @@ class ProxyGenerator(object):
         # https://www.scraperapi.com/documentation/
         self._TIMEOUT = 60
 
+        prefix = "http://scraperapi"
+        if country_code is not None:
+            prefix += ".country_code=" + country_code
+        if premium:
+            prefix += ".premium=true"
+        if render:
+            prefix += ".render=true"
+
         for _ in range(3):
-            proxy_works = self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001')
+            proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
             if proxy_works:
                 return proxy_works
 
