@@ -393,11 +393,16 @@ come from the ProxyGenerator class:
 -  Luminati()
 -  ScraperAPI()
 -  FreeProxies()
--  SingleProxy() Example:
+-  SingleProxy()
+
+All of these methods return ``True`` if the proxy was setup successfully which
+you can check before beginning to use it with the ``use_proxy`` method.
+
+Example:
 
 .. code:: python
 
-    pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+    success = pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
 
 Finally set scholarly to use this proxy for your actions
 
@@ -440,7 +445,7 @@ default password, but you may want to change it for your installation.)
     from scholarly import scholarly, ProxyGenerator
 
     pg = ProxyGenerator()
-    pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
+    success = pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
     scholarly.use_proxy(pg)
 
     author = next(scholarly.search_author('Steven A Cholewiak'))
@@ -460,7 +465,7 @@ executable in your system.
     from scholarly import scholarly, ProxyGenerator
 
     pg = ProxyGenerator()
-    pg.Tor_Internal(tor_cmd = "tor")
+    success = pg.Tor_Internal(tor_cmd = "tor")
     scholarly.use_proxy(pg)
 
     author = next(scholarly.search_author('Steven A Cholewiak'))
@@ -485,7 +490,7 @@ You can use your own configuration
 
 .. code:: python
 
-    pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
+    success = pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
 
 Or alternatively you can use the environment variables set in your .env
 file
@@ -551,7 +556,7 @@ configuration.
     from scholarly import scholarly, ProxyGenerator
 
     pg = ProxyGenerator()
-    pg.FreeProxies()
+    success = pg.FreeProxies()
     scholarly.use_proxy(pg)
 
     author = next(scholarly.search_author('Steven A Cholewiak'))
@@ -569,7 +574,7 @@ If you want to use a proxy of your choice, feel free to use this option.
     from scholarly import scholarly, ProxyGenerator
 
     pg = ProxyGenerator()
-    pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+    success = pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
     scholarly.use_proxy(pg)
 
     author = next(scholarly.search_author('Steven A Cholewiak'))
