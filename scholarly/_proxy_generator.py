@@ -186,7 +186,9 @@ class ProxyGenerator(object):
             if has_luminati:
                 self.logger.warning("Luminati does not seem to work")
             elif has_scraperapi:
-                self.logger.warning("ScraperAPI does not seem to work")
+                # Do not warn that ScraperAPI is not working here,
+                # since we try multiple times.
+                pass
             else:
                 self.logger.warning("Proxy %s does not seem to work.", http)
         return self._proxy_works
@@ -452,6 +454,7 @@ class ProxyGenerator(object):
             if proxy_works:
                 return proxy_works
 
+        self.logger.warning("ScraperAPI does not seem to work")
         return proxy_works
 
     def has_proxy(self)-> bool:
