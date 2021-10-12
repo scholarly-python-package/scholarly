@@ -432,10 +432,12 @@ class ProxyGenerator(object):
         if self._webdriver:
             self._webdriver.quit()
 
-    def FreeProxies(self):
+    def FreeProxies(self, timeout=1):
         """
         Sets up a proxy from the free-proxy library
 
+        :param timeout: Timeout for the proxy in seconds, optional
+        :type timeout: float
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
@@ -443,11 +445,15 @@ class ProxyGenerator(object):
             pg = ProxyGenerator()
             success = pg.FreeProxies()
         """
-        while True:
-            proxy = FreeProxy(rand=True, timeout=1).get()
+        freeproxy = FreeProxy(rand=False, timeout=timeout)
+        for _ in range(100):
+            proxy = freeproxy.get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)
             if proxy_works:
                 return proxy_works
+
+        self.logger.info("None of the free proxies are working at the moment. "
+                         "Try again after a few minutes.")
 
     def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False, skip_checking_proxy=False):
         """
