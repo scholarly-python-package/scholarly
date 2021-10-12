@@ -6,7 +6,7 @@ import time
 import requests
 import stem.process
 import tempfile
-import os 
+import os
 
 from requests.exceptions import Timeout
 from selenium import webdriver
@@ -36,14 +36,14 @@ class Singleton(type):
 
 class ProxyGenerator(object):
     def __init__(self):
-        # setting up logger 
+        # setting up logger
         self.logger = logging.getLogger('scholarly')
 
         self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         self._use_luminati = False
-        self._ScraperAPI_KEY = None
+        self._use_scraperapi = False
         # If we h:ve a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
@@ -71,35 +71,41 @@ class ProxyGenerator(object):
         :type passwd: string
         :param proxy_port: port for the proxy,optional by default None
         :type proxy_port: integer
-        
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
+
         :Example::
             pg = ProxyGenerator()
-            pg.Luminati(usr = foo, passwd = bar, port = 1200)
+            success = pg.Luminati(usr = foo, passwd = bar, port = 1200)
         """
         if (usr != None and passwd != None and proxy_port != None):
             username = usr
             password = passwd
-            port = proxy_port 
+            port = proxy_port
         else:
             self.logger.info("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
             return
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-        self._use_proxy(http=proxy, https=proxy)
+        proxy_works = self._use_proxy(http=proxy, https=proxy)
+        return proxy_works
 
     def SingleProxy(self, http = None, https = None):
         """
         Use proxy of your choice
         :param http: http proxy address
         type http: string
-        :param https: https proxy adress 
+        :param https: https proxy adress
         :type https: string
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
 
         :Example::
             pg = ProxyGenerator()
-            pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+            success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
         """
-        self._use_proxy(http=http,https=https)
+        proxy_works = self._use_proxy(http=http,https=https)
+        return proxy_works
 
     def _check_proxy(self, proxies) -> bool:
         """Checks if a proxy is working.
@@ -111,13 +117,18 @@ class ProxyGenerator(object):
         with requests.Session() as session:
             session.proxies = proxies
             try:
-                # Netflix assets CDN should have very low latency for about everybody
-                resp = session.get("http://assets.nflxext.com", timeout=self._TIMEOUT)
+                resp = session.get("http://httpbin.org/ip", timeout=self._TIMEOUT)
                 if resp.status_code == 200:
-                    self.logger.info("Proxy works!")
+                    self.logger.info("Proxy works! IP address: %s",
+                                     resp.json()["origin"])
                     return True
+                elif resp.status_code == 401:
+                    self.logger.warning("Incorrect credentials for proxy!")
+                    return False
             except Exception as e:
-                self.logger.info(f"Exception while testing proxy: {e}")
+                self.logger.warning("Exception while testing proxy: %s", e)
+                if ('lum' in proxies['http']) or ('scraperapi' in proxies['http']):
+                    self.logger.warning("Double check your credentials and try increasing the timeout")
 
             return False
 
@@ -149,22 +160,37 @@ class ProxyGenerator(object):
         :type http: str
         :param https: the https proxy (default to the same as http)
         :type https: str
-        :returns: if the proxy works
+        :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
-        # check if the proxy url contains luminati
-        self._use_luminati = (True if "lum" in http else False)
         if https is None:
             https = http
 
         proxies = {'http': http, 'https': https}
         self._proxy_works = self._check_proxy(proxies)
+        # check if the proxy url contains luminati or scraperapi
+        has_luminati = (True if "lum" in http else False)
+        has_scraperapi = (True if "scraperapi" in http else False)
         if self._proxy_works:
-            self.logger.info(f"Enabling proxies: http={http} https={https}")
+            if has_luminati:
+                self.logger.info("Enabling Luminati proxy")
+                self._use_luminati = has_luminati
+            elif has_scraperapi:
+                self.logger.info("Enabling ScraperAPI proxy")
+                self._use_scraperapi = has_scraperapi
+            else:
+                self.logger.info("Enabling proxies: http=%s https=%s", http, https)
             self._session.proxies = proxies
             self._new_session()
         else:
-            self.logger.info(f"Proxy {http} does not seem to work.")
+            if has_luminati:
+                self.logger.warning("Luminati does not seem to work")
+            elif has_scraperapi:
+                # Do not warn that ScraperAPI is not working here,
+                # since we try multiple times.
+                pass
+            else:
+                self.logger.warning("Proxy %s does not seem to work.", http)
         return self._proxy_works
 
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
@@ -177,7 +203,7 @@ class ProxyGenerator(object):
         :type tor_control_port: int
         :param tor_password: the password for the Tor control server
         :type tor_password: str
-    
+
         :Example::
             pg = ProxyGenerator()
             pg.Tor_External(tor_sock_port = 9050, tor_control_port = 9051, tor_password = "scholarly_password")
@@ -213,7 +239,7 @@ class ProxyGenerator(object):
 
         :param tor_cmd: tor executable location (absolute path if its not exported in PATH)
         :type tor_cmd: string
-        :param tor_sock_port: tor socket port 
+        :param tor_sock_port: tor socket port
         :type tor_sock_port: int
         :param tor_control_port: tor control port
         :type tor_control_port: int
@@ -292,7 +318,7 @@ class ProxyGenerator(object):
                 "sslProxy": self._session.proxies['https'],
                 "proxyType":"MANUAL",
             }
-        
+
         self._webdriver = webdriver.Firefox()
         self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
 
@@ -371,6 +397,11 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             self._session.proxies = proxies
+            if self._use_scraperapi:
+                # SSL Certificate verification must be disabled for
+                # ScraperAPI requests to work.
+                # https://www.scraperapi.com/documentation/
+                self._session.verify = False
         self._webdriver = None
 
         return self._session
@@ -380,36 +411,79 @@ class ProxyGenerator(object):
             self._session.close()
         if self._webdriver:
             self._webdriver.quit()
-    
+
     def FreeProxies(self):
         """
         Sets up a proxy from the free-proxy library
 
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
+
         :Example::
             pg = ProxyGenerator()
-            pg.FreeProxies()
+            success = pg.FreeProxies()
         """
         while True:
             proxy = FreeProxy(rand=True, timeout=1).get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)
             if proxy_works:
-                break
+                return proxy_works
 
-    def ScraperAPI(self, API_KEY):
+    def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False):
         """
         Sets up a proxy using ScraperAPI
 
+        The optional parameters are only for Business and Enterprise plans with
+        ScraperAPI. For more details, https://www.scraperapi.com/documentation/
+
         :Example::
             pg = ProxyGenerator()
-            pg.ScraperAPI(API_KEY)
+            success = pg.ScraperAPI(API_KEY)
 
-        :param API_KEY: ScraperAPI API Key value. 
+        :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
+        :type country_code: string, optional by default None
+        :type premium: bool, optional by default False
+        :type render: bool, optional by default False
+        :returns: whether or not the proxy was set up successfully
+        :rtype: {bool}
         """
-        assert API_KEY is not None
-        self._ScraperAPI_KEY = API_KEY
+        if API_KEY is None:
+            raise ValueError("ScraperAPI API Key is required.")
 
-        self._use_proxy(http=f'http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001')
+        # Get basic account information. This will NOT be counted towards successful API requests.
+        r = requests.get("http://api.scraperapi.com/account", params={'api_key': API_KEY}).json()
+        if "error" in r:
+            self.logger.warning(r["error"])
+            return False
+
+        r["requestLimit"] = int(r["requestLimit"])
+        self.logger.info("Successful ScraperAPI requests %d / %d",
+                         r["requestCount"], r["requestLimit"])
+        if r["requestCount"] == r["requestLimit"]:
+            self.logger.warning("ScraperAPI account limit reached.")
+            return False
+
+        # ScraperAPI documentation recommends setting the timeout to 60 seconds
+        # so it has had a chance to try out all the retries.
+        # https://www.scraperapi.com/documentation/
+        self._TIMEOUT = 60
+
+        prefix = "http://scraperapi"
+        if country_code is not None:
+            prefix += ".country_code=" + country_code
+        if premium:
+            prefix += ".premium=true"
+        if render:
+            prefix += ".render=true"
+
+        for _ in range(3):
+            proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
+            if proxy_works:
+                return proxy_works
+
+        self.logger.warning("ScraperAPI does not seem to work")
+        return proxy_works
 
     def has_proxy(self)-> bool:
         return self._proxy_gen or self._can_refresh_tor
@@ -438,4 +512,3 @@ class ProxyGenerator(object):
             self._new_session()
 
         return self._session, new_timeout
-

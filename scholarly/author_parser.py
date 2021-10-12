@@ -162,20 +162,23 @@ class AuthorParser:
         To be called by _fill_coauthors method.
         """
         wd = self.nav.pm._get_webdriver()
-        wd.get(_COAUTH.format(author['scholar_id']))
-        # Wait up to 30 seconds for the various elements to be available.
-        # The wait may be better set elsewhere.
-        wd.implicitly_wait(30)
-        coauthors = wd.find_elements_by_class_name('gs_ai_pho')
-        coauthor_ids = [re.findall(_CITATIONAUTHRE,
-                        coauth.get_attribute('href'))[0]
-                        for coauth in coauthors]
-        coauthor_names = [name.text for name in
-                          wd.find_elements_by_class_name('gs_ai_name')]
-        coauthor_affils = [affil.text for affil in
-                           wd.find_elements_by_class_name('gs_ai_aff')]
+        try:
+            wd.get(_COAUTH.format(author['scholar_id']))
+            # Wait up to 30 seconds for the various elements to be available.
+            # The wait may be better set elsewhere.
+            wd.implicitly_wait(30)
+            coauthors = wd.find_elements_by_class_name('gs_ai_pho')
+            coauthor_ids = [re.findall(_CITATIONAUTHRE,
+                            coauth.get_attribute('href'))[0]
+                            for coauth in coauthors]
+            coauthor_names = [name.text for name in
+                              wd.find_elements_by_class_name('gs_ai_name')]
+            coauthor_affils = [affil.text for affil in
+                               wd.find_elements_by_class_name('gs_ai_aff')]
 
-        return coauthor_ids, coauthor_names, coauthor_affils
+            return coauthor_ids, coauthor_names, coauthor_affils
+        finally:
+            wd.quit()
 
     def _fill_coauthors(self, soup, author):
         # If "View All" is not found, scrape the page for coauthors

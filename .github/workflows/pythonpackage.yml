@@ -47,5 +47,6 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
           PORT: ${{ secrets.PORT }}
           USERNAME: ${{ secrets.USERNAME }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
           python3 -m unittest -v test_module.py
