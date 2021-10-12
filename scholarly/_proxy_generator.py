@@ -83,7 +83,7 @@ class ProxyGenerator(object):
             password = passwd
             port = proxy_port
         else:
-            self.logger.info("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
+            self.logger.warning("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
             return
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
