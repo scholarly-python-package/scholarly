@@ -24,6 +24,6 @@ jobs:
 
     - name: Publish package to PyPI
       if: startsWith(github.event.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@main
+      uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.pypi_password }}
