@@ -270,6 +270,12 @@ class PublicationParser(object):
             url = _CITATIONPUB.format(publication['author_pub_id'])
             soup = self.nav._get_soup(url)
             publication['bib']['title'] = soup.find('div', id='gsc_oci_title').text
+            if publication['bib']['title'][-1] == '\u2026':
+                merged_snippet = soup.find('div', class_='gsc_oci_merged_snippet')
+                if merged_snippet:
+                    title_div = merged_snippet.find('div')
+                    if title_div:
+                        publication['bib']['title'] = title_div.text
             if soup.find('a', class_='gsc_oci_title_link'):
                 publication['pub_url'] = soup.find(
                     'a', class_='gsc_oci_title_link')['href']

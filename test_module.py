@@ -298,6 +298,28 @@ class TestScholarly(unittest.TestCase):
         serialized = json.dumps(pub)
         pub_loaded = json.loads(serialized, object_hook=cpy_decoder)
         self.assertEqual(pub, pub_loaded)
+        
+    def test_full_title(self):
+        """
+        Test if the full title of a long title-publication gets retrieved.
+        The code under test gets executed if:
+        publication['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY
+        so the long title-publication is taken from an author object.
+        """
+        author = scholarly.search_author_id('Xxjj6IsAAAAJ')
+        author = scholarly.fill(author, sections=['publications'])
+        pub_index = -1
+        for i in range(len(author['publications'])):
+            if author['publications'][i]['author_pub_id'] == 'Xxjj6IsAAAAJ:u_35RYKgDlwC':
+                pub_index = i
+        self.assertGreaterEqual(i, 0)
+        # elided title
+        self.assertEqual(author['publications'][pub_index]['bib']['title'],
+                         u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary …')
+        # full text
+        pub = scholarly.fill(author['publications'][pub_index])
+        self.assertEqual(pub['bib']['title'],
+                         u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
 
 
 if __name__ == '__main__':
