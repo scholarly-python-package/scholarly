@@ -189,7 +189,7 @@ class AuthorParser:
         # If geckodriver is not installed, resort to a short list and warn.
             try:
                 coauthor_info = self._get_coauthors_long(author)
-            except WebDriverException as err:
+            except Exception as err:
                 coauthor_info = self._get_coauthors_short(soup)
                 self.nav.logger.warning(err.msg)
                 self.nav.logger.warning("Fetching only the top 20 coauthors")
