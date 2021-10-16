@@ -37,14 +37,32 @@ class _Scholarly:
         return self.__nav._set_retries(num_retries)
 
 
-    def use_proxy(self, proxy_generator: ProxyGenerator)->None:
+    def use_proxy(self, proxy_generator: ProxyGenerator,
+                  secondary_proxy_generator: ProxyGenerator = None) -> None:
         """Select which proxy method to use.
+
         See the available ProxyGenerator methods.
 
-        :param proxy_generator: proxy generator objects
+        This is used to get some pages that have strong anti-bot prevention.
+        ``secondary_proxy_generator`` is used for other pages that do not have
+        a strong anti-bot prevention. If not set, free proxies are used.
+
+        :param proxy_generator: a proxy generator object, typically setup with
+                               a premium proxy service (ScraperAPI or Luminati)
         :type proxy_generator: ProxyGenerator
+        :param proxy_generator: a second proxy generator object, optional
+        :type proxy_generator: ProxyGenerator
+
+        :Example::
+
+        .. testcode::
+
+            pg = ProxyGenerator()
+            pg.ScraperAPI(YOUR_SCRAPER_API_KEY)
+            scholarly.use_proxy(pg)
+
         """
-        self.__nav.use_proxy(proxy_generator)
+        self.__nav.use_proxy(proxy_generator, secondary_proxy_generator)
 
 
     def set_logger(self, enable: bool):
