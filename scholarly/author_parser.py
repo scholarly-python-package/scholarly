@@ -161,7 +161,7 @@ class AuthorParser:
         Opens the dialog box to get the complete list of coauthors.
         To be called by _fill_coauthors method.
         """
-        wd = self.nav.pm._get_webdriver()
+        wd = self.nav.pm2._get_webdriver()
         try:
             wd.get(_COAUTH.format(author['scholar_id']))
             # Wait up to 30 seconds for the various elements to be available.
