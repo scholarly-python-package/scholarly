@@ -567,7 +567,7 @@ class ProxyGenerator(object):
             new_timeout = self._TIMEOUT # Reset timeout to default
         elif self._proxy_gen:
             if (num_tries):
-                self.logger.info(f"Try #{num_tries} failed. Switching proxy.") # TODO: add tries
+                self.logger.info("Try #%d failed. Switching proxy.", num_tries)
             # Try to get another proxy
             new_proxy = self._proxy_gen(old_proxy)
             while (not self._use_proxy(new_proxy)):
