@@ -189,8 +189,11 @@ class ProxyGenerator(object):
         else:
             self._proxy_works = self._check_proxy(proxies)
         # check if the proxy url contains luminati or scraperapi
-        has_luminati = (True if "lum" in http else False)
-        has_scraperapi = (True if "scraperapi" in http else False)
+        if http is not None:
+            has_luminati = (True if "lum" in http else False)
+            has_scraperapi = (True if "scraperapi" in http else False)
+        else:
+            has_luminati, has_scraperapi = False, False
         if self._proxy_works:
             if has_luminati:
                 self.logger.info("Enabling Luminati proxy")
