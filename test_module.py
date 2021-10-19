@@ -57,6 +57,12 @@ class TestScholarly(unittest.TestCase):
         else:
             scholarly.use_proxy(None)
 
+    def tearDown(self):
+        return
+        if self.connection_method == "freeproxy":
+            scholarly._Scholarly__nav.pm1._fp_gen.close()
+        scholarly._Scholarly__nav.pm2._fp_gen.close()
+
     @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
                           if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
     def test_tor_launch_own_process(self):

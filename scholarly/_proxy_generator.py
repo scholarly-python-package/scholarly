@@ -140,7 +140,10 @@ class ProxyGenerator(object):
                 elif resp.status_code == 401:
                     self.logger.warning("Incorrect credentials for proxy!")
                     return False
+            except (TimeoutException, TimeoutError):
+                time.sleep(self._TIMEOUT)
             except Exception as e:
+                # import pdb; pdb.set_trace()
                 self.logger.warning("Exception while testing proxy: %s", e)
                 if ('lum' in proxies['http']) or ('scraperapi' in proxies['http']):
                     self.logger.warning("Double check your credentials and try increasing the timeout")
@@ -435,12 +438,42 @@ class ProxyGenerator(object):
         if self._webdriver:
             self._webdriver.quit()
 
-    def FreeProxies(self, timeout=1):
-        """
-        Sets up a proxy from the free-proxy library
+    def _fp_coroutine(self, timeout=1, wait_time=120):
+        """A coroutine to continuosly yield free proxies
 
-        :param timeout: Timeout for the proxy in seconds, optional
+        It takes back the proxies that stopped working and marks it as dirty.
+        """
+        freeproxy = FreeProxy(rand=False, timeout=timeout)
+        if not hasattr(self, '_dirty_freeproxies'):
+            self._dirty_freeproxies = set()
+        all_proxies = freeproxy.get_proxy_list()
+        all_proxies.reverse()  # Try the older proxies first
+
+        t1 = time.time()
+        while (time.time()-t1 < wait_time):
+            proxy = all_proxies.pop()
+            if not all_proxies:
+                all_proxies = freeproxy.get_proxy_list()
+            if proxy in self._dirty_freeproxies:
+                continue
+            proxies = {'http': proxy, 'https': proxy}
+            proxy_works = self._check_proxy(proxies)
+            if proxy_works:
+                # self._use_proxy(proxy, skip_checking_proxy=True)
+                dirty_proxy = (yield proxy)
+                t1 = time.time()
+            else:
+                dirty_proxy = proxy
+            self._dirty_freeproxies.add(dirty_proxy)
+
+    def FreeProxies(self, timeout=1, wait_time=120):
+        """
+        Sets up continuously rotating proxies from the free-proxy library
+
+        :param timeout: Timeout for a single proxy in seconds, optional
         :type timeout: float
+        :param wait_time: Maximum time (in seconds) to wait until newer set of proxies become available at https://sslproxies.org/
+        :type wait_time: float
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
@@ -448,17 +481,28 @@ class ProxyGenerator(object):
             pg = ProxyGenerator()
             success = pg.FreeProxies()
         """
-        freeproxy = FreeProxy(rand=True, timeout=timeout)
-        # Looping it 60000 times gives us a 85% chance that we try each proxy
-        # at least once.
-        for _ in range(60000):
-            proxy = freeproxy.get()
-            proxy_works = self._use_proxy(http=proxy, https=proxy)
-            if proxy_works:
-                return proxy_works
+        # import pdb; pdb.set_trace()
+        self._fp_gen = self._fp_coroutine(timeout=timeout, wait_time=wait_time)
+        self._proxy_gen = self._fp_gen.send
+        proxy = self._proxy_gen(None)  # prime the generator
+        proxy_works = self._use_proxy(proxy)
+        n_retries = 200
+        n_tries = 0
+        while (not proxy_works) and (n_tries < n_retries):
+            proxy_works = self._use_proxy(proxy)
+            n_tries += 1
+            if not proxy_works:
+                proxy = self._proxy_gen(proxy)
 
-        self.logger.info("None of the free proxies are working at the moment. "
-                         "Try again after a few minutes.")
+        if n_tries == n_retries:
+            n_dirty = len(self._dirty_freeproxies)
+            self._fp_gen.close()
+            msg = ("None of the free proxies are working at the moment. "
+                  f"Marked {n_dirty} proxies dirty. Try again after a few minutes."
+                  )
+            raise MaxTriesExceededException(msg)
+        else:
+            return True
 
     def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False, skip_checking_proxy=False):
         """
@@ -532,7 +576,7 @@ class ProxyGenerator(object):
         self._proxy_gen = gen
         return True
 
-    def get_next_proxy(self, num_tries = None, old_timeout = 3):
+    def get_next_proxy(self, num_tries = None, old_timeout = 3, old_proxy=None):
         new_timeout = old_timeout
         if self._can_refresh_tor:
             # Check if Tor is running and refresh it
@@ -541,13 +585,15 @@ class ProxyGenerator(object):
             time.sleep(5) # wait for the refresh to happen
             new_timeout = self._TIMEOUT # Reset timeout to default
         elif self._proxy_gen:
+            # import pdb; pdb.set_trace()
             if (num_tries):
                 self.logger.info(f"Try #{num_tries} failed. Switching proxy.") # TODO: add tries
             # Try to get another proxy
-            new_proxy = self._proxy_gen()
+            new_proxy = self._proxy_gen(old_proxy)
             while (not self._use_proxy(new_proxy)):
-                new_proxy = self._proxy_gen()
+                new_proxy = self._proxy_gen(new_proxy)
             new_timeout = self._TIMEOUT # Reset timeout to default
+            self._new_session()
         else:
             self._new_session()
 

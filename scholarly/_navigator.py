@@ -182,7 +182,7 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Retrying with a new session.")
 
             tries += 1
-            session, timeout = pm.get_next_proxy(num_tries = tries, old_timeout = timeout)
+            session, timeout = pm.get_next_proxy(num_tries = tries, old_timeout = timeout, old_proxy=session.proxies.get('http', None))
 
         # If secondary proxy does not work, try again primary proxy.
         if not premium:
