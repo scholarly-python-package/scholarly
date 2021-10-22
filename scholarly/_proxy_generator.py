@@ -62,8 +62,12 @@ class ProxyGenerator(object):
     def get_session(self):
         return self._session
 
-    def Luminati(self, usr , passwd, proxy_port):
+    def Luminati(self, usr , passwd, proxy_port, skip_checking_proxy=False):
         """ Setups a luminati proxy without refreshing capabilities.
+
+        Note: ``skip_checking_proxy`` is meant to be set to `True` only in
+        unit tests. Applications using this library must always use the default
+        value of `False`.
 
         :param usr: scholarly username, optional by default None
         :type usr: string
@@ -71,6 +75,9 @@ class ProxyGenerator(object):
         :type passwd: string
         :param proxy_port: port for the proxy,optional by default None
         :type proxy_port: integer
+        :param skip_checking_proxy: skip checking if the proxy works,
+                                    optional by default False
+        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
@@ -83,20 +90,28 @@ class ProxyGenerator(object):
             password = passwd
             port = proxy_port
         else:
-            self.logger.info("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
+            self.logger.warning("Not enough parameters were provided for the Luminati proxy. Reverting to a local connection.")
             return
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-        proxy_works = self._use_proxy(http=proxy, https=proxy)
+        proxy_works = self._use_proxy(http=proxy, https=proxy, skip_checking_proxy=skip_checking_proxy)
         return proxy_works
 
-    def SingleProxy(self, http = None, https = None):
+    def SingleProxy(self, http = None, https = None, skip_checking_proxy=False):
         """
         Use proxy of your choice
+
+        Note: ``skip_checking_proxy`` is meant to be set to `True` only in
+        unit tests. Applications using this library must always use the default
+        value of `False`.
+
         :param http: http proxy address
         type http: string
         :param https: https proxy adress
         :type https: string
+        :param skip_checking_proxy: skip checking if the proxy works,
+                                    optional by default False
+        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
@@ -104,7 +119,7 @@ class ProxyGenerator(object):
             pg = ProxyGenerator()
             success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
         """
-        proxy_works = self._use_proxy(http=http,https=https)
+        proxy_works = self._use_proxy(http=http, https=https, skip_checking_proxy=skip_checking_proxy)
         return proxy_works
 
     def _check_proxy(self, proxies) -> bool:
@@ -152,7 +167,7 @@ class ProxyGenerator(object):
             self.logger.info(err)
             return (False, None)
 
-    def _use_proxy(self, http: str, https: str = None) -> bool:
+    def _use_proxy(self, http: str, https: str = None, skip_checking_proxy: bool = False) -> bool:
         """Allows user to set their own proxy for the connection session.
         Sets the proxy, and checks if it works.
 
@@ -160,6 +175,8 @@ class ProxyGenerator(object):
         :type http: str
         :param https: the https proxy (default to the same as http)
         :type https: str
+        :param skip_checking_proxy: Skip checking if the proxy works (defaults to False)
+        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
@@ -167,10 +184,16 @@ class ProxyGenerator(object):
             https = http
 
         proxies = {'http': http, 'https': https}
-        self._proxy_works = self._check_proxy(proxies)
+        if skip_checking_proxy:
+            self._proxy_works = True
+        else:
+            self._proxy_works = self._check_proxy(proxies)
         # check if the proxy url contains luminati or scraperapi
-        has_luminati = (True if "lum" in http else False)
-        has_scraperapi = (True if "scraperapi" in http else False)
+        if http is not None:
+            has_luminati = (True if "lum" in http else False)
+            has_scraperapi = (True if "scraperapi" in http else False)
+        else:
+            has_luminati, has_scraperapi = False, False
         if self._proxy_works:
             if has_luminati:
                 self.logger.info("Enabling Luminati proxy")
@@ -412,10 +435,12 @@ class ProxyGenerator(object):
         if self._webdriver:
             self._webdriver.quit()
 
-    def FreeProxies(self):
+    def FreeProxies(self, timeout=1):
         """
         Sets up a proxy from the free-proxy library
 
+        :param timeout: Timeout for the proxy in seconds, optional
+        :type timeout: float
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
@@ -423,18 +448,28 @@ class ProxyGenerator(object):
             pg = ProxyGenerator()
             success = pg.FreeProxies()
         """
-        while True:
-            proxy = FreeProxy(rand=True, timeout=1).get()
+        freeproxy = FreeProxy(rand=True, timeout=timeout)
+        # Looping it 60000 times gives us a 85% chance that we try each proxy
+        # at least once.
+        for _ in range(60000):
+            proxy = freeproxy.get()
             proxy_works = self._use_proxy(http=proxy, https=proxy)
             if proxy_works:
                 return proxy_works
 
-    def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False):
+        self.logger.info("None of the free proxies are working at the moment. "
+                         "Try again after a few minutes.")
+
+    def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False, skip_checking_proxy=False):
         """
         Sets up a proxy using ScraperAPI
 
         The optional parameters are only for Business and Enterprise plans with
         ScraperAPI. For more details, https://www.scraperapi.com/documentation/
+
+        Note: ``skip_checking_proxy`` is meant to be set to `True` only in
+        unit tests. Applications using this library must always use the default
+        value of `False`.
 
         :Example::
             pg = ProxyGenerator()
@@ -445,6 +480,9 @@ class ProxyGenerator(object):
         :type country_code: string, optional by default None
         :type premium: bool, optional by default False
         :type render: bool, optional by default False
+        :param skip_checking_proxy: skip checking if the proxy works,
+                                    optional by default False
+        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
@@ -475,7 +513,8 @@ class ProxyGenerator(object):
             prefix += ".render=true"
 
         for _ in range(3):
-            proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
+            proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001',
+                                          skip_checking_proxy=skip_checking_proxy)
             if proxy_works:
                 return proxy_works
 
