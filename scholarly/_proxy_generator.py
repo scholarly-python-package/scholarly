@@ -460,9 +460,6 @@ class ProxyGenerator(object):
         r["requestLimit"] = int(r["requestLimit"])
         self.logger.info("Successful ScraperAPI requests %d / %d",
                          r["requestCount"], r["requestLimit"])
-        if r["requestCount"] == r["requestLimit"]:
-            self.logger.warning("ScraperAPI account limit reached.")
-            return False
 
         # ScraperAPI documentation recommends setting the timeout to 60 seconds
         # so it has had a chance to try out all the retries.
@@ -482,8 +479,12 @@ class ProxyGenerator(object):
             if proxy_works:
                 return proxy_works
 
-        self.logger.warning("ScraperAPI does not seem to work")
-        return proxy_works
+        if (r["requestCount"] >= r["requestLimit"]):
+            self.logger.warning("ScraperAPI account limit reached.")
+        else:
+            self.logger.warning("ScraperAPI does not seem to work. Reason unknown.")
+
+        return False
 
     def has_proxy(self)-> bool:
         return self._proxy_gen or self._can_refresh_tor
