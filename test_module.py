@@ -43,13 +43,16 @@ class TestScholarly(unittest.TestCase):
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "luminati":
             scholarly.set_retries(10)
-            proxy_generator.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
+            proxy_generator.Luminati(usr=os.getenv("USERNAME"),
+                                     passwd=os.getenv("PASSWORD"),
+                                     proxy_port = os.getenv("PORT"),
+                                     skip_checking_proxy=True)
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "freeproxy":
             proxy_generator.FreeProxies()
             scholarly.use_proxy(proxy_generator)
         elif self.connection_method == "scraperapi":
-            proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
+            proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'), skip_checking_proxy=True)
             scholarly.use_proxy(proxy_generator)
         else:
             scholarly.use_proxy(None)
