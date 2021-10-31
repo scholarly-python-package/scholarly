@@ -19,5 +19,9 @@ A clear and concise description of what you want to happen.
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
 
+**Do you plan on contributing?**
+Your response below will clarify if this is something that the maintainers can expect you to work on or not.
+- [ ] Yes, I plan to contribute towards this feature in the next couple of days.
+
 **Additional context**
 Add any other context or screenshots about the feature request here.
