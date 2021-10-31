@@ -25,5 +25,9 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. macOS]
  - Version [e.g. 1.5]
 
+**Do you plan on contributing?**
+Your response below will clarify whether the maintainers can expect you to fix the bug you reported.
+- [ ] Yes, I will create a Pull Request with the bugfix.
+
 **Additional context**
 Add any other context about the problem here.
