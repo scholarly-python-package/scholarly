@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get install -y tor
           python3 -m pip install --upgrade pip
-          pip3 install flake8 pytest
+          pip3 install flake8 coverage
           if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
@@ -49,4 +49,15 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
-          python3 -m unittest -v test_module.py
+          curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
+          coverage run -m unittest -v test_module.py
+          coverage xml
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./
+          fail_ci_if_error: true
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          verbose: true

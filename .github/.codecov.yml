@@ -1,0 +1,27 @@
+# Any changes to this file should be validated before pushing.
+# curl --data-binary @.github/.codecov.yml https://codecov.io/validate
+codecov:
+  require_ci_to_pass: false
+
+coverage:
+  precision: 2
+  round: down
+  range: 65...80
+  # Coverage below 55% is flagged red, and above 80% is green.
+
+  status:
+    project:
+      default:
+        branches: null
+        # Each PR must increase the coverage, but allow a slippage of 5%.
+        target: auto
+        threshold: 5%
+
+    patch:
+      default:
+        branches: null
+        # Changes have a higher standard and require at least (90-5)% coverage.
+        target: 90%
+        threshold: 5%
+
+comment: false
