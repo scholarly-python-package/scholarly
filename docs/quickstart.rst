@@ -95,8 +95,10 @@ Search for an author by the id visible in the url of an Authors profile.
     {'affiliation': 'Professor of Vision Science, UC Berkeley',
      'email_domain': '@berkeley.edu',
      'filled': False,
+     'homepage': 'http://bankslab.berkeley.edu/',
      'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
      'name': 'Martin Banks',
+     'organization': 11816294095661060495,
      'scholar_id': 'Smr99uEAAAAJ',
      'source': 'AUTHOR_PROFILE_PAGE'}
 
@@ -312,6 +314,7 @@ author information to fill, as follows:
      'filled': False,
      'hindex': 9,
      'hindex5y': 9,
+     'homepage': 'http://steven.cholewiak.com/',
      'i10index': 8,
      'i10index5y': 7,
      'interests': ['Depth Cues',
@@ -320,6 +323,7 @@ author information to fill, as follows:
                    'Naive Physics',
                    'Haptics'],
      'name': 'Steven A. Cholewiak, PhD',
+     'organization': 6518679690484165796,
      'scholar_id': '4bahYMkAAAAJ',
      'source': 'SEARCH_AUTHOR_SNIPPETS',
      'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}

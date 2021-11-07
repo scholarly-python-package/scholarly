@@ -163,6 +163,7 @@ class TestScholarly(unittest.TestCase):
         else:
             self.assertEqual(len(author['coauthors']), 20)
         self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
+        self.assertEqual(author['organization'], 6518679690484165796)
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])

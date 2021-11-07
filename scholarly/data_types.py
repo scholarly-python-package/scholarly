@@ -206,6 +206,7 @@ class Author(TypedDict, total=False):
     scholar_id: str
     name: str
     affiliation: str
+    organization: int
     email_domain: str
     url_picture: str
     homepage: str

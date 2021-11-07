@@ -83,7 +83,11 @@ class AuthorParser:
                 picture = _HOST.format(picture)
             author['url_picture'] = picture
 
-        author['affiliation'] = soup.find('div', class_='gsc_prf_il').text
+        affiliation = soup.find('div', class_='gsc_prf_il')
+        author['affiliation'] = affiliation.text
+        affiliation_link = affiliation.find('a')
+        if affiliation_link:
+            author['organization'] = int(affiliation_link.get('href').split("org=")[-1])
         author['interests'] = [i.text.strip() for i in
                           soup.find_all('a', class_='gsc_prf_inta')]
         email = soup.find('div', id="gsc_prf_ivh", class_="gsc_prf_il")
