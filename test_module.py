@@ -165,6 +165,10 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
         self.assertEqual(author['organization'], 6518679690484165796)
         self.assertGreaterEqual(author['public_access']['available'], 10)
+        self.assertEqual(author['public_access']['available'],
+                         sum(pub.get('public_access', None) is True for pub in author['publications']))
+        self.assertEqual(author['public_access']['not_available'],
+                         sum(pub.get('public_access', None) is False for pub in author['publications']))
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])

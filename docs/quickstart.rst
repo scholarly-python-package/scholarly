@@ -192,6 +192,7 @@ author information to fill, as follows:
 -  ``'counts'`` = number of citations per year;
 -  ``'coauthors'`` = co-authors;
 -  ``'publications'`` = publications;
+-  ``'public_access'`` = public_access;
 -  ``'[]'`` = all of the above (this is the default)
 
 .. code:: python

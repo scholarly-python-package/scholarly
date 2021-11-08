@@ -1,7 +1,8 @@
 from .publication_parser import PublicationParser
 import re
-from .data_types import Author, AuthorSource, PublicationSource
+from .data_types import Author, AuthorSource, PublicationSource, PublicAccess
 from selenium.common.exceptions import WebDriverException
+import codecs
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -11,6 +12,7 @@ _CITATIONAUTH = '/citations?hl=en&user={0}'
 _COAUTH = ('https://scholar.google.com/citations?user={0}&hl=en'
            '#d=gsc_md_cod&u=%2Fcitations%3Fview_op%3Dlist_colleagues'
            '%26hl%3Den%26json%3D%26user%3D{0}%23t%3Dgsc_cod_lc')
+_MANDATES = "/citations?hl=en&tzom=300&user={0}&view_op=list_mandates&pagesize={1}"
 
 
 class AuthorParser:
@@ -18,12 +20,12 @@ class AuthorParser:
 
     def __init__(self, nav):
         self.nav = nav
-        self._sections = {'basics',
+        self._sections = ['basics',
                           'indices',
                           'counts',
-                          'public_access',
                           'coauthors',
-                          'publications'}
+                          'publications',
+                          'public_access']
 
     def get_author(self, __data)->Author:
         """ Fills the information for an author container
@@ -126,13 +128,46 @@ class AuthorParser:
         author['cites_per_year'] = dict(zip(years, cites))
 
     def _fill_public_access(self, soup, author):
-        author["public_access"] = dict.fromkeys(("available", "not_available"), 0)
         available = soup.find('div', class_='gsc_rsb_m_a')
         not_available = soup.find('div', class_='gsc_rsb_m_na')
+        n_available, n_not_available = 0, 0
         if available:
-            author["public_access"]["available"] = int(available.text.split(" ")[0])
+            n_available = int(available.text.split(" ")[0])
         if not_available:
-            author["public_access"]["not_available"] = int(not_available.text.split(" ")[0])
+            n_not_available = int(not_available.text.split(" ")[0])
+
+        author["public_access"] = PublicAccess(available=n_available,
+                                               not_available=n_not_available)
+
+        if 'publications' not in author['filled']:
+            return
+
+        # Make a dictionary mapping to the publications
+        publications = {pub['author_pub_id']:pub for pub in author['publications']}
+        soup = self.nav._get_soup(_MANDATES.format(author['scholar_id'], _PAGESIZE))
+        while True:
+            rows = soup.find_all('div', 'gsc_mnd_sec_na')
+            if rows:
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                    author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
+                                               row['data-href'])[0]
+                    publications[author_pub_id]["public_access"] = False
+
+            rows = soup.find_all('div', 'gsc_mnd_sec_avl')
+            if rows:
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                    author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
+                                               row['data-href'])[0]
+                    publications[author_pub_id]["public_access"] = True
+
+            next_button = soup.find(class_="gs_btnPR")
+            if next_button and "disabled" not in next_button.attrs:
+                url = next_button['onclick'][17:-1]
+                url = codecs.getdecoder("unicode_escape")(url)[0]
+                soup = self.nav._get_soup(url)
+            else:
+                break
+
 
     def _fill_publications(self, soup, author, publication_limit: int = 0, sortby_str: str = ''):
         author['publications'] = list()
@@ -386,6 +421,7 @@ class AuthorParser:
         """
         try:
             sections = [section.lower() for section in sections]
+            sections.sort(reverse=True)  # Ensure 'publications' comes before 'public_access'
             sortby_str = ''
             if sortby == "year":
                 sortby_str = '&view_op=list_works&sortby=pubdate'

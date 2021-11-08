@@ -154,6 +154,7 @@ class Publication(TypedDict, total=False):
                           of multiple publications, and therefore may have multiple "citedby_id"
                           values.
                           (source: AUTHOR_PUBLICATION_ENTRY)
+    :param public_access: Boolean corresponding to whether the article is available or not in accordance with public access mandates.
     :param url_related_articles: the url containing link for related articles of a publication (needs fill() for AUTHOR_PUBLICATION_ENTRIES)
     :param url_add_sclib: (source: PUBLICATION_SEARCH_SNIPPET)
     :param url_scholarbib: the url containing links for 
@@ -172,6 +173,7 @@ class Publication(TypedDict, total=False):
     citedby_url: str
     cites_per_year: CitesPerYear
     author_pub_id: str
+    public_access: bool
     eprint_url: str
     pub_url: str
     url_add_sclib: str
@@ -189,6 +191,7 @@ class Author(TypedDict, total=False):
     :param scholar_id: The id of the author on Google Scholar
     :param name: The name of the author
     :param affiliation: The affiliation of the author
+    :param organization: A unique ID of the organization (source: AUTHOR_PROFILE_PAGE)
     :param email_domain: The email domain of the author (source: SEARCH_AUTHOR_SNIPPETS, AUTHOR_PROFILE_PAGE)
     :param url_picture: The URL for the picture of the author
     :param homepage: URL of the homepage of the author
