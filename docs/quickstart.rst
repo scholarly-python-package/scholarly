@@ -102,6 +102,29 @@ Search for an author by the id visible in the url of an Authors profile.
      'scholar_id': 'Smr99uEAAAAJ',
      'source': 'AUTHOR_PROFILE_PAGE'}
 
+``search_author_by_organization``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Search for authors by organization ID.
+########################################################################
+
+.. code:: python
+
+    >>> scholarly.search_org('Princeton University')
+    [{'Organization': 'Princeton University', 'id': '4836318610601440500'}]
+
+    >>> search_query = scholarly.search_author_by_organization(4836318610601440500)
+    >>> author = next(search_query)
+    >>> scholarly.pprint(author)
+        {'affiliation': 'Princeton University (Emeritus)',
+         'citedby': 438891,
+         'email_domain': '@princeton.edu',
+         'filled': False,
+         'interests': ['Daniel Kahneman'],
+         'name': 'Daniel Kahneman',
+         'scholar_id': 'ImhakoAAAAAJ',
+         'source': 'SEARCH_AUTHOR_SNIPPETS',
+         'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=ImhakoAAAAAJ'}
+
 ``search_keyword``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

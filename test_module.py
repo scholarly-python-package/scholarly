@@ -333,6 +333,18 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(pub['bib']['title'],
                          u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
 
+    def test_author_organization(self):
+        """
+        """
+        organization = 4836318610601440500  # Princeton University
+        search_query = scholarly.search_author_by_organization(organization)
+        author = next(search_query)
+        self.assertEqual(author['scholar_id'], "ImhakoAAAAAJ")
+        self.assertEqual(author['name'], "Daniel Kahneman")
+        self.assertEqual(author['email_domain'], "@princeton.edu")
+        self.assertEqual(author['affiliation'], "Princeton University (Emeritus)")
+        self.assertGreaterEqual(author['citedby'], 438891)
+
     def test_public_access(self):
         """
         Test that we obtain public access information

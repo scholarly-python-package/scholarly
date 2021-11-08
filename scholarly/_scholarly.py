@@ -17,6 +17,7 @@ _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
 _KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 _CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
+_ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
 
 
 class _Scholarly:
@@ -447,6 +448,24 @@ class _Scholarly:
 
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_organization(url, fromauthor)
+
+    def search_author_by_organization(self, organization_id: int):
+        """
+        Search for authors in an organization and return a generator of Authors
+
+        ``organization_id`` can be found from the organization name using
+        ``search_org``. Alternatively, they can be found in the ``Author`` object.
+
+        The returned authors are typically in the decreasing order of total citations.
+        The authors must have a verified email address and set their affiliation
+        appropriately to appear on this list.
+
+        :param organization_id: unique integer id for each organization
+        :type organization_id: integer
+        """
+        url = _ORGSEARCH.format(organization_id)
+        return self.__nav.search_authors(url)
+
 
 def _construct_url(baseurl: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,
