@@ -333,6 +333,27 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(pub['bib']['title'],
                          u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
 
+    def test_public_access(self):
+        """
+        Test that we obtain public access information
+
+        We check two cases: 1) when number of public access mandates exceeds
+        100, thus requiring fetching information from a second page and 2) fill
+        public access counts without fetching publications.
+        """
+        author = scholarly.search_author_id("7x48vOkAAAAJ")
+        scholarly.fill(author, sections=['basics', 'public_access', 'publications'])
+        self.assertGreaterEqual(author["public_access"]["available"], 110)
+        self.assertEqual(author["public_access"]["available"],
+                         sum(pub.get("public_access", None) is True for pub in author["publications"]))
+        self.assertEqual(author["public_access"]["not_available"],
+                         sum(pub.get("public_access", None) is False for pub in author["publications"]))
+
+        author = next(scholarly.search_author("Daniel Kahneman"))
+        scholarly.fill(author, sections=["basics", "indices", "public_access"])
+        self.assertEqual(author["scholar_id"], "ImhakoAAAAAJ")
+        self.assertGreaterEqual(author["public_access"]["available"], 6)
+
 
 if __name__ == '__main__':
     unittest.main()
