@@ -301,7 +301,7 @@ class TestScholarly(unittest.TestCase):
         serialized = json.dumps(pub)
         pub_loaded = json.loads(serialized, object_hook=cpy_decoder)
         self.assertEqual(pub, pub_loaded)
-        
+
     def test_full_title(self):
         """
         Test if the full title of a long title-publication gets retrieved.

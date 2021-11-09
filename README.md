@@ -1,5 +1,5 @@
-[![Python package](https://github.com/scholarly-python-package/scholarly/workflows/Python%20package/badge.svg?branch=master)](https://github.com/scholarly-python-package/scholarly/actions?query=branch%3Amaster)
-
+[![Python package](https://github.com/scholarly-python-package/scholarly/workflows/Python%20package/badge.svg?branch=main)](https://github.com/scholarly-python-package/scholarly/actions?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/scholarly-python-package/scholarly/branch/main/graph/badge.svg?token=0svtI9yVSQ)](https://codecov.io/gh/scholarly-python-package/scholarly)
 [![Documentation Status](https://readthedocs.org/projects/scholarly/badge/?version=latest)](https://scholarly.readthedocs.io/en/latest/?badge=latest)
 
 # scholarly
