@@ -65,7 +65,7 @@ class _SearchScholarIterator(object):
             return None
 
         for x in self._soup.find_all('div', class_='gs_ab_mdw'):
-            # Accounting for different thousands separators: 
+            # Accounting for different thousands separators:
             # comma, dot, space, apostrophe
             match = re.match(pattern=r'(^|\s*About)\s*([0-9,\.\s’]+)', string=x.text)
             if match:
@@ -126,7 +126,7 @@ class PublicationParser(object):
                 and not year.text.isspace()
                 and len(year.text) > 0):
             publication['bib']['pub_year'] = year.text.strip()
-        
+
         return publication
 
     def get_publication(self, __data, pubtype: PublicationSource)->Publication:
@@ -169,7 +169,7 @@ class PublicationParser(object):
             match = re.search('\\?user=(.*?)&amp;', author_html)
             if match:
                 author_id_list.append(match.groups()[0])
-            else: 
+            else:
                 author_id_list.append("")
         return author_id_list
 
@@ -235,22 +235,19 @@ class PublicationParser(object):
             if publication['bib']['abstract'][0:8].lower() == 'abstract':
                 publication['bib']['abstract'] = publication['bib']['abstract'][9:].strip()
 
+        publication['url_scholarbib'] = _BIBCITE.format(cid, pos)
+        sclib = self.nav.publib.format(id=cid)
+        publication['url_add_sclib'] = sclib
+
         lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
 
         publication["num_citations"] = 0
 
         for link in lowerlinks:
-            if (link is not None and
-                    link.get('title') is not None and
-                    'Cite' == link.get('title')):
-                publication['url_scholarbib'] = _BIBCITE.format(cid, pos)
-                sclib = self.nav.publib.format(id=cid)
-                publication['url_add_sclib'] = sclib
-
             if 'Cited by' in link.text:
                 publication['num_citations'] = int(re.findall(r'\d+', link.text)[0].strip())
                 publication['citedby_url'] = link['href']
-            
+
             if 'Related articles' in link.text:
                 publication['url_related_articles'] = link['href']
 
@@ -262,7 +259,7 @@ class PublicationParser(object):
 
     def fill(self, publication: Publication)->Publication:
         """Populate the Publication with information from its profile
-        
+
         :param publication: Scholar or Citation publication container object that is not filled
         :type publication: PublicationCitation or PublicationScholar
         """
@@ -310,7 +307,7 @@ class PublicationParser(object):
                     # try to find all the gsh_csp if they exist
                     abstract = val.find_all(class_='gsh_csp')
                     result = ""
-                    
+
                     # append all gsh_csp together as there can be multiple in certain scenarios
                     for item in abstract:
                         if item.text[0:8].lower() == 'abstract':
@@ -318,7 +315,7 @@ class PublicationParser(object):
                         else:
                             result += item.text
 
-                    if len(abstract) == 0: # if no gsh_csp were found 
+                    if len(abstract) == 0:  # if no gsh_csp were found
                         abstract = val.find(class_='gsh_small')
                         if abstract:
                             if abstract.text[0:8].lower() == 'abstract':
