@@ -235,22 +235,19 @@ class PublicationParser(object):
             if publication['bib']['abstract'][0:8].lower() == 'abstract':
                 publication['bib']['abstract'] = publication['bib']['abstract'][9:].strip()
 
+        publication['url_scholarbib'] = _BIBCITE.format(cid, pos)
+        sclib = self.nav.publib.format(id=cid)
+        publication['url_add_sclib'] = sclib
+
         lowerlinks = databox.find('div', class_='gs_fl').find_all('a')
 
         publication["num_citations"] = 0
 
         for link in lowerlinks:
-            if (link is not None and
-                    link.get('title') is not None and
-                    'Cite' == link.get('title')):
-                publication['url_scholarbib'] = _BIBCITE.format(cid, pos)
-                sclib = self.nav.publib.format(id=cid)
-                publication['url_add_sclib'] = sclib
-
             if 'Cited by' in link.text:
                 publication['num_citations'] = int(re.findall(r'\d+', link.text)[0].strip())
                 publication['citedby_url'] = link['href']
-            
+
             if 'Related articles' in link.text:
                 publication['url_related_articles'] = link['href']
 
