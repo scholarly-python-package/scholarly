@@ -139,6 +139,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_keyword_empty_keyword(self):
         """
         As of 2020-04-30, there are  6 individuals that match the name 'label'
@@ -149,6 +150,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_keyword('')]
         self.assertGreaterEqual(len(authors), 6)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_empty_publication(self):
         """
         Test that searching for an empty publication returns zero results
@@ -156,6 +158,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby(self):
         """
         Testing that when we retrieve the list of publications that cite
@@ -172,6 +175,7 @@ class TestScholarly(unittest.TestCase):
         cites = [c for c in scholarly.citedby(filled)]
         self.assertEqual(len(cites), filled['num_citations'])
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby_id(self):
         """
         Test querying for citations by paper ID.
@@ -185,6 +189,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_bibtex(self):
         """
         Test that we get the BiBTeX entry correctly
@@ -212,6 +217,7 @@ class TestScholarly(unittest.TestCase):
         result = scholarly.bibtex(pub)
         self.assertEqual(result, expected_result.replace("\n        ", "\n"))
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_keyword(self):
         """
         Test that we can search based on specific keywords
@@ -309,6 +315,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(pub["citedby_url"],
                          "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
@@ -323,6 +330,7 @@ class TestScholarly(unittest.TestCase):
 
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_total_results(self):
         """
         As of September 16, 2021 there are 32 pubs that fit the search term:
@@ -340,6 +348,7 @@ class TestScholarly(unittest.TestCase):
         pubs = scholarly.search_pubs('sdfsdf+24r+asdfasdf')
         self.assertEqual(pubs.total_results, 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_filling_publication_contents(self):
         '''
         This process  checks the process of filling a publication that is derived
