@@ -185,6 +185,33 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
+    def test_bibtex(self):
+        """
+        Test that we get the BiBTeX entry correctly
+        """
+
+        expected_result = \
+        ("""@inproceedings{ester1996density,
+         abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. """
+         """However, the application to large spatial databases rises the following requirements for clustering algorithms: """
+         """minimal requirements of domain knowledge to determine the input},
+         author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\\"o}rg and Xu, Xiaowei and others},
+         booktitle = {kdd},
+         number = {34},
+         pages = {226--231},
+         pub_year = {1996},
+         title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
+         venue = {kdd},
+         volume = {96}
+        }
+
+        """
+        )
+        query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
+        pub = next(query)
+        result = scholarly.bibtex(pub)
+        self.assertEqual(result, expected_result.replace("\n        ", "\n"))
+
     def test_search_keyword(self):
         """
         When we search for the keyword "3d_shape" the author
