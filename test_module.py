@@ -214,12 +214,38 @@ class TestScholarly(unittest.TestCase):
 
     def test_search_keyword(self):
         """
+        Test that we can search based on specific keywords
+
         When we search for the keyword "3d_shape" the author
-        Steven A. Cholewiak should be among those listed
+        Steven A. Cholewiak should be among those listed.
+        When we search for the keyword "Haptics", Oussama Khatib
+        should be listed first.
         """
+        # Example 1
         authors = [a['name'] for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
         self.assertIn(u'Steven A. Cholewiak, PhD', authors)
+
+        # Example 2
+        expected_author = {'affiliation': 'Stanford University',
+                           'citedby': 43856,
+                           'email_domain': '@cs.stanford.edu',
+                           'filled': [],
+                           'interests': ['Robotics',
+                                         'Haptics',
+                                         'Human Motion Understanding'],
+                           'name': 'Oussama Khatib',
+                           'scholar_id': '4arkOLcAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('Haptics')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        self.assertGreaterEqual(author["citedby"], expected_author["citedby"])
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
     def test_search_author_single_author(self):
         query = 'Steven A. Cholewiak'
