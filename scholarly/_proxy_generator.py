@@ -6,6 +6,7 @@ import time
 import requests
 import stem.process
 import tempfile
+import urllib3
 import os, sys
 
 from requests.exceptions import Timeout
@@ -537,6 +538,9 @@ class ProxyGenerator(object):
             prefix += ".premium=true"
         if render:
             prefix += ".render=true"
+
+        # Suppress the unavoidable insecure request warnings with ScraperAPI
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         for _ in range(3):
             proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
