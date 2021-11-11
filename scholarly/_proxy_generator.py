@@ -161,8 +161,11 @@ class ProxyGenerator(object):
             except (TimeoutException, TimeoutError):
                 time.sleep(self._TIMEOUT)
             except Exception as e:
-                self.logger.warning("Exception while testing proxy: %s", e)
-                if ('lum' in proxies['http']) or ('scraperapi' in proxies['http']):
+                # Failure is common and expected with free proxy.
+                # Do not log at warning level and annoy users.
+                level = logging.DEBUG if self.proxy_mode is ProxyMode.FREE_PROXIES else logging.WARNING
+                self.logger.log(level, "Exception while testing proxy: %s", e)
+                if self.proxy_mode in (ProxyMode.LUMINATI, ProxyMode.SCRAPERAPI):
                     self.logger.warning("Double check your credentials and try increasing the timeout")
 
             return False
