@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from ._proxy_generator import ProxyGenerator
+from ._proxy_generator import ProxyGenerator, MaxTriesExceededException, DOSException
 
 from typing import Callable
 from bs4 import BeautifulSoup
@@ -31,11 +31,6 @@ from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
 from .data_types import Author, PublicationSource
 
-class DOSException(Exception):
-    """DOS attack was detected."""
-
-class MaxTriesExceededException(Exception):
-    """Maximum number of tries by scholarly reached"""
 
 class Singleton(type):
     _instances = {}

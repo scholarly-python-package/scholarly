@@ -21,9 +21,13 @@ from stem.control import Controller
 from fake_useragent import UserAgent
 from dotenv import load_dotenv, find_dotenv
 
+
 class DOSException(Exception):
     """DOS attack was detected."""
 
+
+class MaxTriesExceededException(Exception):
+    """Maximum number of tries by scholarly reached"""
 
 class Singleton(type):
     _instances = {}
