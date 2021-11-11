@@ -343,9 +343,8 @@ class ProxyGenerator(object):
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
                 "httpProxy": self._session.proxies['http'],
-                "ftpProxy": self._session.proxies['http'],
                 "sslProxy": self._session.proxies['https'],
-                "proxyType":"MANUAL",
+                "proxyType": "MANUAL",
             }
 
         self._webdriver = webdriver.Firefox()

@@ -199,12 +199,12 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')
-        # Currently, fetching more than 20 coauthors works only if not using a proxy.
-        if self.connection_method=="none":
-            self.assertGreaterEqual(len(author['coauthors']), 33, "Full coauthor list not fetched")
+        # Currently, fetching more than 20 coauthors works only if a browser can be opened.
+        self.assertGreaterEqual(len(author['coauthors']), 20)
+        if len(author['coauthors'])>20:
             self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
-        else:
-            self.assertEqual(len(author['coauthors']), 20)
+            self.assertGreaterEqual(len(author['coauthors']), 36, "Full coauthor list not fetched")
+
         self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
         self.assertEqual(author['organization'], 6518679690484165796)
         self.assertGreaterEqual(author['public_access']['available'], 10)
