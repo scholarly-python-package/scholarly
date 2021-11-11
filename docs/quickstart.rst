@@ -95,10 +95,35 @@ Search for an author by the id visible in the url of an Authors profile.
     {'affiliation': 'Professor of Vision Science, UC Berkeley',
      'email_domain': '@berkeley.edu',
      'filled': False,
+     'homepage': 'http://bankslab.berkeley.edu/',
      'interests': ['vision science', 'psychology', 'human factors', 'neuroscience'],
      'name': 'Martin Banks',
+     'organization': 11816294095661060495,
      'scholar_id': 'Smr99uEAAAAJ',
      'source': 'AUTHOR_PROFILE_PAGE'}
+
+``search_author_by_organization``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Search for authors by organization ID.
+########################################################################
+
+.. code:: python
+
+    >>> scholarly.search_org('Princeton University')
+    [{'Organization': 'Princeton University', 'id': '4836318610601440500'}]
+
+    >>> search_query = scholarly.search_author_by_organization(4836318610601440500)
+    >>> author = next(search_query)
+    >>> scholarly.pprint(author)
+        {'affiliation': 'Princeton University (Emeritus)',
+         'citedby': 438891,
+         'email_domain': '@princeton.edu',
+         'filled': False,
+         'interests': ['Daniel Kahneman'],
+         'name': 'Daniel Kahneman',
+         'scholar_id': 'ImhakoAAAAAJ',
+         'source': 'SEARCH_AUTHOR_SNIPPETS',
+         'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=ImhakoAAAAAJ'}
 
 ``search_keyword``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -190,6 +215,7 @@ author information to fill, as follows:
 -  ``'counts'`` = number of citations per year;
 -  ``'coauthors'`` = co-authors;
 -  ``'publications'`` = publications;
+-  ``'public_access'`` = public_access;
 -  ``'[]'`` = all of the above (this is the default)
 
 .. code:: python
@@ -312,6 +338,7 @@ author information to fill, as follows:
      'filled': False,
      'hindex': 9,
      'hindex5y': 9,
+     'homepage': 'http://steven.cholewiak.com/',
      'i10index': 8,
      'i10index5y': 7,
      'interests': ['Depth Cues',
@@ -320,6 +347,7 @@ author information to fill, as follows:
                    'Naive Physics',
                    'Haptics'],
      'name': 'Steven A. Cholewiak, PhD',
+     'organization': 6518679690484165796,
      'scholar_id': '4bahYMkAAAAJ',
      'source': 'SEARCH_AUTHOR_SNIPPETS',
      'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4bahYMkAAAAJ'}

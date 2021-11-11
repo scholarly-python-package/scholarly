@@ -162,6 +162,13 @@ class TestScholarly(unittest.TestCase):
             self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
         else:
             self.assertEqual(len(author['coauthors']), 20)
+        self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
+        self.assertEqual(author['organization'], 6518679690484165796)
+        self.assertGreaterEqual(author['public_access']['available'], 10)
+        self.assertEqual(author['public_access']['available'],
+                         sum(pub.get('public_access', None) is True for pub in author['publications']))
+        self.assertEqual(author['public_access']['not_available'],
+                         sum(pub.get('public_access', None) is False for pub in author['publications']))
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
@@ -196,6 +203,8 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
         self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
+        self.assertEqual(author['public_access']['available'], 0)
+        self.assertEqual(author['public_access']['not_available'], 0)
         self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
         self.assertGreaterEqual(len(author['publications']), 179)
         pub = author['publications'][1]
@@ -323,6 +332,39 @@ class TestScholarly(unittest.TestCase):
         pub = scholarly.fill(author['publications'][pub_index])
         self.assertEqual(pub['bib']['title'],
                          u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
+
+    def test_author_organization(self):
+        """
+        """
+        organization = 4836318610601440500  # Princeton University
+        search_query = scholarly.search_author_by_organization(organization)
+        author = next(search_query)
+        self.assertEqual(author['scholar_id'], "ImhakoAAAAAJ")
+        self.assertEqual(author['name'], "Daniel Kahneman")
+        self.assertEqual(author['email_domain'], "@princeton.edu")
+        self.assertEqual(author['affiliation'], "Princeton University (Emeritus)")
+        self.assertGreaterEqual(author['citedby'], 438891)
+
+    def test_public_access(self):
+        """
+        Test that we obtain public access information
+
+        We check two cases: 1) when number of public access mandates exceeds
+        100, thus requiring fetching information from a second page and 2) fill
+        public access counts without fetching publications.
+        """
+        author = scholarly.search_author_id("7x48vOkAAAAJ")
+        scholarly.fill(author, sections=['basics', 'public_access', 'publications'])
+        self.assertGreaterEqual(author["public_access"]["available"], 110)
+        self.assertEqual(author["public_access"]["available"],
+                         sum(pub.get("public_access", None) is True for pub in author["publications"]))
+        self.assertEqual(author["public_access"]["not_available"],
+                         sum(pub.get("public_access", None) is False for pub in author["publications"]))
+
+        author = next(scholarly.search_author("Daniel Kahneman"))
+        scholarly.fill(author, sections=["basics", "indices", "public_access"])
+        self.assertEqual(author["scholar_id"], "ImhakoAAAAAJ")
+        self.assertGreaterEqual(author["public_access"]["available"], 6)
 
 
 if __name__ == '__main__':
