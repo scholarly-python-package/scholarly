@@ -21,6 +21,8 @@ from stem.control import Controller
 from fake_useragent import UserAgent
 from dotenv import load_dotenv, find_dotenv
 
+from .data_types import ProxyMode
+
 
 class DOSException(Exception):
     """DOS attack was detected."""
@@ -28,6 +30,7 @@ class DOSException(Exception):
 
 class MaxTriesExceededException(Exception):
     """Maximum number of tries by scholarly reached"""
+
 
 class Singleton(type):
     _instances = {}
@@ -38,6 +41,7 @@ class Singleton(type):
                                                                  **kwargs)
         return cls._instances[cls]
 
+
 class ProxyGenerator(object):
     def __init__(self):
         # setting up logger
@@ -46,9 +50,8 @@ class ProxyGenerator(object):
         self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
-        self._use_luminati = False
-        self._use_scraperapi = False
-        # If we h:ve a Tor server that we can refresh, we set this to True
+        self.proxy_mode = None
+        # If we have a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
         self._tor_control_port = None
@@ -99,6 +102,11 @@ class ProxyGenerator(object):
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
         proxy_works = self._use_proxy(http=proxy, https=proxy, skip_checking_proxy=skip_checking_proxy)
+        if proxy_works:
+            self.logger.info("Luminati proxy setup successfully")
+            self.proxy_mode = ProxyMode.LUMINATI
+        else:
+            self.logger.warning("Luminati does not seem to work. Reason unknown.")
         return proxy_works
 
     def SingleProxy(self, http=None, https=None, skip_checking_proxy=False):
@@ -123,7 +131,13 @@ class ProxyGenerator(object):
             >>> pg = ProxyGenerator()
             >>> success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
         """
+        self.logger.info("Enabling proxies: http=%s https=%s", http, https)
         proxy_works = self._use_proxy(http=http, https=https, skip_checking_proxy=skip_checking_proxy)
+        if proxy_works:
+            self.proxy_mode = ProxyMode.SINGLEPROXY
+            self.logger.info("Proxy setup successfully")
+        else:
+            self.logger.warning("Unable to setup the proxy: http=%s https=%s. Reason unknown." , http, https)
         return proxy_works
 
     def _check_proxy(self, proxies) -> bool:
@@ -175,7 +189,7 @@ class ProxyGenerator(object):
 
     def _use_proxy(self, http: str, https: str = None, skip_checking_proxy: bool = False) -> bool:
         """Allows user to set their own proxy for the connection session.
-        Sets the proxy, and checks if it works.
+        Sets the proxy if it works.
 
         :param http: the http proxy
         :type http: str
@@ -194,32 +208,11 @@ class ProxyGenerator(object):
             self._proxy_works = True
         else:
             self._proxy_works = self._check_proxy(proxies)
-        # check if the proxy url contains luminati or scraperapi
-        if http is not None:
-            has_luminati = (True if "lum" in http else False)
-            has_scraperapi = (True if "scraperapi" in http else False)
-        else:
-            has_luminati, has_scraperapi = False, False
+
         if self._proxy_works:
-            if has_luminati:
-                self.logger.info("Enabling Luminati proxy")
-                self._use_luminati = has_luminati
-            elif has_scraperapi:
-                self.logger.info("Enabling ScraperAPI proxy")
-                self._use_scraperapi = has_scraperapi
-            else:
-                self.logger.info("Enabling proxies: http=%s https=%s", http, https)
             self._session.proxies = proxies
             self._new_session()
-        else:
-            if has_luminati:
-                self.logger.warning("Luminati does not seem to work")
-            elif has_scraperapi:
-                # Do not warn that ScraperAPI is not working here,
-                # since we try multiple times.
-                pass
-            else:
-                self.logger.warning("Proxy %s does not seem to work.", http)
+
         return self._proxy_works
 
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
@@ -250,6 +243,7 @@ class ProxyGenerator(object):
             self._tor_control_port = None
             self._tor_password = None
 
+        self.proxy_mode = ProxyMode.TOR_EXTERNAL
         # Setting requests timeout to be reasonably long
         # to accommodate slowness of the Tor network
         return {
@@ -309,6 +303,7 @@ class ProxyGenerator(object):
             },
             # take_ownership=True # Taking this out for now, as it seems to cause trouble
         )
+        self.proxy_mode = ProxyMode.TOR_INTERNAL
         return self.Tor_External(tor_sock_port, tor_control_port, tor_password=None)
 
     def _has_captcha(self, got_id, got_class) -> bool:
@@ -425,7 +420,7 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             self._session.proxies = proxies
-            if self._use_scraperapi:
+            if self.proxy_mode is ProxyMode.SCRAPERAPI:
                 # SSL Certificate verification must be disabled for
                 # ScraperAPI requests to work.
                 # https://www.scraperapi.com/documentation/
@@ -483,13 +478,19 @@ class ProxyGenerator(object):
             >>> pg = ProxyGenerator()
             >>> success = pg.FreeProxies()
         """
+        self.proxy_mode = ProxyMode.FREE_PROXIES
+        # FreeProxies is the only mode that is assigned regardless of setup successfully or not.
+
         self._fp_gen = self._fp_coroutine(timeout=timeout, wait_time=wait_time)
         self._proxy_gen = self._fp_gen.send
         proxy = self._proxy_gen(None)  # prime the generator
+        self.logger.debug("Trying with proxy %s", proxy)
         proxy_works = self._use_proxy(proxy)
         n_retries = 200
         n_tries = 0
+
         while (not proxy_works) and (n_tries < n_retries):
+            self.logger.debug("Trying with proxy %s", proxy)
             proxy_works = self._use_proxy(proxy)
             n_tries += 1
             if not proxy_works:
@@ -559,8 +560,11 @@ class ProxyGenerator(object):
 
         for _ in range(3):
             proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001',
-                                          skip_checking_proxy=skip_checking_proxy)
+                                           skip_checking_proxy=skip_checking_proxy)
             if proxy_works:
+                self.logger.info("ScraperAPI proxy setup successfully")
+                self.proxy_mode = ProxyMode.SCRAPERAPI
+                self._session.verify = False
                 return proxy_works
 
         if (r["requestCount"] >= r["requestLimit"]):

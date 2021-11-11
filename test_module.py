@@ -20,6 +20,7 @@ class TestLuminati(unittest.TestCase):
                                            passwd=os.getenv("PASSWORD"),
                                            proxy_port=os.getenv("PORT"))
         self.assertTrue(success)
+        self.assertEqual(proxy_generator.proxy_mode, "LUMINATI")
 
 
 class TestScraperAPI(unittest.TestCase):
@@ -33,6 +34,7 @@ class TestScraperAPI(unittest.TestCase):
         proxy_generator = ProxyGenerator()
         success = proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
         self.assertTrue(success)
+        self.assertEqual(proxy_generator.proxy_mode, "SCRAPERAPI")
 
 
 class TestTorInternal(unittest.TestCase):

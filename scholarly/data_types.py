@@ -62,6 +62,7 @@ class PublicationSource(str, Enum):
     PUBLICATION_SEARCH_SNIPPET = "PUBLICATION_SEARCH_SNIPPET"
     AUTHOR_PUBLICATION_ENTRY = "AUTHOR_PUBLICATION_ENTRY"
 
+
 class AuthorSource(str, Enum):
     '''
     Defines the source of the HTML that will be parsed.
@@ -77,6 +78,19 @@ class AuthorSource(str, Enum):
     CO_AUTHORS_LIST = "CO_AUTHORS_LIST"
 
 
+class ProxyMode(str, Enum):
+    """
+    Defines the different types supported.
+    """
+    FREE_PROXIES = "FREE_PROXIES"
+    SCRAPERAPI = "SCRAPERAPI"
+    LUMINATI = "LUMINATI"
+    SINGLEPROXY = "SINGLEPROXY"
+    # Deprecated:
+    TOR_EXTERNAL = "TOR_EXTERNAL"
+    TOR_INTERNAL = "TOR_INTERNAL"
+
+
 ''' Lightweight Data Structure to keep distribution of citations of the years '''
 CitesPerYear = Dict[int, int]
 
@@ -85,6 +99,7 @@ CitesPerYear = Dict[int, int]
     not available publicly according to funding mandates
 '''
 PublicAccess = TypedDict('PublicAccess', {"available": int, "not_available": int})
+
 
 class BibEntry(TypedDict, total=False):
     """

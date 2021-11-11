@@ -29,7 +29,7 @@ from fake_useragent import UserAgent
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
-from .data_types import Author, PublicationSource
+from .data_types import Author, PublicationSource, ProxyMode
 
 
 class Singleton(type):
@@ -117,7 +117,7 @@ class Navigator(object, metaclass=Singleton):
             pm = self.pm1
             session = self._session1
             premium = True
-        if pm._use_scraperapi:
+        if pm.proxy_mode is ProxyMode.SCRAPERAPI:
             self.set_timeout(60)
         timeout=self._TIMEOUT
         while tries < self._max_retries:
@@ -142,7 +142,7 @@ class Navigator(object, metaclass=Singleton):
                         if not self.got_403:
                             self.logger.info("Retrying immediately with another session.")
                         else:
-                            if not pm._use_luminati:
+                            if pm.proxy_mode not in (ProxyMode.LUMINATI, ProxyMode.SCRAPERAPI):
                                 w = random.uniform(60, 2*60)
                                 self.logger.info("Will retry after {} seconds (with another session).".format(w))
                                 time.sleep(w)
