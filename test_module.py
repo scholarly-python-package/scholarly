@@ -9,62 +9,39 @@ from fp.fp import FreeProxy
 import json
 
 
-class TestScholarly(unittest.TestCase):
+class TestLuminati(unittest.TestCase):
+    skipUnless = os.getenv("USERNAME") and os.getenv("PASSWORD") and os.getenv("PORT")
 
-    def setUp(self):
+    @unittest.skipUnless(skipUnless, reason="No Luminati credentials found.")
+    def test_luminati(self):
+        """
+        Test that we can set up Luminati (Bright Data) successfully
+        """
         proxy_generator = ProxyGenerator()
-        if "CONNECTION_METHOD" in scholarly.env:
-            self.connection_method = os.getenv("CONNECTION_METHOD")
-        else:
-            self.connection_method = "none"
-        if self.connection_method == "tor":
-            tor_sock_port = None
-            tor_control_port = None
-            tor_password = "scholarly_password"
-            # Tor uses the 9050 port as the default socks port
-            # on windows 9150 for socks and 9151 for control
-            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-                tor_sock_port = 9050
-                tor_control_port = 9051
-            elif sys.platform.startswith("win"):
-                tor_sock_port = 9150
-                tor_control_port = 9151
-            proxy_generator.Tor_External(tor_sock_port,tor_control_port,tor_password)
-            scholarly.use_proxy(proxy_generator)
+        success = proxy_generator.Luminati(usr=os.getenv("USERNAME"),
+                                           passwd=os.getenv("PASSWORD"),
+                                           proxy_port=os.getenv("PORT"))
+        self.assertTrue(success)
 
-        elif self.connection_method == "tor_internal":
-            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-                tor_cmd = 'tor'
-            elif sys.platform.startswith("win"):
-                tor_cmd = 'tor.exe'
-            else:
-                tor_cmd = None
-            proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
-            scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "luminati":
-            scholarly.set_retries(10)
-            proxy_generator.Luminati(usr=os.getenv("USERNAME"),
-                                     passwd=os.getenv("PASSWORD"),
-                                     proxy_port = os.getenv("PORT"),
-                                     skip_checking_proxy=True)
-            scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "freeproxy":
-            proxy_generator.FreeProxies()
-            scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "scraperapi":
-            proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'), skip_checking_proxy=True)
-            scholarly.use_proxy(proxy_generator)
-        else:
-            scholarly.use_proxy(None)
 
-    def tearDown(self):
-        return
-        if self.connection_method == "freeproxy":
-            scholarly._Scholarly__nav.pm1._fp_gen.close()
-        scholarly._Scholarly__nav.pm2._fp_gen.close()
+class TestScraperAPI(unittest.TestCase):
+    skipUnless = os.getenv('SCRAPER_API_KEY')
 
-    @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
-                          if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
+    @unittest.skipUnless(skipUnless, reason="No ScraperAPI key found")
+    def test_scraperapi(self):
+        """
+        Test that we can set up ScraperAPI successfully
+        """
+        proxy_generator = ProxyGenerator()
+        success = proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
+        self.assertTrue(success)
+
+
+class TestTorInternal(unittest.TestCase):
+    skipUnless = [_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
+                  if _bin in ('tor', 'tor.exe')]
+
+    @unittest.skipUnless(skipUnless, reason='Tor executable not found')
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
@@ -91,6 +68,69 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
 
+
+class TestScholarly(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Setup the proxy methods for unit tests
+        """
+        if "CONNECTION_METHOD" in scholarly.env:
+            cls.connection_method = os.getenv("CONNECTION_METHOD")
+        else:
+            cls.connection_method = "none"
+            scholarly.use_proxy(None)
+            return
+
+        # Use dual proxies for unit testing
+        secondary_proxy_generator = ProxyGenerator()
+        secondary_proxy_generator.FreeProxies()
+
+        proxy_generator = ProxyGenerator()
+        if cls.connection_method == "tor":
+            tor_password = "scholarly_password"
+            # Tor uses the 9050 port as the default socks port
+            # on windows 9150 for socks and 9151 for control
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+                tor_sock_port = 9050
+                tor_control_port = 9051
+            elif sys.platform.startswith("win"):
+                tor_sock_port = 9150
+                tor_control_port = 9151
+            else:
+                tor_sock_port = None
+                tor_control_port = None
+            proxy_generator.Tor_External(tor_sock_port, tor_control_port,
+                                         tor_password)
+
+        elif cls.connection_method == "tor_internal":
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+                tor_cmd = 'tor'
+            elif sys.platform.startswith("win"):
+                tor_cmd = 'tor.exe'
+            else:
+                tor_cmd = None
+            proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
+
+        elif cls.connection_method == "luminati":
+            scholarly.set_retries(10)
+            proxy_generator.Luminati(usr=os.getenv("USERNAME"),
+                                     passwd=os.getenv("PASSWORD"),
+                                     proxy_port = os.getenv("PORT"))
+
+        elif cls.connection_method == "freeproxy":
+            # Use different instances for primary and secondary
+            proxy_generator = ProxyGenerator()
+            proxy_generator.FreeProxies()
+
+        elif cls.connection_method == "scraperapi":
+            proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
+
+        else:
+            scholarly.use_proxy(None)
+
+        scholarly.use_proxy(proxy_generator, secondary_proxy_generator)
 
     def test_search_author_empty_author(self):
         """
