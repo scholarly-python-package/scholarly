@@ -66,7 +66,7 @@ class ProxyGenerator(object):
     def get_session(self):
         return self._session
 
-    def Luminati(self, usr , passwd, proxy_port, skip_checking_proxy=False):
+    def Luminati(self, usr, passwd, proxy_port, skip_checking_proxy=False):
         """ Setups a luminati proxy without refreshing capabilities.
 
         Note: ``skip_checking_proxy`` is meant to be set to `True` only in
@@ -86,10 +86,10 @@ class ProxyGenerator(object):
         :rtype: {bool}
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.Luminati(usr = foo, passwd = bar, port = 1200)
+            >>> pg = ProxyGenerator()
+            >>> success = pg.Luminati(usr = foo, passwd = bar, port = 1200)
         """
-        if (usr != None and passwd != None and proxy_port != None):
+        if (usr is not None and passwd is not None and proxy_port is not None):
             username = usr
             password = passwd
             port = proxy_port
@@ -101,7 +101,7 @@ class ProxyGenerator(object):
         proxy_works = self._use_proxy(http=proxy, https=proxy, skip_checking_proxy=skip_checking_proxy)
         return proxy_works
 
-    def SingleProxy(self, http = None, https = None, skip_checking_proxy=False):
+    def SingleProxy(self, http=None, https=None, skip_checking_proxy=False):
         """
         Use proxy of your choice
 
@@ -110,18 +110,18 @@ class ProxyGenerator(object):
         value of `False`.
 
         :param http: http proxy address
-        type http: string
+        :type http: string
         :param https: https proxy adress
         :type https: string
-        :param skip_checking_proxy: skip checking if the proxy works,
-                                    optional by default False
+        :param skip_checking_proxy: skip checking if the proxy works, optional by default False
         :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+
+            >>> pg = ProxyGenerator()
+            >>> success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
         """
         proxy_works = self._use_proxy(http=http, https=https, skip_checking_proxy=skip_checking_proxy)
         return proxy_works
@@ -147,7 +147,6 @@ class ProxyGenerator(object):
             except (TimeoutException, TimeoutError):
                 time.sleep(self._TIMEOUT)
             except Exception as e:
-                # import pdb; pdb.set_trace()
                 self.logger.warning("Exception while testing proxy: %s", e)
                 if ('lum' in proxies['http']) or ('scraperapi' in proxies['http']):
                     self.logger.warning("Double check your credentials and try increasing the timeout")
@@ -482,10 +481,9 @@ class ProxyGenerator(object):
         :rtype: {bool}
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.FreeProxies()
+            >>> pg = ProxyGenerator()
+            >>> success = pg.FreeProxies()
         """
-        # import pdb; pdb.set_trace()
         self._fp_gen = self._fp_coroutine(timeout=timeout, wait_time=wait_time)
         self._proxy_gen = self._fp_gen.send
         proxy = self._proxy_gen(None)  # prime the generator
@@ -520,8 +518,8 @@ class ProxyGenerator(object):
         value of `False`.
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.ScraperAPI(API_KEY)
+            >>> pg = ProxyGenerator()
+            >>> success = pg.ScraperAPI(API_KEY)
 
         :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
@@ -573,7 +571,7 @@ class ProxyGenerator(object):
 
         return False
 
-    def has_proxy(self)-> bool:
+    def has_proxy(self) -> bool:
         return self._proxy_gen or self._can_refresh_tor
 
     def _set_proxy_generator(self, gen: Callable[..., str]) -> bool:
@@ -589,7 +587,6 @@ class ProxyGenerator(object):
             time.sleep(5) # wait for the refresh to happen
             new_timeout = self._TIMEOUT # Reset timeout to default
         elif self._proxy_gen:
-            # import pdb; pdb.set_trace()
             if (num_tries):
                 self.logger.info(f"Try #{num_tries} failed. Switching proxy.") # TODO: add tries
             # Try to get another proxy

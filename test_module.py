@@ -1,11 +1,9 @@
 import unittest
-import argparse
 import os
 import sys
 from scholarly import scholarly, ProxyGenerator
 from scholarly.publication_parser import PublicationParser
 import random
-from fp.fp import FreeProxy
 import json
 
 
@@ -117,7 +115,7 @@ class TestScholarly(unittest.TestCase):
             scholarly.set_retries(10)
             proxy_generator.Luminati(usr=os.getenv("USERNAME"),
                                      passwd=os.getenv("PASSWORD"),
-                                     proxy_port = os.getenv("PORT"))
+                                     proxy_port=os.getenv("PORT"))
 
         elif cls.connection_method == "freeproxy":
             # Use different instances for primary and secondary
@@ -155,7 +153,6 @@ class TestScholarly(unittest.TestCase):
         """
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
-
 
     def test_search_pubs_citedby(self):
         """
