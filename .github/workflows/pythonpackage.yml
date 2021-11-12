@@ -41,7 +41,9 @@ jobs:
       #- name: Typilus, Suggest Python Type Annotations
       #  uses: typilus/typilus-action@v0.9
       - name: Setup Tor to allow for password-based refresh of ID
-        run: ./setup_tor.sh
+        run: ./scripts/setup_tor.sh
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@latest
       - name: Test with unittest
         env:
           CONNECTION_METHOD: ${{ secrets.CONNECTION_METHOD }}

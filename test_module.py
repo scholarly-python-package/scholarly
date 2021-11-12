@@ -283,7 +283,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')
         # Currently, fetching more than 20 coauthors works only if a browser can be opened.
-        self.assertGreaterEqual(len(author['coauthors']), 20)
+        self.assertGreaterEqual(len(author['coauthors']), 36)
         if len(author['coauthors'])>20:
             self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
             self.assertGreaterEqual(len(author['coauthors']), 36, "Full coauthor list not fetched")

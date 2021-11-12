@@ -325,6 +325,32 @@ class ProxyGenerator(object):
         if self._webdriver:
             return self._webdriver
 
+        try:
+            return self._get_firefox_webdriver()
+        except Exception as err:
+            self.logger.debug("Cannot open Firefox/Geckodriver: %s", err)
+            try:
+                return self._get_chrome_webdriver()
+            except Exception as err:
+                self.logger.debug("Cannot open Chrome: %s", err)
+                self.logger.info("Neither Chrome nor Firefox/Geckodriver found in PATH")
+
+    def _get_chrome_webdriver(self):
+        if self._proxy_works:
+            webdriver.DesiredCapabilities.CHROME['proxy'] = {
+                "httpProxy": self._session.proxies['http'],
+                "sslProxy": self._session.proxies['https'],
+                "proxyType": "MANUAL"
+            }
+
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        self._webdriver = webdriver.Chrome('chromedriver', options=options)
+        self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
+
+        return self._webdriver
+
+    def _get_firefox_webdriver(self):
         if self._proxy_works:
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
@@ -336,7 +362,7 @@ class ProxyGenerator(object):
         options = FirefoxOptions()
         options.add_argument('--headless')
         self._webdriver = webdriver.Firefox(options=options)
-        self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
+        self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
 
         # It might make sense to (pre)set cookies as well, e.g., to set a GSP ID.
         # However, a limitation of webdriver makes it impossible to set cookies for
