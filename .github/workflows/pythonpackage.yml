@@ -50,7 +50,7 @@ jobs:
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
           curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
-          coverage run -m unittest -v test_module.py
+          coverage run -m unittest -v test_module.TestScholarly
           coverage xml
       - name: Upload code coverage
         uses: codecov/codecov-action@v2

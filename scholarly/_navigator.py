@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from ._proxy_generator import ProxyGenerator
+from ._proxy_generator import ProxyGenerator, MaxTriesExceededException, DOSException
 
 from typing import Callable
 from bs4 import BeautifulSoup
@@ -29,13 +29,8 @@ from fake_useragent import UserAgent
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
-from .data_types import Author, PublicationSource
+from .data_types import Author, PublicationSource, ProxyMode
 
-class DOSException(Exception):
-    """DOS attack was detected."""
-
-class MaxTriesExceededException(Exception):
-    """Maximum number of tries by scholarly reached"""
 
 class Singleton(type):
     _instances = {}
@@ -122,7 +117,7 @@ class Navigator(object, metaclass=Singleton):
             pm = self.pm1
             session = self._session1
             premium = True
-        if pm._use_scraperapi:
+        if pm.proxy_mode is ProxyMode.SCRAPERAPI:
             self.set_timeout(60)
         timeout=self._TIMEOUT
         while tries < self._max_retries:
@@ -147,7 +142,7 @@ class Navigator(object, metaclass=Singleton):
                         if not self.got_403:
                             self.logger.info("Retrying immediately with another session.")
                         else:
-                            if not pm._use_luminati:
+                            if pm.proxy_mode not in (ProxyMode.LUMINATI, ProxyMode.SCRAPERAPI):
                                 w = random.uniform(60, 2*60)
                                 self.logger.info("Will retry after {} seconds (with another session).".format(w))
                                 time.sleep(w)
@@ -182,7 +177,7 @@ class Navigator(object, metaclass=Singleton):
                 self.logger.info("Retrying with a new session.")
 
             tries += 1
-            session, timeout = pm.get_next_proxy(num_tries = tries, old_timeout = timeout)
+            session, timeout = pm.get_next_proxy(num_tries = tries, old_timeout = timeout, old_proxy=session.proxies.get('http', None))
 
         # If secondary proxy does not work, try again primary proxy.
         if not premium:
