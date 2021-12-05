@@ -245,7 +245,7 @@ class AuthorParser:
                 coauthor_info = self._get_coauthors_long(author)
             except Exception as err:
                 coauthor_info = self._get_coauthors_short(soup)
-                self.nav.logger.warning(err.msg)
+                self.nav.logger.warning(err)
                 self.nav.logger.warning("Fetching only the top 20 coauthors")
 
         author['coauthors'] = []
