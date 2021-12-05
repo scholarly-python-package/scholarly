@@ -444,12 +444,14 @@ or if you want to run it without any proxy:
 
 .. code:: python
 
-    scholarly.use_proxy(None)
+    scholarly.use_proxy(None, None)
 
 ``Tor_External``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pg.Tor_External(tor_sock_port: int, tor_control_port: int, tor_password: str)
 ###############################################################################
+
+This method is deprecated since v1.5
 
 This option assumes that you have access to a Tor server and a ``torrc``
 file configuring the Tor server to have a control port configured with a
@@ -483,6 +485,8 @@ default password, but you may want to change it for your installation.)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 pg.Tor_internal(tor_cmd=None, tor_sock_port=None, tor_control_port=None)
 ########################################################################
+
+This method is deprecated since v1.5
 
 If you have Tor installed locally, this option allows scholarly to
 launch its own Tor process. You need to pass a pointer to the Tor

@@ -1,6 +1,7 @@
 arrow
 beautifulsoup4
 bibtexparser
+deprecated
 PySocks
 requests[security]
 requests[socks]

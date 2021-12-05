@@ -4,10 +4,8 @@ import random
 import logging
 import time
 import requests
-import stem.process
 import tempfile
 import urllib3
-import os, sys
 
 from requests.exceptions import Timeout
 from selenium import webdriver
@@ -17,11 +15,15 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from urllib.parse import urlparse
-from stem import Signal
-from stem.control import Controller
 from fake_useragent import UserAgent
 from contextlib import contextmanager
-from dotenv import load_dotenv, find_dotenv
+from deprecated import deprecated
+try:
+    import stem.process
+    from stem import Signal
+    from stem.control import Controller
+except ImportError:
+    stem = None
 
 from .data_types import ProxyMode
 
@@ -202,6 +204,7 @@ class ProxyGenerator(object):
 
         return self._proxy_works
 
+    @deprecated(version='1.5', reason="Tor methods are deprecated and are not actively tested.")
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
         """
         Setting up Tor Proxy. A tor service should be already running on the system. Otherwise you might want to use Tor_Internal
@@ -216,7 +219,13 @@ class ProxyGenerator(object):
         :Example::
             pg = ProxyGenerator()
             pg.Tor_External(tor_sock_port = 9050, tor_control_port = 9051, tor_password = "scholarly_password")
+
+        Note: This method is deprecated since v1.5
         """
+        if stem is None:
+            raise RuntimeError("Tor methods are not supported with basic version of the package. "
+                               "Please install scholarly[tor] to use this method.")
+
         self._TIMEOUT = 10
 
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
@@ -240,6 +249,7 @@ class ProxyGenerator(object):
             "tor_sock_port": tor_sock_port
         }
 
+    @deprecated(version='1.5', reason="Tor methods are deprecated and are not actively tested")
     def Tor_Internal(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
         '''
         Starts a Tor client running in a scholarly-specific port, together with a scholarly-specific control port.
@@ -257,7 +267,13 @@ class ProxyGenerator(object):
         :Example::
             pg = ProxyGenerator()
             pg.Tor_Internal(tor_cmd = 'tor')
+
+        Note: This method is deprecated since v1.5
         '''
+        if stem is None:
+            raise RuntimeError("Tor methods are not supported with basic version of the package. "
+                               "Please install scholarly[tor] to use this method.")
+
         self.logger.info("Attempting to start owned Tor as the proxy")
 
         if tor_cmd is None:
