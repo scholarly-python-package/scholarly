@@ -144,7 +144,7 @@ class Navigator(object, metaclass=Singleton):
                         else:
                             if pm.proxy_mode not in (ProxyMode.LUMINATI, ProxyMode.SCRAPERAPI):
                                 w = random.uniform(60, 2*60)
-                                self.logger.info("Will retry after {} seconds (with another session).".format(w))
+                                self.logger.info("Will retry after %.2f seconds (with another session).", w)
                                 time.sleep(w)
                         self._new_session(premium=premium)
                         self.got_403 = True
@@ -153,18 +153,18 @@ class Navigator(object, metaclass=Singleton):
                     else:
                         self.logger.info("We can use another connection... let's try that.")
                 else:
-                    self.logger.info(f"""Response code {resp.status_code}.
-                                    Retrying...""")
+                    self.logger.info("""Response code %d.
+                                    Retrying...""", resp.status_code)
 
             except DOSException:
                 if not pm.has_proxy():
                     self.logger.info("No other connections possible.")
                     w = random.uniform(60, 2*60)
-                    self.logger.info("Will retry after {} seconds (with the same session).".format(w))
+                    self.logger.info("Will retry after %.2f seconds (with the same session).", w)
                     time.sleep(w)
                     continue
             except Timeout as e:
-                err = f"Timeout Exception %s while fetching page: %s" % (type(e).__name__, e.args)
+                err = "Timeout Exception %s while fetching page: %s" % (type(e).__name__, e.args)
                 self.logger.info(err)
                 if timeout < 3*self._TIMEOUT:
                     self.logger.info("Increasing timeout and retrying within same session.")
@@ -172,7 +172,7 @@ class Navigator(object, metaclass=Singleton):
                     continue
                 self.logger.info("Giving up this session.")
             except Exception as e:
-                err = f"Exception %s while fetching page: %s" % (type(e).__name__, e.args)
+                err = "Exception %s while fetching page: %s" % (type(e).__name__, e.args)
                 self.logger.info(err)
                 self.logger.info("Retrying with a new session.")
 

@@ -139,6 +139,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_keyword_empty_keyword(self):
         """
         As of 2020-04-30, there are  6 individuals that match the name 'label'
@@ -149,6 +150,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_keyword('')]
         self.assertGreaterEqual(len(authors), 6)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_empty_publication(self):
         """
         Test that searching for an empty publication returns zero results
@@ -156,6 +158,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby(self):
         """
         Testing that when we retrieve the list of publications that cite
@@ -172,6 +175,7 @@ class TestScholarly(unittest.TestCase):
         cites = [c for c in scholarly.citedby(filled)]
         self.assertEqual(len(cites), filled['num_citations'])
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby_id(self):
         """
         Test querying for citations by paper ID.
@@ -185,14 +189,69 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_bibtex(self):
+        """
+        Test that we get the BiBTeX entry correctly
+        """
+
+        expected_result = \
+        ("""@inproceedings{ester1996density,
+         abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. """
+         """However, the application to large spatial databases rises the following requirements for clustering algorithms: """
+         """minimal requirements of domain knowledge to determine the input},
+         author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\\"o}rg and Xu, Xiaowei and others},
+         booktitle = {kdd},
+         number = {34},
+         pages = {226--231},
+         pub_year = {1996},
+         title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
+         venue = {kdd},
+         volume = {96}
+        }
+
+        """
+        )
+        query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
+        pub = next(query)
+        result = scholarly.bibtex(pub)
+        self.assertEqual(result, expected_result.replace("\n        ", "\n"))
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_keyword(self):
         """
+        Test that we can search based on specific keywords
+
         When we search for the keyword "3d_shape" the author
-        Steven A. Cholewiak should be among those listed
+        Steven A. Cholewiak should be among those listed.
+        When we search for the keyword "Haptics", Oussama Khatib
+        should be listed first.
         """
+        # Example 1
         authors = [a['name'] for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
         self.assertIn(u'Steven A. Cholewiak, PhD', authors)
+
+        # Example 2
+        expected_author = {'affiliation': 'Stanford University',
+                           'citedby': 43856,
+                           'email_domain': '@cs.stanford.edu',
+                           'filled': [],
+                           'interests': ['Robotics',
+                                         'Haptics',
+                                         'Human Motion Understanding'],
+                           'name': 'Oussama Khatib',
+                           'scholar_id': '4arkOLcAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('Haptics')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        self.assertGreaterEqual(author["citedby"], expected_author["citedby"])
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
     def test_search_author_single_author(self):
         query = 'Steven A. Cholewiak'
@@ -256,6 +315,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(pub["citedby_url"],
                          "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
@@ -270,6 +330,7 @@ class TestScholarly(unittest.TestCase):
 
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_total_results(self):
         """
         As of September 16, 2021 there are 32 pubs that fit the search term:
@@ -287,6 +348,7 @@ class TestScholarly(unittest.TestCase):
         pubs = scholarly.search_pubs('sdfsdf+24r+asdfasdf')
         self.assertEqual(pubs.total_results, 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_filling_publication_contents(self):
         '''
         This process  checks the process of filling a publication that is derived
