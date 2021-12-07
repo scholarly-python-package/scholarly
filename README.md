@@ -1,6 +1,8 @@
 [![Python package](https://github.com/scholarly-python-package/scholarly/workflows/Python%20package/badge.svg?branch=main)](https://github.com/scholarly-python-package/scholarly/actions?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/scholarly-python-package/scholarly/branch/main/graph/badge.svg?token=0svtI9yVSQ)](https://codecov.io/gh/scholarly-python-package/scholarly)
 [![Documentation Status](https://readthedocs.org/projects/scholarly/badge/?version=latest)](https://scholarly.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/27442991.svg)](https://zenodo.org/badge/latestdoi/27442991)
+
 
 # scholarly
 
@@ -108,7 +110,18 @@ scholarly.pprint(next(search_query))
 `scholarly` is smart enough to know which queries need proxies and which do not.
 It is therefore recommended to always set up a proxy in the beginning of your application.
 
+## Citing
 
+If you have used this codebase in a scientific publication and wish to cite it, please use the following:
+
+```bibtex
+@misc{cholewiak2021scholarly,
+  author  = {Cholewiak, Steven A. and Ipeirotis, Panos and Silva, Victor and Kannawadi, Arun},
+  title   = {{SCHOLARLY: Simple access to Google Scholar authors and citation using Python}},
+  year    = {2021},
+  doi     = {10.5821/zenodo.5764802}
+}
+```
 
 #### Disclaimer
 
