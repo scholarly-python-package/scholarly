@@ -4,9 +4,8 @@ import random
 import logging
 import time
 import requests
-import stem.process
 import tempfile
-import os
+import urllib3
 
 from requests.exceptions import Timeout
 from selenium import webdriver
@@ -16,13 +15,25 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from urllib.parse import urlparse
-from stem import Signal
-from stem.control import Controller
 from fake_useragent import UserAgent
-from dotenv import load_dotenv, find_dotenv
+from contextlib import contextmanager
+from deprecated import deprecated
+try:
+    import stem.process
+    from stem import Signal
+    from stem.control import Controller
+except ImportError:
+    stem = None
+
+from .data_types import ProxyMode
+
 
 class DOSException(Exception):
     """DOS attack was detected."""
+
+
+class MaxTriesExceededException(Exception):
+    """Maximum number of tries by scholarly reached"""
 
 
 class Singleton(type):
@@ -34,6 +45,7 @@ class Singleton(type):
                                                                  **kwargs)
         return cls._instances[cls]
 
+
 class ProxyGenerator(object):
     def __init__(self):
         # setting up logger
@@ -42,9 +54,8 @@ class ProxyGenerator(object):
         self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
-        self._use_luminati = False
-        self._use_scraperapi = False
-        # If we h:ve a Tor server that we can refresh, we set this to True
+        self.proxy_mode = None
+        # If we have a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
         self._tor_control_port = None
@@ -62,12 +73,8 @@ class ProxyGenerator(object):
     def get_session(self):
         return self._session
 
-    def Luminati(self, usr , passwd, proxy_port, skip_checking_proxy=False):
+    def Luminati(self, usr, passwd, proxy_port):
         """ Setups a luminati proxy without refreshing capabilities.
-
-        Note: ``skip_checking_proxy`` is meant to be set to `True` only in
-        unit tests. Applications using this library must always use the default
-        value of `False`.
 
         :param usr: scholarly username, optional by default None
         :type usr: string
@@ -75,17 +82,14 @@ class ProxyGenerator(object):
         :type passwd: string
         :param proxy_port: port for the proxy,optional by default None
         :type proxy_port: integer
-        :param skip_checking_proxy: skip checking if the proxy works,
-                                    optional by default False
-        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.Luminati(usr = foo, passwd = bar, port = 1200)
+            >>> pg = ProxyGenerator()
+            >>> success = pg.Luminati(usr = foo, passwd = bar, port = 1200)
         """
-        if (usr != None and passwd != None and proxy_port != None):
+        if (usr is not None and passwd is not None and proxy_port is not None):
             username = usr
             password = passwd
             port = proxy_port
@@ -94,32 +98,37 @@ class ProxyGenerator(object):
             return
         session_id = random.random()
         proxy = f"http://{username}-session-{session_id}:{password}@zproxy.lum-superproxy.io:{port}"
-        proxy_works = self._use_proxy(http=proxy, https=proxy, skip_checking_proxy=skip_checking_proxy)
+        proxy_works = self._use_proxy(http=proxy, https=proxy)
+        if proxy_works:
+            self.logger.info("Luminati proxy setup successfully")
+            self.proxy_mode = ProxyMode.LUMINATI
+        else:
+            self.logger.warning("Luminati does not seem to work. Reason unknown.")
         return proxy_works
 
-    def SingleProxy(self, http = None, https = None, skip_checking_proxy=False):
+    def SingleProxy(self, http=None, https=None):
         """
         Use proxy of your choice
 
-        Note: ``skip_checking_proxy`` is meant to be set to `True` only in
-        unit tests. Applications using this library must always use the default
-        value of `False`.
-
         :param http: http proxy address
-        type http: string
+        :type http: string
         :param https: https proxy adress
         :type https: string
-        :param skip_checking_proxy: skip checking if the proxy works,
-                                    optional by default False
-        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+
+            >>> pg = ProxyGenerator()
+            >>> success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
         """
-        proxy_works = self._use_proxy(http=http, https=https, skip_checking_proxy=skip_checking_proxy)
+        self.logger.info("Enabling proxies: http=%s https=%s", http, https)
+        proxy_works = self._use_proxy(http=http, https=https)
+        if proxy_works:
+            self.proxy_mode = ProxyMode.SINGLEPROXY
+            self.logger.info("Proxy setup successfully")
+        else:
+            self.logger.warning("Unable to setup the proxy: http=%s https=%s. Reason unknown." , http, https)
         return proxy_works
 
     def _check_proxy(self, proxies) -> bool:
@@ -140,9 +149,14 @@ class ProxyGenerator(object):
                 elif resp.status_code == 401:
                     self.logger.warning("Incorrect credentials for proxy!")
                     return False
+            except (TimeoutException, TimeoutError):
+                time.sleep(self._TIMEOUT)
             except Exception as e:
-                self.logger.warning("Exception while testing proxy: %s", e)
-                if ('lum' in proxies['http']) or ('scraperapi' in proxies['http']):
+                # Failure is common and expected with free proxy.
+                # Do not log at warning level and annoy users.
+                level = logging.DEBUG if self.proxy_mode is ProxyMode.FREE_PROXIES else logging.WARNING
+                self.logger.log(level, "Exception while testing proxy: %s", e)
+                if self.proxy_mode in (ProxyMode.LUMINATI, ProxyMode.SCRAPERAPI):
                     self.logger.warning("Double check your credentials and try increasing the timeout")
 
             return False
@@ -167,16 +181,14 @@ class ProxyGenerator(object):
             self.logger.info(err)
             return (False, None)
 
-    def _use_proxy(self, http: str, https: str = None, skip_checking_proxy: bool = False) -> bool:
+    def _use_proxy(self, http: str, https: str = None) -> bool:
         """Allows user to set their own proxy for the connection session.
-        Sets the proxy, and checks if it works.
+        Sets the proxy if it works.
 
         :param http: the http proxy
         :type http: str
         :param https: the https proxy (default to the same as http)
         :type https: str
-        :param skip_checking_proxy: Skip checking if the proxy works (defaults to False)
-        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
@@ -184,38 +196,15 @@ class ProxyGenerator(object):
             https = http
 
         proxies = {'http': http, 'https': https}
-        if skip_checking_proxy:
-            self._proxy_works = True
-        else:
-            self._proxy_works = self._check_proxy(proxies)
-        # check if the proxy url contains luminati or scraperapi
-        if http is not None:
-            has_luminati = (True if "lum" in http else False)
-            has_scraperapi = (True if "scraperapi" in http else False)
-        else:
-            has_luminati, has_scraperapi = False, False
+        self._proxy_works = self._check_proxy(proxies)
+
         if self._proxy_works:
-            if has_luminati:
-                self.logger.info("Enabling Luminati proxy")
-                self._use_luminati = has_luminati
-            elif has_scraperapi:
-                self.logger.info("Enabling ScraperAPI proxy")
-                self._use_scraperapi = has_scraperapi
-            else:
-                self.logger.info("Enabling proxies: http=%s https=%s", http, https)
             self._session.proxies = proxies
             self._new_session()
-        else:
-            if has_luminati:
-                self.logger.warning("Luminati does not seem to work")
-            elif has_scraperapi:
-                # Do not warn that ScraperAPI is not working here,
-                # since we try multiple times.
-                pass
-            else:
-                self.logger.warning("Proxy %s does not seem to work.", http)
+
         return self._proxy_works
 
+    @deprecated(version='1.5', reason="Tor methods are deprecated and are not actively tested.")
     def Tor_External(self, tor_sock_port: int, tor_control_port: int, tor_password: str):
         """
         Setting up Tor Proxy. A tor service should be already running on the system. Otherwise you might want to use Tor_Internal
@@ -230,7 +219,13 @@ class ProxyGenerator(object):
         :Example::
             pg = ProxyGenerator()
             pg.Tor_External(tor_sock_port = 9050, tor_control_port = 9051, tor_password = "scholarly_password")
+
+        Note: This method is deprecated since v1.5
         """
+        if stem is None:
+            raise RuntimeError("Tor methods are not supported with basic version of the package. "
+                               "Please install scholarly[tor] to use this method.")
+
         self._TIMEOUT = 10
 
         proxy = f"socks5://127.0.0.1:{tor_sock_port}"
@@ -244,6 +239,7 @@ class ProxyGenerator(object):
             self._tor_control_port = None
             self._tor_password = None
 
+        self.proxy_mode = ProxyMode.TOR_EXTERNAL
         # Setting requests timeout to be reasonably long
         # to accommodate slowness of the Tor network
         return {
@@ -253,6 +249,7 @@ class ProxyGenerator(object):
             "tor_sock_port": tor_sock_port
         }
 
+    @deprecated(version='1.5', reason="Tor methods are deprecated and are not actively tested")
     def Tor_Internal(self, tor_cmd=None, tor_sock_port=None, tor_control_port=None):
         '''
         Starts a Tor client running in a scholarly-specific port, together with a scholarly-specific control port.
@@ -270,7 +267,13 @@ class ProxyGenerator(object):
         :Example::
             pg = ProxyGenerator()
             pg.Tor_Internal(tor_cmd = 'tor')
+
+        Note: This method is deprecated since v1.5
         '''
+        if stem is None:
+            raise RuntimeError("Tor methods are not supported with basic version of the package. "
+                               "Please install scholarly[tor] to use this method.")
+
         self.logger.info("Attempting to start owned Tor as the proxy")
 
         if tor_cmd is None:
@@ -303,6 +306,7 @@ class ProxyGenerator(object):
             },
             # take_ownership=True # Taking this out for now, as it seems to cause trouble
         )
+        self.proxy_mode = ProxyMode.TOR_INTERNAL
         return self.Tor_External(tor_sock_port, tor_control_port, tor_password=None)
 
     def _has_captcha(self, got_id, got_class) -> bool:
@@ -337,9 +341,8 @@ class ProxyGenerator(object):
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
                 "httpProxy": self._session.proxies['http'],
-                "ftpProxy": self._session.proxies['http'],
                 "sslProxy": self._session.proxies['https'],
-                "proxyType":"MANUAL",
+                "proxyType": "MANUAL",
             }
 
         self._webdriver = webdriver.Firefox()
@@ -411,16 +414,18 @@ class ProxyGenerator(object):
         self._session = requests.Session()
         self.got_403 = False
 
-        _HEADERS = {
-            'accept-language': 'en-US,en',
-            'accept': 'text/html,application/xhtml+xml,application/xml',
-            'User-Agent': UserAgent().random,
-        }
+        # Suppress the misleading traceback from UserAgent()
+        with self._suppress_logger('fake_useragent'):
+            _HEADERS = {
+                'accept-language': 'en-US,en',
+                'accept': 'text/html,application/xhtml+xml,application/xml',
+                'User-Agent': UserAgent().random,
+            }
         self._session.headers.update(_HEADERS)
 
         if self._proxy_works:
             self._session.proxies = proxies
-            if self._use_scraperapi:
+            if self.proxy_mode is ProxyMode.SCRAPERAPI:
                 # SSL Certificate verification must be disabled for
                 # ScraperAPI requests to work.
                 # https://www.scraperapi.com/documentation/
@@ -435,54 +440,92 @@ class ProxyGenerator(object):
         if self._webdriver:
             self._webdriver.quit()
 
-    def FreeProxies(self, timeout=1):
-        """
-        Sets up a proxy from the free-proxy library
+    def _fp_coroutine(self, timeout=1, wait_time=120):
+        """A coroutine to continuosly yield free proxies
 
-        :param timeout: Timeout for the proxy in seconds, optional
+        It takes back the proxies that stopped working and marks it as dirty.
+        """
+        freeproxy = FreeProxy(rand=False, timeout=timeout)
+        if not hasattr(self, '_dirty_freeproxies'):
+            self._dirty_freeproxies = set()
+        all_proxies = freeproxy.get_proxy_list()
+        all_proxies.reverse()  # Try the older proxies first
+
+        t1 = time.time()
+        while (time.time()-t1 < wait_time):
+            proxy = all_proxies.pop()
+            if not all_proxies:
+                all_proxies = freeproxy.get_proxy_list()
+            if proxy in self._dirty_freeproxies:
+                continue
+            proxies = {'http': proxy, 'https': proxy}
+            proxy_works = self._check_proxy(proxies)
+            if proxy_works:
+                dirty_proxy = (yield proxy)
+                t1 = time.time()
+            else:
+                dirty_proxy = proxy
+            self._dirty_freeproxies.add(dirty_proxy)
+
+    def FreeProxies(self, timeout=1, wait_time=120):
+        """
+        Sets up continuously rotating proxies from the free-proxy library
+
+        :param timeout: Timeout for a single proxy in seconds, optional
         :type timeout: float
+        :param wait_time: Maximum time (in seconds) to wait until newer set of proxies become available at https://sslproxies.org/
+        :type wait_time: float
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
 
         :Example::
-            pg = ProxyGenerator()
-            success = pg.FreeProxies()
+            >>> pg = ProxyGenerator()
+            >>> success = pg.FreeProxies()
         """
-        freeproxy = FreeProxy(rand=True, timeout=timeout)
-        # Looping it 60000 times gives us a 85% chance that we try each proxy
-        # at least once.
-        for _ in range(60000):
-            proxy = freeproxy.get()
-            proxy_works = self._use_proxy(http=proxy, https=proxy)
-            if proxy_works:
-                return proxy_works
+        self.proxy_mode = ProxyMode.FREE_PROXIES
+        # FreeProxies is the only mode that is assigned regardless of setup successfully or not.
 
-        self.logger.info("None of the free proxies are working at the moment. "
-                         "Try again after a few minutes.")
+        self._fp_gen = self._fp_coroutine(timeout=timeout, wait_time=wait_time)
+        self._proxy_gen = self._fp_gen.send
+        proxy = self._proxy_gen(None)  # prime the generator
+        self.logger.debug("Trying with proxy %s", proxy)
+        proxy_works = self._use_proxy(proxy)
+        n_retries = 200
+        n_tries = 0
 
-    def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False, skip_checking_proxy=False):
+        while (not proxy_works) and (n_tries < n_retries):
+            self.logger.debug("Trying with proxy %s", proxy)
+            proxy_works = self._use_proxy(proxy)
+            n_tries += 1
+            if not proxy_works:
+                proxy = self._proxy_gen(proxy)
+
+        if n_tries == n_retries:
+            n_dirty = len(self._dirty_freeproxies)
+            self._fp_gen.close()
+            msg = ("None of the free proxies are working at the moment. "
+                  f"Marked {n_dirty} proxies dirty. Try again after a few minutes."
+                  )
+            raise MaxTriesExceededException(msg)
+        else:
+            return True
+
+    def ScraperAPI(self, API_KEY, country_code=None, premium=False, render=False):
         """
         Sets up a proxy using ScraperAPI
 
         The optional parameters are only for Business and Enterprise plans with
         ScraperAPI. For more details, https://www.scraperapi.com/documentation/
 
-        Note: ``skip_checking_proxy`` is meant to be set to `True` only in
-        unit tests. Applications using this library must always use the default
-        value of `False`.
-
         :Example::
-            pg = ProxyGenerator()
-            success = pg.ScraperAPI(API_KEY)
+            >>> pg = ProxyGenerator()
+            >>> success = pg.ScraperAPI(API_KEY)
 
         :param API_KEY: ScraperAPI API Key value.
         :type API_KEY: string
         :type country_code: string, optional by default None
         :type premium: bool, optional by default False
         :type render: bool, optional by default False
-        :param skip_checking_proxy: skip checking if the proxy works,
-                                    optional by default False
-        :type skip_checking_proxy: bool
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
@@ -512,10 +555,15 @@ class ProxyGenerator(object):
         if render:
             prefix += ".render=true"
 
+        # Suppress the unavoidable insecure request warnings with ScraperAPI
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         for _ in range(3):
-            proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001',
-                                          skip_checking_proxy=skip_checking_proxy)
+            proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
             if proxy_works:
+                self.logger.info("ScraperAPI proxy setup successfully")
+                self.proxy_mode = ProxyMode.SCRAPERAPI
+                self._session.verify = False
                 return proxy_works
 
         if (r["requestCount"] >= r["requestLimit"]):
@@ -525,14 +573,14 @@ class ProxyGenerator(object):
 
         return False
 
-    def has_proxy(self)-> bool:
+    def has_proxy(self) -> bool:
         return self._proxy_gen or self._can_refresh_tor
 
     def _set_proxy_generator(self, gen: Callable[..., str]) -> bool:
         self._proxy_gen = gen
         return True
 
-    def get_next_proxy(self, num_tries = None, old_timeout = 3):
+    def get_next_proxy(self, num_tries = None, old_timeout = 3, old_proxy=None):
         new_timeout = old_timeout
         if self._can_refresh_tor:
             # Check if Tor is running and refresh it
@@ -542,13 +590,29 @@ class ProxyGenerator(object):
             new_timeout = self._TIMEOUT # Reset timeout to default
         elif self._proxy_gen:
             if (num_tries):
-                self.logger.info(f"Try #{num_tries} failed. Switching proxy.") # TODO: add tries
+                self.logger.info("Try #%d failed. Switching proxy.", num_tries)
             # Try to get another proxy
-            new_proxy = self._proxy_gen()
+            new_proxy = self._proxy_gen(old_proxy)
             while (not self._use_proxy(new_proxy)):
-                new_proxy = self._proxy_gen()
+                new_proxy = self._proxy_gen(new_proxy)
             new_timeout = self._TIMEOUT # Reset timeout to default
+            self._new_session()
         else:
             self._new_session()
 
         return self._session, new_timeout
+
+    # A context manager to suppress the misleading traceback from UserAgent()
+    # Based on https://thesmithfam.org/blog/2012/10/25/temporarily-suppress-console-output-in-python/
+    @staticmethod
+    @contextmanager
+    def _suppress_logger(loggerName: str, level=logging.CRITICAL):
+        """Temporarily suppress logging output from a specific logger.
+        """
+        logger = logging.getLogger(loggerName)
+        original_level = logger.getEffectiveLevel()
+        logger.setLevel(level)
+        try:
+            yield
+        finally:
+            logger.setLevel(original_level)

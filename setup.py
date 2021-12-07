@@ -29,7 +29,6 @@ setuptools.setup(
                       'bibtexparser',
                       'requests[security]',
                       'requests[socks]',
-                      'stem',
                       'fake_useragent',
                       'PySocks',
                       'selenium',
@@ -38,5 +37,8 @@ setuptools.setup(
                       'sphinx_rtd_theme',
                       'typing_extensions'
                       ],
+    extras_require={
+        'tor': ['stem'],
+    },
     test_suite="test_module.py"
 )
