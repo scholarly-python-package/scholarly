@@ -23,7 +23,11 @@ authors:
   - given-names: Victor
     family-names: Silva
     email: 'vsilva@ualberta.ca,'
-    affiliation: 'University of Alberta, Canada'
+    affiliation: >-
+      Department of Computing Science
+      University of Alberta, Edmonton, Alberta
+      Canada
+    orcid: 'https://orcid.org/0000-0001-6702-6334'
   - given-names: Arun
     family-names: Kannawadi
     email: arunkannawadi@astro.princeton.edu
@@ -33,7 +37,7 @@ authors:
     orcid: 'https://orcid.org/0000-0001-8783-6529'
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.1234
+    value: 10.5821/zenodo.5764802
     description: DOI
 repository-code: >-
   https://github.com/scholarly-python-package/scholarly
