@@ -440,23 +440,20 @@ if you want to use one of the above methods:
 
     scholarly.use_proxy(pg)
 
-or if you want to run it without any proxy:
+`scholarly` is smart enough to know which requests really need proxy, and which do not.
+If you set up a proxy, `scholarly` will by default use `FreeProxies` to fetch pages that will not be actively blocked.
+If you would rather have all requests go through the proxy you set, then pass your `pg` object twice.
 
 .. code:: python
 
-    scholarly.use_proxy(None, None)
+    scholarly.use_proxy(pg, pg)
 
-``Tor_External``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-pg.Tor_External(tor_sock_port: int, tor_control_port: int, tor_password: str)
-###############################################################################
+If you want to run it without any proxy (after setting up one):
 
-This method is deprecated since v1.5
+.. code:: python
 
-This option assumes that you have access to a Tor server and a ``torrc``
-file configuring the Tor server to have a control port configured with a
-password; this setup allows scholarly to refresh the Tor ID, if
-scholarly runs into problems accessing Google Scholar.
+    pg = ProxyGenerator()
+    scholarly.use_proxy(pg, pg)
 
 If you want to install and use Tor, then install it using the command
 
