@@ -1,64 +1,47 @@
 import unittest
-import argparse
 import os
 import sys
 from scholarly import scholarly, ProxyGenerator
 from scholarly.publication_parser import PublicationParser
 import random
-from fp.fp import FreeProxy
 import json
 
 
-class TestScholarly(unittest.TestCase):
+class TestLuminati(unittest.TestCase):
+    skipUnless = os.getenv("USERNAME") and os.getenv("PASSWORD") and os.getenv("PORT")
 
-    def setUp(self):
+    @unittest.skipUnless(skipUnless, reason="No Luminati credentials found.")
+    def test_luminati(self):
+        """
+        Test that we can set up Luminati (Bright Data) successfully
+        """
         proxy_generator = ProxyGenerator()
-        if "CONNECTION_METHOD" in scholarly.env:
-            self.connection_method = os.getenv("CONNECTION_METHOD")
-        else:
-            self.connection_method = "none"
-        if self.connection_method == "tor":
-            tor_sock_port = None
-            tor_control_port = None
-            tor_password = "scholarly_password"
-            # Tor uses the 9050 port as the default socks port
-            # on windows 9150 for socks and 9151 for control
-            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-                tor_sock_port = 9050
-                tor_control_port = 9051
-            elif sys.platform.startswith("win"):
-                tor_sock_port = 9150
-                tor_control_port = 9151
-            proxy_generator.Tor_External(tor_sock_port,tor_control_port,tor_password)
-            scholarly.use_proxy(proxy_generator)
+        success = proxy_generator.Luminati(usr=os.getenv("USERNAME"),
+                                           passwd=os.getenv("PASSWORD"),
+                                           proxy_port=os.getenv("PORT"))
+        self.assertTrue(success)
+        self.assertEqual(proxy_generator.proxy_mode, "LUMINATI")
 
-        elif self.connection_method == "tor_internal":
-            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-                tor_cmd = 'tor'
-            elif sys.platform.startswith("win"):
-                tor_cmd = 'tor.exe'
-            else:
-                tor_cmd = None
-            proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
-            scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "luminati":
-            scholarly.set_retries(10)
-            proxy_generator.Luminati(usr=os.getenv("USERNAME"),
-                                     passwd=os.getenv("PASSWORD"),
-                                     proxy_port = os.getenv("PORT"),
-                                     skip_checking_proxy=True)
-            scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "freeproxy":
-            proxy_generator.FreeProxies()
-            scholarly.use_proxy(proxy_generator)
-        elif self.connection_method == "scraperapi":
-            proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'), skip_checking_proxy=True)
-            scholarly.use_proxy(proxy_generator)
-        else:
-            scholarly.use_proxy(None)
 
-    @unittest.skipUnless([_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
-                          if _bin=='tor' or _bin=='tor.exe'], reason='Tor executable not found')
+class TestScraperAPI(unittest.TestCase):
+    skipUnless = os.getenv('SCRAPER_API_KEY')
+
+    @unittest.skipUnless(skipUnless, reason="No ScraperAPI key found")
+    def test_scraperapi(self):
+        """
+        Test that we can set up ScraperAPI successfully
+        """
+        proxy_generator = ProxyGenerator()
+        success = proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
+        self.assertTrue(success)
+        self.assertEqual(proxy_generator.proxy_mode, "SCRAPERAPI")
+
+
+class TestTorInternal(unittest.TestCase):
+    skipUnless = [_bin for path in sys.path if os.path.isdir(path) for _bin in os.listdir(path)
+                  if _bin in ('tor', 'tor.exe')]
+
+    @unittest.skipUnless(skipUnless, reason='Tor executable not found')
     def test_tor_launch_own_process(self):
         """
         Test that we can launch a Tor process
@@ -86,6 +69,69 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(authors), 1)
 
 
+class TestScholarly(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Setup the proxy methods for unit tests
+        """
+        if "CONNECTION_METHOD" in scholarly.env:
+            cls.connection_method = os.getenv("CONNECTION_METHOD")
+        else:
+            cls.connection_method = "none"
+            scholarly.use_proxy(None)
+            return
+
+        # Use dual proxies for unit testing
+        secondary_proxy_generator = ProxyGenerator()
+        secondary_proxy_generator.FreeProxies()
+
+        proxy_generator = ProxyGenerator()
+        if cls.connection_method == "tor":
+            tor_password = "scholarly_password"
+            # Tor uses the 9050 port as the default socks port
+            # on windows 9150 for socks and 9151 for control
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+                tor_sock_port = 9050
+                tor_control_port = 9051
+            elif sys.platform.startswith("win"):
+                tor_sock_port = 9150
+                tor_control_port = 9151
+            else:
+                tor_sock_port = None
+                tor_control_port = None
+            proxy_generator.Tor_External(tor_sock_port, tor_control_port,
+                                         tor_password)
+
+        elif cls.connection_method == "tor_internal":
+            if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+                tor_cmd = 'tor'
+            elif sys.platform.startswith("win"):
+                tor_cmd = 'tor.exe'
+            else:
+                tor_cmd = None
+            proxy_generator.Tor_Internal(tor_cmd = tor_cmd)
+
+        elif cls.connection_method == "luminati":
+            scholarly.set_retries(10)
+            proxy_generator.Luminati(usr=os.getenv("USERNAME"),
+                                     passwd=os.getenv("PASSWORD"),
+                                     proxy_port=os.getenv("PORT"))
+
+        elif cls.connection_method == "freeproxy":
+            # Use different instances for primary and secondary
+            proxy_generator = ProxyGenerator()
+            proxy_generator.FreeProxies()
+
+        elif cls.connection_method == "scraperapi":
+            proxy_generator.ScraperAPI(os.getenv('SCRAPER_API_KEY'))
+
+        else:
+            scholarly.use_proxy(None)
+
+        scholarly.use_proxy(proxy_generator, secondary_proxy_generator)
+
     def test_search_author_empty_author(self):
         """
         Test that sholarly.search_author('') returns no authors
@@ -93,6 +139,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_author('')]
         self.assertIs(len(authors), 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_keyword_empty_keyword(self):
         """
         As of 2020-04-30, there are  6 individuals that match the name 'label'
@@ -103,6 +150,7 @@ class TestScholarly(unittest.TestCase):
         authors = [a for a in scholarly.search_keyword('')]
         self.assertGreaterEqual(len(authors), 6)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_empty_publication(self):
         """
         Test that searching for an empty publication returns zero results
@@ -110,7 +158,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby(self):
         """
         Testing that when we retrieve the list of publications that cite
@@ -127,6 +175,7 @@ class TestScholarly(unittest.TestCase):
         cites = [c for c in scholarly.citedby(filled)]
         self.assertEqual(len(cites), filled['num_citations'])
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby_id(self):
         """
         Test querying for citations by paper ID.
@@ -140,14 +189,69 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_bibtex(self):
+        """
+        Test that we get the BiBTeX entry correctly
+        """
+
+        expected_result = \
+        ("""@inproceedings{ester1996density,
+         abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. """
+         """However, the application to large spatial databases rises the following requirements for clustering algorithms: """
+         """minimal requirements of domain knowledge to determine the input},
+         author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\\"o}rg and Xu, Xiaowei and others},
+         booktitle = {kdd},
+         number = {34},
+         pages = {226--231},
+         pub_year = {1996},
+         title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
+         venue = {kdd},
+         volume = {96}
+        }
+
+        """
+        )
+        query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
+        pub = next(query)
+        result = scholarly.bibtex(pub)
+        self.assertEqual(result, expected_result.replace("\n        ", "\n"))
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_keyword(self):
         """
+        Test that we can search based on specific keywords
+
         When we search for the keyword "3d_shape" the author
-        Steven A. Cholewiak should be among those listed
+        Steven A. Cholewiak should be among those listed.
+        When we search for the keyword "Haptics", Oussama Khatib
+        should be listed first.
         """
+        # Example 1
         authors = [a['name'] for a in scholarly.search_keyword('3d_shape')]
         self.assertIsNot(len(authors), 0)
         self.assertIn(u'Steven A. Cholewiak, PhD', authors)
+
+        # Example 2
+        expected_author = {'affiliation': 'Stanford University',
+                           'citedby': 43856,
+                           'email_domain': '@cs.stanford.edu',
+                           'filled': [],
+                           'interests': ['Robotics',
+                                         'Haptics',
+                                         'Human Motion Understanding'],
+                           'name': 'Oussama Khatib',
+                           'scholar_id': '4arkOLcAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('Haptics')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        self.assertGreaterEqual(author["citedby"], expected_author["citedby"])
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
     def test_search_author_single_author(self):
         query = 'Steven A. Cholewiak'
@@ -156,12 +260,19 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')
-        # Currently, fetching more than 20 coauthors works only if not using a proxy.
-        if self.connection_method=="none":
-            self.assertGreaterEqual(len(author['coauthors']), 33, "Full coauthor list not fetched")
+        # Currently, fetching more than 20 coauthors works only if a browser can be opened.
+        self.assertGreaterEqual(len(author['coauthors']), 20)
+        if len(author['coauthors'])>20:
             self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
-        else:
-            self.assertEqual(len(author['coauthors']), 20)
+            self.assertGreaterEqual(len(author['coauthors']), 36, "Full coauthor list not fetched")
+
+        self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
+        self.assertEqual(author['organization'], 6518679690484165796)
+        self.assertGreaterEqual(author['public_access']['available'], 10)
+        self.assertEqual(author['public_access']['available'],
+                         sum(pub.get('public_access', None) is True for pub in author['publications']))
+        self.assertEqual(author['public_access']['not_available'],
+                         sum(pub.get('public_access', None) is False for pub in author['publications']))
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
@@ -196,12 +307,15 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
         self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
+        self.assertEqual(author['public_access']['available'], 0)
+        self.assertEqual(author['public_access']['not_available'], 0)
         self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
         self.assertGreaterEqual(len(author['publications']), 179)
         pub = author['publications'][1]
         self.assertEqual(pub["citedby_url"],
                          "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
@@ -216,6 +330,7 @@ class TestScholarly(unittest.TestCase):
 
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_total_results(self):
         """
         As of September 16, 2021 there are 32 pubs that fit the search term:
@@ -233,6 +348,7 @@ class TestScholarly(unittest.TestCase):
         pubs = scholarly.search_pubs('sdfsdf+24r+asdfasdf')
         self.assertEqual(pubs.total_results, 0)
 
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_filling_publication_contents(self):
         '''
         This process  checks the process of filling a publication that is derived
@@ -323,6 +439,39 @@ class TestScholarly(unittest.TestCase):
         pub = scholarly.fill(author['publications'][pub_index])
         self.assertEqual(pub['bib']['title'],
                          u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
+
+    def test_author_organization(self):
+        """
+        """
+        organization = 4836318610601440500  # Princeton University
+        search_query = scholarly.search_author_by_organization(organization)
+        author = next(search_query)
+        self.assertEqual(author['scholar_id'], "ImhakoAAAAAJ")
+        self.assertEqual(author['name'], "Daniel Kahneman")
+        self.assertEqual(author['email_domain'], "@princeton.edu")
+        self.assertEqual(author['affiliation'], "Princeton University (Emeritus)")
+        self.assertGreaterEqual(author['citedby'], 438891)
+
+    def test_public_access(self):
+        """
+        Test that we obtain public access information
+
+        We check two cases: 1) when number of public access mandates exceeds
+        100, thus requiring fetching information from a second page and 2) fill
+        public access counts without fetching publications.
+        """
+        author = scholarly.search_author_id("7x48vOkAAAAJ")
+        scholarly.fill(author, sections=['basics', 'public_access', 'publications'])
+        self.assertGreaterEqual(author["public_access"]["available"], 110)
+        self.assertEqual(author["public_access"]["available"],
+                         sum(pub.get("public_access", None) is True for pub in author["publications"]))
+        self.assertEqual(author["public_access"]["not_available"],
+                         sum(pub.get("public_access", None) is False for pub in author["publications"]))
+
+        author = next(scholarly.search_author("Daniel Kahneman"))
+        scholarly.fill(author, sections=["basics", "indices", "public_access"])
+        self.assertEqual(author["scholar_id"], "ImhakoAAAAAJ")
+        self.assertGreaterEqual(author["public_access"]["available"], 6)
 
 
 if __name__ == '__main__':

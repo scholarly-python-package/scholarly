@@ -14,6 +14,17 @@ Additionally, if you are interesting in contributing to the codebase, submit a p
 
 1. Create a fork of `scholarly-python-package/scholarly` repository.
 2. If you add a new feature, try to include tests in already existing test cases, or create a new test case if that is not possible.
-3. Make sure the unit tests pass before raising a PR. For all the unit tests to pass, you typically need to setup a premium proxy service such as `ScraperAPI` or `Luminati` (`Bright Data`). If you do not have an account, you may try to use `FreeProxy`. Without a premium proxy, 6 out of 17 test cases typically fail.
-4. Submit a PR, with `develop` as your base branch.
-5. After an initial code review by the maintainers, the unit tests will be run with the `ScraperAPI` key stored in the Github repository. Passing all tests cases is necessary before merging your PR.
+3. Make sure the unit tests pass before raising a PR. For all the unit tests to pass, you typically need to setup a premium proxy service such as `ScraperAPI` or `Luminati` (`Bright Data`). If you do not have an account, you may try to use `FreeProxy`. Without a proxy, 6 out of 17 test cases will be skipped.
+4. Check that the documentatation is consistent with the code. Check that the documentation builds successfully.
+5. Submit a PR, with `develop` as your base branch.
+6. After an initial code review by the maintainers, the unit tests will be run with the `ScraperAPI` key stored in the Github repository. Passing all tests cases is necessary before merging your PR.
+
+
+## Build Docs
+
+To build the documentation execute the make file as:
+
+```bash
+cd docs
+make html
+```

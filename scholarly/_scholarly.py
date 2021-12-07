@@ -17,6 +17,7 @@ _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
 _KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 _CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
+_ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
 
 
 class _Scholarly:
@@ -203,12 +204,17 @@ class _Scholarly:
 
         :param object: the Author or Publication object that needs to get filled
         :type object: Author or Publication
-        :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications']
+        :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications', 'public_access']
         :type sections: list
         :param sortby: if the object is an author, select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
         :param publication_limit: if the object is an author, select the max number of publications you want you want to fill for the author. Defaults to no limit.
         :type publication_limit: int
+
+        Note:  For Author objects, if 'public_access' is filled prior to 'publications',
+        only the total counts from the Public Access section of the author's profile page is filled.
+        If 'public_access' is filled along with 'publications' or afterwards for the first time,
+        the publication entries are also marked whether they satisfy public access mandates or not.
         """
 
         if object['container_type'] == "Author":
@@ -269,11 +275,13 @@ class _Scholarly:
             .. testoutput::
 
                 {'affiliation': 'Institut du radium, University of Paris',
+                 'citedby': 2208,
                  'filled': False,
                  'interests': [],
                  'name': 'Marie Skłodowska-Curie',
                  'scholar_id': 'EmD_lTEAAAAJ',
-                 'source': 'AUTHOR_PROFILE_PAGE'}
+                 'source': 'AUTHOR_PROFILE_PAGE',
+                 'url_picture': 'https://scholar.googleusercontent.com/citations?view_op=view_photo&user=EmD_lTEAAAAJ&citpid=3'}
         """
         return self.__nav.search_author_id(id, filled, sortby, publication_limit)
 
@@ -440,6 +448,24 @@ class _Scholarly:
 
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_organization(url, fromauthor)
+
+    def search_author_by_organization(self, organization_id: int):
+        """
+        Search for authors in an organization and return a generator of Authors
+
+        ``organization_id`` can be found from the organization name using
+        ``search_org``. Alternatively, they can be found in the ``Author`` object.
+
+        The returned authors are typically in the decreasing order of total citations.
+        The authors must have a verified email address and set their affiliation
+        appropriately to appear on this list.
+
+        :param organization_id: unique integer id for each organization
+        :type organization_id: integer
+        """
+        url = _ORGSEARCH.format(organization_id)
+        return self.__nav.search_authors(url)
+
 
 def _construct_url(baseurl: str, patents: bool = True,
                     citations: bool = True, year_low: int = None,

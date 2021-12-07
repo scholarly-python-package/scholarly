@@ -1,7 +1,8 @@
 from .publication_parser import PublicationParser
 import re
-from .data_types import Author, AuthorSource, PublicationSource
+from .data_types import Author, AuthorSource, PublicationSource, PublicAccess
 from selenium.common.exceptions import WebDriverException
+import codecs
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
 _HOST = 'https://scholar.google.com{0}'
@@ -11,6 +12,7 @@ _CITATIONAUTH = '/citations?hl=en&user={0}'
 _COAUTH = ('https://scholar.google.com/citations?user={0}&hl=en'
            '#d=gsc_md_cod&u=%2Fcitations%3Fview_op%3Dlist_colleagues'
            '%26hl%3Den%26json%3D%26user%3D{0}%23t%3Dgsc_cod_lc')
+_MANDATES = "/citations?hl=en&tzom=300&user={0}&view_op=list_mandates&pagesize={1}"
 
 
 class AuthorParser:
@@ -18,11 +20,12 @@ class AuthorParser:
 
     def __init__(self, nav):
         self.nav = nav
-        self._sections = {'basics',
+        self._sections = ['basics',
                           'indices',
                           'counts',
                           'coauthors',
-                          'publications'}
+                          'publications',
+                          'public_access']
 
     def get_author(self, __data)->Author:
         """ Fills the information for an author container
@@ -74,21 +77,30 @@ class AuthorParser:
         author['name'] = soup.find('div', id='gsc_prf_in').text
         if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
             res = soup.find('img', id='gsc_prf_pup-img')
-            if res != None:
+            if res is not None:
                 if "avatar_scholar" not in res['src']:
                     author['url_picture'] = res['src']
-        author['affiliation'] = soup.find('div', class_='gsc_prf_il').text
-        author['interests'] = [i.text.strip() for i in
-                          soup.find_all('a', class_='gsc_prf_inta')]
-        if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
-            email = soup.find('div', id="gsc_prf_ivh", class_="gsc_prf_il")
-            if email.text != "No verified email":
-                author['email_domain'] = '@'+email.text.split(" ")[3]
-        if author['source'] == AuthorSource.CO_AUTHORS_LIST:
+        elif author['source'] == AuthorSource.CO_AUTHORS_LIST:
             picture = soup.find('img', id="gsc_prf_pup-img").get('src')
             if "avatar_scholar" in picture:
                 picture = _HOST.format(picture)
             author['url_picture'] = picture
+
+        affiliation = soup.find('div', class_='gsc_prf_il')
+        author['affiliation'] = affiliation.text
+        affiliation_link = affiliation.find('a')
+        if affiliation_link:
+            author['organization'] = int(affiliation_link.get('href').split("org=")[-1])
+        author['interests'] = [i.text.strip() for i in
+                          soup.find_all('a', class_='gsc_prf_inta')]
+        email = soup.find('div', id="gsc_prf_ivh", class_="gsc_prf_il")
+        if author['source'] == AuthorSource.AUTHOR_PROFILE_PAGE:
+            if email.text != "No verified email":
+                author['email_domain'] = '@'+email.text.split(" ")[3]
+        homepage = email.find('a', class_="gsc_prf_ila")
+        if homepage:
+            author['homepage'] = homepage.get('href')
+
         index = soup.find_all('td', class_='gsc_rsb_std')
         if index:
             author['citedby'] = int(index[0].text)
@@ -114,6 +126,48 @@ class AuthorParser:
         cites = [int(c.text)
                  for c in soup.find_all('span', class_='gsc_g_al')]
         author['cites_per_year'] = dict(zip(years, cites))
+
+    def _fill_public_access(self, soup, author):
+        available = soup.find('div', class_='gsc_rsb_m_a')
+        not_available = soup.find('div', class_='gsc_rsb_m_na')
+        n_available, n_not_available = 0, 0
+        if available:
+            n_available = int(available.text.split(" ")[0])
+        if not_available:
+            n_not_available = int(not_available.text.split(" ")[0])
+
+        author["public_access"] = PublicAccess(available=n_available,
+                                               not_available=n_not_available)
+
+        if 'publications' not in author['filled']:
+            return
+
+        # Make a dictionary mapping to the publications
+        publications = {pub['author_pub_id']:pub for pub in author['publications']}
+        soup = self.nav._get_soup(_MANDATES.format(author['scholar_id'], _PAGESIZE))
+        while True:
+            rows = soup.find_all('div', 'gsc_mnd_sec_na')
+            if rows:
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                    author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
+                                               row['data-href'])[0]
+                    publications[author_pub_id]["public_access"] = False
+
+            rows = soup.find_all('div', 'gsc_mnd_sec_avl')
+            if rows:
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                    author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
+                                               row['data-href'])[0]
+                    publications[author_pub_id]["public_access"] = True
+
+            next_button = soup.find(class_="gs_btnPR")
+            if next_button and "disabled" not in next_button.attrs:
+                url = next_button['onclick'][17:-1]
+                url = codecs.getdecoder("unicode_escape")(url)[0]
+                soup = self.nav._get_soup(url)
+            else:
+                break
+
 
     def _fill_publications(self, soup, author, publication_limit: int = 0, sortby_str: str = ''):
         author['publications'] = list()
@@ -191,7 +245,7 @@ class AuthorParser:
                 coauthor_info = self._get_coauthors_long(author)
             except Exception as err:
                 coauthor_info = self._get_coauthors_short(soup)
-                self.nav.logger.warning(err.msg)
+                self.nav.logger.warning(err)
                 self.nav.logger.warning("Fetching only the top 20 coauthors")
 
         author['coauthors'] = []
@@ -213,10 +267,11 @@ class AuthorParser:
             * ``basics``: fills name, affiliation, and interests;
             * ``citations``: fills h-index, i10-index, and 5-year analogues;
             * ``counts``: fills number of citations per year;
+            * ``public_access``: fills number of articles with public access mandates;
             * ``coauthors``: fills co-authors;
             * ``publications``: fills publications;
             * ``[]``: fills all of the above
-        :type sections: ['basics','citations','counts','coauthors','publications',[]] list, optional
+        :type sections: ['basics','citations','counts','public_access','coauthors','publications',[]] list, optional
         :param sortby: Select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
         :param publication_limit: Select the max number of publications you want you want to fill for the author. Defaults to no limit.
@@ -230,7 +285,8 @@ class AuthorParser:
 
             search_query = scholarly.search_author('Steven A Cholewiak')
             author = next(search_query)
-            scholarly.pprint(author.fill(sections=['basic', 'citation_indices', 'co-authors']))
+            author = scholarly.fill(author, sections=['basics', 'citations', 'coauthors'])
+            scholarly.pprint(author)
 
         :Output::
 
@@ -348,6 +404,7 @@ class AuthorParser:
                             'scholar_id': 'nHx9IgYAAAAJ',
                             'source': 'CO_AUTHORS_LIST'}],
              'email_domain': '@berkeley.edu',
+             'homepage': 'http://steven.cholewiak.com/',
              'filled': False,
              'hindex': 9,
              'hindex5y': 9,
@@ -365,6 +422,7 @@ class AuthorParser:
         """
         try:
             sections = [section.lower() for section in sections]
+            sections.sort(reverse=True)  # Ensure 'publications' comes before 'public_access'
             sortby_str = ''
             if sortby == "year":
                 sortby_str = '&view_op=list_works&sortby=pubdate'

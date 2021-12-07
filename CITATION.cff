@@ -1,0 +1,51 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: scholarly
+message: >-
+  If your publication used this software, please cite
+  it as below
+type: software
+authors:
+  - given-names: Steven
+    family-names: Cholewiak
+    email: steven@cholewiak.com
+    affiliation: Google LLC
+    orcid: 'https://orcid.org/0000-0003-0605-4395'
+  - given-names: Panos
+    family-names: Ipeirotis
+    email: panos@stern.nyu.edu
+    orcid: 'https://orcid.org/0000-0002-2966-7402'
+    affiliation: >-
+      New York University Stern School of Business:
+      New York, NY, US
+  - given-names: Victor
+    family-names: Silva
+    email: 'vsilva@ualberta.ca,'
+    affiliation: 'University of Alberta, Canada'
+  - given-names: Arun
+    family-names: Kannawadi
+    email: arunkannawadi@astro.princeton.edu
+    affiliation: >-
+      Department of Astrophysical Sciences, Princeton
+      University, 4 Ivy Lane, Princeton NJ 08544 USA
+    orcid: 'https://orcid.org/0000-0001-8783-6529'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.1234
+    description: DOI
+repository-code: >-
+  https://github.com/scholarly-python-package/scholarly
+abstract: >-
+  Retrieve author and publication information from
+  Google Scholar in a friendly, Pythonic way without
+  having to worry about CAPTCHAs!
+keywords:
+  - >-
+    citations publication-data
+    scholarly-communications citation-network
+    citation-index scholarly-articles
+    citation-analysis scholar googlescholar
+license: WTFPL
+version: 1.5.0
