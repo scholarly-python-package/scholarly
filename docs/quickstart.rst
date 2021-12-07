@@ -416,12 +416,12 @@ Then you need to initialize an object:
 Select the desirered connection type from the following options that
 come from the ProxyGenerator class:
 
--  Tor\_Internal()
--  Tor\_External()
--  Luminati()
 -  ScraperAPI()
+-  Luminati()
 -  FreeProxies()
 -  SingleProxy()
+-  Tor\_Internal()
+-  Tor\_External()
 
 All of these methods return ``True`` if the proxy was setup successfully which
 you can check before beginning to use it with the ``use_proxy`` method.
@@ -455,46 +455,37 @@ If you want to run it without any proxy (after setting up one):
     pg = ProxyGenerator()
     scholarly.use_proxy(pg, pg)
 
-If you want to install and use Tor, then install it using the command
-
-::
-
-    sudo apt-get install -y tor
-
-See
-`setup\_tor.sh <https://github.com/scholarly-python-package/scholarly/blob/master/setup_tor.sh>`__
-on how to setup a minimal, working ``torrc`` and set the password for
-the control server. (Note: the script uses ``scholarly_password`` as the
-default password, but you may want to change it for your installation.)
+``ScraperAPI``
+^^^^^^^^^^^^^^
+pg.ScraperAPI()
+###############
 
 .. code:: python
 
     from scholarly import scholarly, ProxyGenerator
 
     pg = ProxyGenerator()
-    success = pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
-    scholarly.use_proxy(pg)
 
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
-``Tor_Internal``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-pg.Tor_internal(tor_cmd=None, tor_sock_port=None, tor_control_port=None)
-########################################################################
-
-This method is deprecated since v1.5
-
-If you have Tor installed locally, this option allows scholarly to
-launch its own Tor process. You need to pass a pointer to the Tor
-executable in your system.
+You will have to provide your ScraperAPI key
 
 .. code:: python
 
-    from scholarly import scholarly, ProxyGenerator
+    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY)
 
-    pg = ProxyGenerator()
-    success = pg.Tor_Internal(tor_cmd = "tor")
+Or alternatively you can use the environment variables as in the case of Luminati example.
+
+If you have Startup or higher paid plans, you can use additional options that are allowed for your plan.
+
+.. code:: python
+
+    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY, country_code='fr', premium=True, render=True)
+
+See https://www.scraperapi.com/pricing/ to see which options are enable for your plan.
+
+Finally, you can route your query through the ScraperAPI proxy
+
+.. code:: python
+
     scholarly.use_proxy(pg)
 
     author = next(scholarly.search_author('Steven A Cholewiak'))
@@ -528,42 +519,6 @@ file
 
     import os
     pg.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
-
-.. code:: python
-
-    scholarly.use_proxy(pg)
-
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
-``ScraperAPI``
-^^^^^^^^^^^^^^
-pg.ScraperAPI()
-###############
-
-.. code:: python
-
-    from scholarly import scholarly, ProxyGenerator
-
-    pg = ProxyGenerator()
-
-You will have to provide your ScraperAPI key
-
-.. code:: python
-
-    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY)
-
-Or alternatively you can use the environment variables as in the case of Luminati example.
-
-If you have Startup or higher paid plans, you can use additional options that are allowed for your plan.
-
-.. code:: python
-
-    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY, country_code='fr', premium=True, render=True)
-
-See https://www.scraperapi.com/pricing/ to see which options are enable for your plan.
-
-Finally, you can route your query through the ScraperAPI proxy
 
 .. code:: python
 
@@ -611,6 +566,64 @@ If you want to use a proxy of your choice, feel free to use this option.
 
 **NOTE:** Please create a new proxy object whenever you change proxy
 method, as this can lead to unexpected behavior.
+
+``Tor_External``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pg.Tor_External(tor_sock_port: int, tor_control_port: int, tor_password: str)
+###############################################################################
+
+This method is deprecated since v1.5
+
+This option assumes that you have access to a Tor server and a ``torrc``
+file configuring the Tor server to have a control port configured with a
+password; this setup allows scholarly to refresh the Tor ID, if
+scholarly runs into problems accessing Google Scholar.
+
+If you want to install and use Tor, then install it using the command
+
+::
+
+    sudo apt-get install -y tor
+
+See
+`setup\_tor.sh <https://github.com/scholarly-python-package/scholarly/blob/master/setup_tor.sh>`__
+on how to setup a minimal, working ``torrc`` and set the password for
+the control server. (Note: the script uses ``scholarly_password`` as the
+default password, but you may want to change it for your installation.)
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+    success = pg.Tor_External(tor_sock_port=9050, tor_control_port=9051, tor_password="scholarly_password")
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
+``Tor_Internal``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pg.Tor_internal(tor_cmd=None, tor_sock_port=None, tor_control_port=None)
+########################################################################
+
+This method is deprecated since v1.5
+
+If you have Tor installed locally, this option allows scholarly to
+launch its own Tor process. You need to pass a pointer to the Tor
+executable in your system.
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+    success = pg.Tor_Internal(tor_cmd = "tor")
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
 
 Setting up environment for Luminati and/or Testing
 --------------------------------------------------
