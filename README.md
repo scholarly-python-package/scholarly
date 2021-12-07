@@ -120,7 +120,7 @@ If you have used this codebase in a scientific publication and wish to cite it, 
   title   = {{SCHOLARLY: Simple access to Google Scholar authors and citation using Python}},
   year    = {2021},
   doi     = {10.5821/zenodo.5764802},
-  license = {WTFPL},
+  license = {Unlicense},
   url = {https://github.com/scholarly-python-package/scholarly},
   version = {1.5.0}
 }
