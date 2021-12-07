@@ -27,6 +27,7 @@ setuptools.setup(
     install_requires=['arrow',
                       'beautifulsoup4',
                       'bibtexparser',
+                      'deprecated',
                       'requests[security]',
                       'requests[socks]',
                       'fake_useragent',
