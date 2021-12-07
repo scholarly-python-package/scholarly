@@ -115,11 +115,14 @@ It is therefore recommended to always set up a proxy in the beginning of your ap
 If you have used this codebase in a scientific publication and wish to cite it, please use the following:
 
 ```bibtex
-@misc{cholewiak2021scholarly,
+@software{cholewiak2021scholarly,
   author  = {Cholewiak, Steven A. and Ipeirotis, Panos and Silva, Victor and Kannawadi, Arun},
   title   = {{SCHOLARLY: Simple access to Google Scholar authors and citation using Python}},
   year    = {2021},
-  doi     = {10.5821/zenodo.5764802}
+  doi     = {10.5821/zenodo.5764802},
+  license = {WTFPL},
+  url = {https://github.com/scholarly-python-package/scholarly},
+  version = {1.5.0}
 }
 ```
 
