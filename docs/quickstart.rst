@@ -416,12 +416,12 @@ Then you need to initialize an object:
 Select the desirered connection type from the following options that
 come from the ProxyGenerator class:
 
--  Tor\_Internal()
--  Tor\_External()
--  Luminati()
 -  ScraperAPI()
+-  Luminati()
 -  FreeProxies()
 -  SingleProxy()
+-  Tor\_Internal()
+-  Tor\_External()
 
 All of these methods return ``True`` if the proxy was setup successfully which
 you can check before beginning to use it with the ``use_proxy`` method.
@@ -440,11 +440,132 @@ if you want to use one of the above methods:
 
     scholarly.use_proxy(pg)
 
-or if you want to run it without any proxy:
+`scholarly` is smart enough to know which requests really need proxy, and which do not.
+If you set up a proxy, `scholarly` will by default use `FreeProxies` to fetch pages that will not be actively blocked.
+If you would rather have all requests go through the proxy you set, then pass your `pg` object twice.
 
 .. code:: python
 
-    scholarly.use_proxy(None, None)
+    scholarly.use_proxy(pg, pg)
+
+If you want to run it without any proxy (after setting up one):
+
+.. code:: python
+
+    pg = ProxyGenerator()
+    scholarly.use_proxy(pg, pg)
+
+``ScraperAPI``
+^^^^^^^^^^^^^^
+pg.ScraperAPI()
+###############
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+
+You will have to provide your ScraperAPI key
+
+.. code:: python
+
+    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY)
+
+Or alternatively you can use the environment variables as in the case of Luminati example.
+
+If you have Startup or higher paid plans, you can use additional options that are allowed for your plan.
+
+.. code:: python
+
+    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY, country_code='fr', premium=True, render=True)
+
+See https://www.scraperapi.com/pricing/ to see which options are enable for your plan.
+
+Finally, you can route your query through the ScraperAPI proxy
+
+.. code:: python
+
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
+``Luminati``
+^^^^^^^^^^^^^^^^^
+pg.Luminati()
+#############
+
+If you have a luminati proxy service, please refer to the environment
+setup for Luminati below and simply call the following command before
+any function you want to execute.
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+
+You can use your own configuration
+
+.. code:: python
+
+    success = pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
+
+Or alternatively you can use the environment variables set in your .env
+file
+
+.. code:: python
+
+    import os
+    pg.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
+
+.. code:: python
+
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
+``FreeProxies``
+^^^^^^^^^^^^^^^^^^^^
+pg.FreeProxies()
+################
+
+This uses the ``free-proxy`` pip library to add a proxy to your
+configuration.
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+    success = pg.FreeProxies()
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
+``SingleProxy``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pg.SingleProxy(http: str, https:str)
+####################################
+
+If you want to use a proxy of your choice, feel free to use this option.
+
+.. code:: python
+
+    from scholarly import scholarly, ProxyGenerator
+
+    pg = ProxyGenerator()
+    success = pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
+    scholarly.use_proxy(pg)
+
+    author = next(scholarly.search_author('Steven A Cholewiak'))
+    scholarly.pprint(author)
+
+**NOTE:** Please create a new proxy object whenever you change proxy
+method, as this can lead to unexpected behavior.
 
 ``Tor_External``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -503,117 +624,6 @@ executable in your system.
     author = next(scholarly.search_author('Steven A Cholewiak'))
     scholarly.pprint(author)
 
-``Luminati``
-^^^^^^^^^^^^^^^^^
-pg.Luminati()
-#############
-
-If you have a luminati proxy service, please refer to the environment
-setup for Luminati below and simply call the following command before
-any function you want to execute.
-
-.. code:: python
-
-    from scholarly import scholarly, ProxyGenerator
-
-    pg = ProxyGenerator()
-
-You can use your own configuration
-
-.. code:: python
-
-    success = pg.Luminati(usr= "your_username",passwd ="your_password", port = "your_port" )
-
-Or alternatively you can use the environment variables set in your .env
-file
-
-.. code:: python
-
-    import os
-    pg.Luminati(usr=os.getenv("USERNAME"),passwd=os.getenv("PASSWORD"),proxy_port = os.getenv("PORT"))
-
-.. code:: python
-
-    scholarly.use_proxy(pg)
-
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
-``ScraperAPI``
-^^^^^^^^^^^^^^
-pg.ScraperAPI()
-###############
-
-.. code:: python
-
-    from scholarly import scholarly, ProxyGenerator
-
-    pg = ProxyGenerator()
-
-You will have to provide your ScraperAPI key
-
-.. code:: python
-
-    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY)
-
-Or alternatively you can use the environment variables as in the case of Luminati example.
-
-If you have Startup or higher paid plans, you can use additional options that are allowed for your plan.
-
-.. code:: python
-
-    success = pg.ScraperAPI(YOUR_SCRAPER_API_KEY, country_code='fr', premium=True, render=True)
-
-See https://www.scraperapi.com/pricing/ to see which options are enable for your plan.
-
-Finally, you can route your query through the ScraperAPI proxy
-
-.. code:: python
-
-    scholarly.use_proxy(pg)
-
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
-``FreeProxies``
-^^^^^^^^^^^^^^^^^^^^
-pg.FreeProxies()
-################
-
-This uses the ``free-proxy`` pip library to add a proxy to your
-configuration.
-
-.. code:: python
-
-    from scholarly import scholarly, ProxyGenerator
-
-    pg = ProxyGenerator()
-    success = pg.FreeProxies()
-    scholarly.use_proxy(pg)
-
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
-``SingleProxy``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-pg.SingleProxy(http: str, https:str)
-####################################
-
-If you want to use a proxy of your choice, feel free to use this option.
-
-.. code:: python
-
-    from scholarly import scholarly, ProxyGenerator
-
-    pg = ProxyGenerator()
-    success = pg.SingleProxy(http = <your http proxy>, https = <your https proxy>)
-    scholarly.use_proxy(pg)
-
-    author = next(scholarly.search_author('Steven A Cholewiak'))
-    scholarly.pprint(author)
-
-**NOTE:** Please create a new proxy object whenever you change proxy
-method, as this can lead to unexpected behavior.
 
 Setting up environment for Luminati and/or Testing
 --------------------------------------------------

@@ -14,7 +14,6 @@ import random
 import time
 import requests
 import tempfile
-import stem.process
 from requests.exceptions import Timeout
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
@@ -23,8 +22,6 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from urllib.parse import urlparse
-from stem import Signal
-from stem.control import Controller
 from fake_useragent import UserAgent
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser

@@ -110,9 +110,14 @@ scholarly.pprint(next(search_query))
 `scholarly` is smart enough to know which queries need proxies and which do not.
 It is therefore recommended to always set up a proxy in the beginning of your application.
 
+#### Disclaimer
+
+The developers use `ScraperAPI` to run the tests in Github Actions.
+The developers of `scholarly` are not affiliated with any of the proxy services and do not profit from them. If your favorite service is not supported, please submit an issue or even better, follow it up with a pull request.
+
 ## Citing
 
-If you have used this codebase in a scientific publication and wish to cite it, please use the following:
+If you have used this codebase in a scientific publication, please cite this software as following:
 
 ```bibtex
 @software{cholewiak2021scholarly,
@@ -125,11 +130,6 @@ If you have used this codebase in a scientific publication and wish to cite it, 
   version = {1.5.0}
 }
 ```
-
-#### Disclaimer
-
-The developers use `ScraperAPI` to run the tests in Github Actions.
-The developers of `scholarly` are not affiliated with any of the proxy services and do not profit from them. If your favorite service is not supported, please submit an issue or even better, follow it up with a pull request.
 
 ## License
 

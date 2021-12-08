@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='scholarly',
-    version='1.5.0-alpha',
+    version='1.5.0',
     author='Steven A. Cholewiak, Panos Ipeirotis, Victor Silva, Arun Kannawadi',
     author_email='steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca, arunkannawadi@astro.princeton.edu',
     description='Simple access to Google Scholar authors and citations',
@@ -27,6 +27,7 @@ setuptools.setup(
     install_requires=['arrow',
                       'beautifulsoup4',
                       'bibtexparser',
+                      'deprecated',
                       'requests[security]',
                       'requests[socks]',
                       'fake_useragent',
