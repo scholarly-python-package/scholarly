@@ -27,3 +27,4 @@ vic.py
 .env
 .vscode/settings.json
 test.py
+*.swp
