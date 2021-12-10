@@ -232,8 +232,8 @@ class _Scholarly:
         :type object: Publication
         """
         if object['container_type'] == "Publication":
-           publication_parser = PublicationParser(self.__nav)
-           return publication_parser.bibtex(object)
+            publication_parser = PublicationParser(self.__nav)
+            return publication_parser.bibtex(object)
         else:
             print("Object not supported for bibtex exportation")
             return
@@ -246,8 +246,8 @@ class _Scholarly:
         :type object: Publication
         """
         if object['container_type'] == "Publication":
-           publication_parser = PublicationParser(self.__nav)
-           return publication_parser.citedby(object)
+            publication_parser = PublicationParser(self.__nav)
+            return publication_parser.citedby(object)
         else:
             print("Object not supported for bibtex exportation")
             return
