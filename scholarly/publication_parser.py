@@ -1,7 +1,6 @@
 import re
 import bibtexparser
 import arrow
-import pprint
 from bibtexparser.bibdatabase import BibDatabase
 from .data_types import BibEntry, Publication, PublicationSource
 

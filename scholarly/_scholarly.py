@@ -1,10 +1,9 @@
 """scholarly.py"""
 import requests
-import random
 import os
 import copy
 import pprint
-from typing import Callable, List
+from typing import List
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -36,7 +35,6 @@ class _Scholarly:
         """
 
         return self.__nav._set_retries(num_retries)
-
 
     def use_proxy(self, proxy_generator: ProxyGenerator,
                   secondary_proxy_generator: ProxyGenerator = None) -> None:
@@ -75,7 +73,6 @@ class _Scholarly:
     def set_timeout(self, timeout: int):
         """Set timeout period in seconds for scholarly"""
         self.__nav.set_timeout(timeout)
-
 
     def search_pubs(self,
                     query: str, patents: bool = True,

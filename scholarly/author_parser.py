@@ -1,7 +1,6 @@
 from .publication_parser import PublicationParser
 import re
 from .data_types import Author, AuthorSource, PublicationSource, PublicAccess
-from selenium.common.exceptions import WebDriverException
 import codecs
 
 _CITATIONAUTHRE = r'user=([\w-]*)'

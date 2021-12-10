@@ -7,13 +7,10 @@ import requests
 import tempfile
 import urllib3
 
-from requests.exceptions import Timeout
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from urllib.parse import urlparse
 from fake_useragent import UserAgent
 from contextlib import contextmanager
@@ -34,16 +31,6 @@ class DOSException(Exception):
 
 class MaxTriesExceededException(Exception):
     """Maximum number of tries by scholarly reached"""
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args,
-                                                                 **kwargs)
-        return cls._instances[cls]
 
 
 class ProxyGenerator(object):
