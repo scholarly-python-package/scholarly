@@ -26,6 +26,7 @@ class _Scholarly:
         load_dotenv(find_dotenv())
         self.env = os.environ.copy()
         self.__nav = Navigator()
+        self.logger = self.__nav.logger
 
     def set_retries(self, num_retries: int)->None:
         """Sets the number of retries in case of errors
@@ -235,7 +236,7 @@ class _Scholarly:
             publication_parser = PublicationParser(self.__nav)
             return publication_parser.bibtex(object)
         else:
-            print("Object not supported for bibtex exportation")
+            self.logger.warning("Object not supported for bibtex exportation")
             return
 
     def citedby(self, object: Publication)->_SearchScholarIterator:
@@ -249,9 +250,8 @@ class _Scholarly:
             publication_parser = PublicationParser(self.__nav)
             return publication_parser.citedby(object)
         else:
-            print("Object not supported for bibtex exportation")
+            self.logger.warning("Object not supported for bibtex exportation")
             return
-
 
     def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0)->Author:
         """Search by author id and return a single Author object
@@ -352,8 +352,6 @@ class _Scholarly:
         url = _KEYWORDSEARCHBASE.format(formated_keywords)
         return self.__nav.search_authors(url)
 
-
-
     def search_pubs_custom_url(self, url: str)->_SearchScholarIterator:
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'
@@ -380,7 +378,7 @@ class _Scholarly:
         :type object: Publication
         """
         if object['container_type'] != 'Publication':
-            print("Not a publication object")
+            self.logger.warning("Not a publication object")
             return
 
         if object['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
@@ -397,7 +395,7 @@ class _Scholarly:
         :type object: Author or Publication
         """
         if 'container_type' not in object:
-            print("Not a scholarly container object")
+            self.logger.warning("Not a scholarly container object")
             return
 
         to_print = copy.deepcopy(object)
