@@ -141,9 +141,9 @@ class _Scholarly:
              'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 
         """
-        url = _construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
-                             citations=citations, year_low=year_low, year_high=year_high,
-                             sort_by=sort_by, start_index=start_index)
+        url = self._construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
+                                  citations=citations, year_low=year_low, year_high=year_high,
+                                  sort_by=sort_by, start_index=start_index)
         return self.__nav.search_publications(url)
 
     def search_citedby(self, publication_id: int, **kwargs):
@@ -154,7 +154,7 @@ class _Scholarly:
 
         For the remaining parameters, see documentation of `search_pubs`.
         """
-        url = _construct_url(_CITEDBYSEARCH.format(str(publication_id)), **kwargs)
+        url = self._construct_url(_CITEDBYSEARCH.format(str(publication_id)), **kwargs)
         return self.__nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False)->PublicationParser:
@@ -461,33 +461,33 @@ class _Scholarly:
         url = _ORGSEARCH.format(organization_id)
         return self.__nav.search_authors(url)
 
+    # TODO: Make it a public method in v1.6
+    def _construct_url(self, baseurl: str, patents: bool = True,
+                       citations: bool = True, year_low: int = None,
+                       year_high: int = None, sort_by: str = "relevance",
+                       include_last_year: str = "abstracts",
+                       start_index: int = 0)-> str:
+        """Construct URL from requested parameters."""
+        url = baseurl
 
-def _construct_url(baseurl: str, patents: bool = True,
-                    citations: bool = True, year_low: int = None,
-                    year_high: int = None, sort_by: str = "relevance",
-                    include_last_year: str = "abstracts",
-                    start_index: int = 0)-> str:
-    """Construct URL from requested parameters."""
-    url = baseurl
+        yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
+        yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
+        citations = '&as_vis={0}'.format(1 - int(citations))
+        patents = '&as_sdt={0},33'.format(1 - int(patents))
+        sortby = ''
+        start = '&start={0}'.format(start_index) if start_index > 0 else ''
 
-    yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
-    yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
-    citations = '&as_vis={0}'.format(1 - int(citations))
-    patents = '&as_sdt={0},33'.format(1 - int(patents))
-    sortby = ''
-    start = '&start={0}'.format(start_index) if start_index > 0 else ''
-
-    if sort_by == "date":
-        if include_last_year == "abstracts":
-            sortby = '&scisbd=1'
-        elif include_last_year == "everything":
-            sortby = '&scisbd=2'
-        else:
-            print("Invalid option for 'include_last_year', available options: 'everything', 'abstracts'")
+        if sort_by == "date":
+            if include_last_year == "abstracts":
+                sortby = '&scisbd=1'
+            elif include_last_year == "everything":
+                sortby = '&scisbd=2'
+            else:
+                self.logger.debug("Invalid option for 'include_last_year', available options: 'everything', 'abstracts'")
+                return
+        elif sort_by != "relevance":
+            self.logger.debug("Invalid option for 'sort_by', available options: 'relevance', 'date'")
             return
-    elif sort_by != "relevance":
-        print("Invalid option for 'sort_by', available options: 'relevance', 'date'")
-        return
 
-    # improve str below
-    return url + yr_lo + yr_hi + citations + patents + sortby + start
+        # improve str below
+        return url + yr_lo + yr_hi + citations + patents + sortby + start
