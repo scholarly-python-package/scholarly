@@ -29,8 +29,8 @@ jobs:
         run: |
           sudo apt-get install -y tor
           python3 -m pip install --upgrade pip
-          pip3 install flake8 coverage
           if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip3 install -r requirements-dev.txt; fi
       - name: Lint with flake8
         run: |
           # Stop the build if there are Python syntax errors, undefined names or unused imports etc.
