@@ -1,6 +1,7 @@
 from .publication_parser import PublicationParser
 import re
 from .data_types import Author, AuthorSource, PublicationSource, PublicAccess
+from selenium.webdriver.common.by import By
 import codecs
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
@@ -214,20 +215,21 @@ class AuthorParser:
         Opens the dialog box to get the complete list of coauthors.
         To be called by _fill_coauthors method.
         """
+        # TODO: Use the webdriver as contextmanager
         wd = self.nav.pm2._get_webdriver()
         try:
             wd.get(_COAUTH.format(author['scholar_id']))
             # Wait up to 30 seconds for the various elements to be available.
             # The wait may be better set elsewhere.
             wd.implicitly_wait(30)
-            coauthors = wd.find_elements_by_class_name('gs_ai_pho')
+            coauthors = wd.find_elements(By.CLASS_NAME, 'gs_ai_pho')
             coauthor_ids = [re.findall(_CITATIONAUTHRE,
                             coauth.get_attribute('href'))[0]
                             for coauth in coauthors]
             coauthor_names = [name.text for name in
-                              wd.find_elements_by_class_name('gs_ai_name')]
+                              wd.find_elements(By.CLASS_NAME, 'gs_ai_name')]
             coauthor_affils = [affil.text for affil in
-                               wd.find_elements_by_class_name('gs_ai_aff')]
+                               wd.find_elements(By.CLASS_NAME, 'gs_ai_aff')]
 
             return coauthor_ids, coauthor_names, coauthor_affils
         finally:
