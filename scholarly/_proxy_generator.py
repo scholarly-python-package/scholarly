@@ -323,7 +323,11 @@ class ProxyGenerator(object):
 
     def _get_webdriver(self):
         if self._webdriver:
-            return self._webdriver
+            try:
+                _ = self._webdriver.current_url
+                return self._webdriver
+            except Exception as e:
+                self.logger.debug(e)
 
         try:
             return self._get_firefox_webdriver()
