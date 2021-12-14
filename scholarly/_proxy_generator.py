@@ -373,10 +373,10 @@ class ProxyGenerator(object):
                 self.logger.info(f"Unexpected alert while waiting for captcha completion: {e.args}")
                 time.sleep(15)
             except DOSException as e:
-                self.logger.info(f"Google thinks we are DOSing the captcha.")
+                self.logger.info("Google thinks we are DOSing the captcha.")
                 raise e
             except (WebDriverException) as e:
-                self.logger.info(f"Browser seems to be disfunctional - closed by user?")
+                self.logger.info("Browser seems to be disfunctional - closed by user?")
                 raise e
             except Exception as e:
                 # TODO: This exception handler should eventually be removed when
