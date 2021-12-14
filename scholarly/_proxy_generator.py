@@ -7,13 +7,11 @@ import requests
 import tempfile
 import urllib3
 
-from requests.exceptions import Timeout
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from urllib.parse import urlparse
 from fake_useragent import UserAgent
 from contextlib import contextmanager
@@ -34,16 +32,6 @@ class DOSException(Exception):
 
 class MaxTriesExceededException(Exception):
     """Maximum number of tries by scholarly reached"""
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args,
-                                                                 **kwargs)
-        return cls._instances[cls]
 
 
 class ProxyGenerator(object):
@@ -335,8 +323,38 @@ class ProxyGenerator(object):
 
     def _get_webdriver(self):
         if self._webdriver:
-            return self._webdriver
+            try:
+                _ = self._webdriver.current_url
+                return self._webdriver
+            except Exception as e:
+                self.logger.debug(e)
 
+        try:
+            return self._get_firefox_webdriver()
+        except Exception as err:
+            self.logger.debug("Cannot open Firefox/Geckodriver: %s", err)
+            try:
+                return self._get_chrome_webdriver()
+            except Exception as err:
+                self.logger.debug("Cannot open Chrome: %s", err)
+                self.logger.info("Neither Chrome nor Firefox/Geckodriver found in PATH")
+
+    def _get_chrome_webdriver(self):
+        if self._proxy_works:
+            webdriver.DesiredCapabilities.CHROME['proxy'] = {
+                "httpProxy": self._session.proxies['http'],
+                "sslProxy": self._session.proxies['https'],
+                "proxyType": "MANUAL"
+            }
+
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        self._webdriver = webdriver.Chrome('chromedriver', options=options)
+        self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
+
+        return self._webdriver
+
+    def _get_firefox_webdriver(self):
         if self._proxy_works:
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
@@ -345,8 +363,10 @@ class ProxyGenerator(object):
                 "proxyType": "MANUAL",
             }
 
-        self._webdriver = webdriver.Firefox()
-        self._webdriver.get("https://scholar.google.com") # Need to pre-load to set cookies later
+        options = FirefoxOptions()
+        options.add_argument('--headless')
+        self._webdriver = webdriver.Firefox(options=options)
+        self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
 
         # It might make sense to (pre)set cookies as well, e.g., to set a GSP ID.
         # However, a limitation of webdriver makes it impossible to set cookies for
@@ -386,10 +406,10 @@ class ProxyGenerator(object):
                 self.logger.info(f"Unexpected alert while waiting for captcha completion: {e.args}")
                 time.sleep(15)
             except DOSException as e:
-                self.logger.info(f"Google thinks we are DOSing the captcha.")
+                self.logger.info("Google thinks we are DOSing the captcha.")
                 raise e
             except (WebDriverException) as e:
-                self.logger.info(f"Browser seems to be disfunctional - closed by user?")
+                self.logger.info("Browser seems to be disfunctional - closed by user?")
                 raise e
             except Exception as e:
                 # TODO: This exception handler should eventually be removed when

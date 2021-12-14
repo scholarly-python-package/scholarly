@@ -1,3 +1,7 @@
+---
+permalink: /contributing.html
+---
+
 # Developers' Notes
 
 We welcome contributions from you!

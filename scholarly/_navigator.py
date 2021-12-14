@@ -4,25 +4,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from ._proxy_generator import ProxyGenerator, MaxTriesExceededException, DOSException
 
-from typing import Callable
 from bs4 import BeautifulSoup
 
 import codecs
-import hashlib
 import logging
 import random
 import time
-import requests
-import tempfile
 from requests.exceptions import Timeout
-from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from urllib.parse import urlparse
-from fake_useragent import UserAgent
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser

@@ -1,10 +1,9 @@
 """scholarly.py"""
 import requests
-import random
 import os
 import copy
 import pprint
-from typing import Callable, List
+from typing import List
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -27,6 +26,7 @@ class _Scholarly:
         load_dotenv(find_dotenv())
         self.env = os.environ.copy()
         self.__nav = Navigator()
+        self.logger = self.__nav.logger
 
     def set_retries(self, num_retries: int)->None:
         """Sets the number of retries in case of errors
@@ -36,7 +36,6 @@ class _Scholarly:
         """
 
         return self.__nav._set_retries(num_retries)
-
 
     def use_proxy(self, proxy_generator: ProxyGenerator,
                   secondary_proxy_generator: ProxyGenerator = None) -> None:
@@ -75,7 +74,6 @@ class _Scholarly:
     def set_timeout(self, timeout: int):
         """Set timeout period in seconds for scholarly"""
         self.__nav.set_timeout(timeout)
-
 
     def search_pubs(self,
                     query: str, patents: bool = True,
@@ -143,9 +141,9 @@ class _Scholarly:
              'url_scholarbib': '/scholar?q=info:K8ZpoI6hZNoJ:scholar.google.com/&output=cite&scirp=0&hl=en'}
 
         """
-        url = _construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
-                             citations=citations, year_low=year_low, year_high=year_high,
-                             sort_by=sort_by, start_index=start_index)
+        url = self._construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
+                                  citations=citations, year_low=year_low, year_high=year_high,
+                                  sort_by=sort_by, start_index=start_index)
         return self.__nav.search_publications(url)
 
     def search_citedby(self, publication_id: int, **kwargs):
@@ -156,7 +154,7 @@ class _Scholarly:
 
         For the remaining parameters, see documentation of `search_pubs`.
         """
-        url = _construct_url(_CITEDBYSEARCH.format(str(publication_id)), **kwargs)
+        url = self._construct_url(_CITEDBYSEARCH.format(str(publication_id)), **kwargs)
         return self.__nav.search_publications(url)
 
     def search_single_pub(self, pub_title: str, filled: bool = False)->PublicationParser:
@@ -235,10 +233,10 @@ class _Scholarly:
         :type object: Publication
         """
         if object['container_type'] == "Publication":
-           publication_parser = PublicationParser(self.__nav)
-           return publication_parser.bibtex(object)
+            publication_parser = PublicationParser(self.__nav)
+            return publication_parser.bibtex(object)
         else:
-            print("Object not supported for bibtex exportation")
+            self.logger.warning("Object not supported for bibtex exportation")
             return
 
     def citedby(self, object: Publication)->_SearchScholarIterator:
@@ -249,12 +247,11 @@ class _Scholarly:
         :type object: Publication
         """
         if object['container_type'] == "Publication":
-           publication_parser = PublicationParser(self.__nav)
-           return publication_parser.citedby(object)
+            publication_parser = PublicationParser(self.__nav)
+            return publication_parser.citedby(object)
         else:
-            print("Object not supported for bibtex exportation")
+            self.logger.warning("Object not supported for bibtex exportation")
             return
-
 
     def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0)->Author:
         """Search by author id and return a single Author object
@@ -355,11 +352,13 @@ class _Scholarly:
         url = _KEYWORDSEARCHBASE.format(formated_keywords)
         return self.__nav.search_authors(url)
 
-
-
     def search_pubs_custom_url(self, url: str)->_SearchScholarIterator:
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'
+
+        A typical use case is to generate the URL by first typing in search
+        parameters in the Advanced Search dialog box and then use the URL here
+        to programmatically fetch the results.
 
         :param url: custom url to seach for the publication
         :type url: string
@@ -383,7 +382,7 @@ class _Scholarly:
         :type object: Publication
         """
         if object['container_type'] != 'Publication':
-            print("Not a publication object")
+            self.logger.warning("Not a publication object")
             return
 
         if object['source'] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
@@ -400,7 +399,7 @@ class _Scholarly:
         :type object: Author or Publication
         """
         if 'container_type' not in object:
-            print("Not a scholarly container object")
+            self.logger.warning("Not a scholarly container object")
             return
 
         to_print = copy.deepcopy(object)
@@ -466,33 +465,33 @@ class _Scholarly:
         url = _ORGSEARCH.format(organization_id)
         return self.__nav.search_authors(url)
 
+    # TODO: Make it a public method in v1.6
+    def _construct_url(self, baseurl: str, patents: bool = True,
+                       citations: bool = True, year_low: int = None,
+                       year_high: int = None, sort_by: str = "relevance",
+                       include_last_year: str = "abstracts",
+                       start_index: int = 0)-> str:
+        """Construct URL from requested parameters."""
+        url = baseurl
 
-def _construct_url(baseurl: str, patents: bool = True,
-                    citations: bool = True, year_low: int = None,
-                    year_high: int = None, sort_by: str = "relevance",
-                    include_last_year: str = "abstracts",
-                    start_index: int = 0)-> str:
-    """Construct URL from requested parameters."""
-    url = baseurl
+        yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
+        yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
+        citations = '&as_vis={0}'.format(1 - int(citations))
+        patents = '&as_sdt={0},33'.format(1 - int(patents))
+        sortby = ''
+        start = '&start={0}'.format(start_index) if start_index > 0 else ''
 
-    yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
-    yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
-    citations = '&as_vis={0}'.format(1 - int(citations))
-    patents = '&as_sdt={0},33'.format(1 - int(patents))
-    sortby = ''
-    start = '&start={0}'.format(start_index) if start_index > 0 else ''
-
-    if sort_by == "date":
-        if include_last_year == "abstracts":
-            sortby = '&scisbd=1'
-        elif include_last_year == "everything":
-            sortby = '&scisbd=2'
-        else:
-            print("Invalid option for 'include_last_year', available options: 'everything', 'abstracts'")
+        if sort_by == "date":
+            if include_last_year == "abstracts":
+                sortby = '&scisbd=1'
+            elif include_last_year == "everything":
+                sortby = '&scisbd=2'
+            else:
+                self.logger.debug("Invalid option for 'include_last_year', available options: 'everything', 'abstracts'")
+                return
+        elif sort_by != "relevance":
+            self.logger.debug("Invalid option for 'sort_by', available options: 'relevance', 'date'")
             return
-    elif sort_by != "relevance":
-        print("Invalid option for 'sort_by', available options: 'relevance', 'date'")
-        return
 
-    # improve str below
-    return url + yr_lo + yr_hi + citations + patents + sortby + start
+        # improve str below
+        return url + yr_lo + yr_hi + citations + patents + sortby + start

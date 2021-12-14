@@ -5,6 +5,7 @@ from scholarly import scholarly, ProxyGenerator
 from scholarly.publication_parser import PublicationParser
 import random
 import json
+from contextlib import contextmanager
 
 
 class TestLuminati(unittest.TestCase):
@@ -76,6 +77,9 @@ class TestScholarly(unittest.TestCase):
         """
         Setup the proxy methods for unit tests
         """
+        scholarly.set_timeout(5)
+        scholarly.set_retries(5)
+
         if "CONNECTION_METHOD" in scholarly.env:
             cls.connection_method = os.getenv("CONNECTION_METHOD")
         else:
@@ -131,6 +135,17 @@ class TestScholarly(unittest.TestCase):
             scholarly.use_proxy(None)
 
         scholarly.use_proxy(proxy_generator, secondary_proxy_generator)
+
+    @staticmethod
+    @contextmanager
+    def suppress_stdout():
+        with open(os.devnull, "w") as devnull:
+            old_stdout = sys.stdout
+            sys.stdout = devnull
+            try:
+                yield
+            finally:
+                sys.stdout = old_stdout
 
     def test_search_author_empty_author(self):
         """
@@ -212,8 +227,8 @@ class TestScholarly(unittest.TestCase):
 
         """
         )
-        query = scholarly.search_pubs("A density-based algorithm for discovering clusters in large spatial databases with noise")
-        pub = next(query)
+        pub = scholarly.search_single_pub("A density-based algorithm for discovering clusters in large "
+                                          "spatial databases with noise", filled=True)
         result = scholarly.bibtex(pub)
         self.assertEqual(result, expected_result.replace("\n        ", "\n"))
 
@@ -253,6 +268,13 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(author["citedby"], expected_author["citedby"])
         self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
+    def test_search_keywords(self):
+        query = scholarly.search_keywords(['crowdsourcing', 'privacy'])
+        author = next(query)
+        self.assertEqual(author['scholar_id'], '_cMw1IUAAAAJ')
+        self.assertEqual(author['name'], 'Arpita Ghosh')
+        self.assertEqual(author['affiliation'], 'Cornell University')
+
     def test_search_author_single_author(self):
         query = 'Steven A. Cholewiak'
         authors = [a for a in scholarly.search_author(query)]
@@ -260,11 +282,6 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')
-        # Currently, fetching more than 20 coauthors works only if a browser can be opened.
-        self.assertGreaterEqual(len(author['coauthors']), 20)
-        if len(author['coauthors'])>20:
-            self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
-            self.assertGreaterEqual(len(author['coauthors']), 36, "Full coauthor list not fetched")
 
         self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
         self.assertEqual(author['organization'], 6518679690484165796)
@@ -276,6 +293,15 @@ class TestScholarly(unittest.TestCase):
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
+        # Trigger the pprint method, but suppress the output
+        with self.suppress_stdout():
+            scholarly.pprint(author)
+            scholarly.pprint(pub)
+        # Check for the complete list of coauthors
+        self.assertGreaterEqual(len(author['coauthors']), 20)
+        if len(author['coauthors']) > 20:
+            self.assertGreaterEqual(len(author['coauthors']), 36)
+            self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_search_author_multiple_authors(self):
         """
@@ -324,11 +350,17 @@ class TestScholarly(unittest.TestCase):
         Check that the paper "Visual perception of the physical stability of asymmetric three-dimensional objects"
         is among them
         """
-        pubs = [p['bib']['title'] for p in scholarly.search_pubs(
-            '"naive physics" stability "3d shape"')]
+        pub = scholarly.search_single_pub("naive physics stability 3d shape")
+        pubs = list(scholarly.search_pubs('"naive physics" stability "3d shape"'))
+        # Check that the first entry in pubs is the same as pub.
+        # Checking for quality holds for non-dict entries only.
+        for key in {'author_id', 'pub_url', 'num_citations'}:
+            self.assertEqual(pub[key], pubs[0][key])
+        for key in {'title', 'pub_year', 'venue'}:
+            self.assertEqual(pub['bib'][key], pubs[0]['bib'][key])
         self.assertGreaterEqual(len(pubs), 27)
-
-        self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', pubs)
+        titles = [p['bib']['title'] for p in pubs]
+        self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', titles)
 
     @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_total_results(self):
@@ -443,14 +475,43 @@ class TestScholarly(unittest.TestCase):
     def test_author_organization(self):
         """
         """
-        organization = 4836318610601440500  # Princeton University
-        search_query = scholarly.search_author_by_organization(organization)
+        organization_id = 4836318610601440500  # Princeton University
+        organizations = scholarly.search_org("Princeton University")
+        self.assertEqual(len(organizations), 1)
+        organization = organizations[0]
+        self.assertEqual(organization['Organization'], "Princeton University")
+        self.assertEqual(organization['id'], str(organization_id))
+
+        search_query = scholarly.search_author_by_organization(organization_id)
         author = next(search_query)
         self.assertEqual(author['scholar_id'], "ImhakoAAAAAJ")
         self.assertEqual(author['name'], "Daniel Kahneman")
         self.assertEqual(author['email_domain'], "@princeton.edu")
         self.assertEqual(author['affiliation'], "Princeton University (Emeritus)")
         self.assertGreaterEqual(author['citedby'], 438891)
+
+    def test_coauthors(self):
+        """
+        Test that we can fetch long (20+) and short list of coauthors
+        """
+        author = scholarly.search_author_id('7Jl3PIoAAAAJ')
+        scholarly.fill(author, sections=['basics', 'coauthors'])
+        self.assertEqual(author['name'], "Victor Silva")
+        self.assertLessEqual(len(author['coauthors']), 20)
+        # If the above assertion fails, pick a different author profile
+        self.assertGreaterEqual(len(author['coauthors']), 6)
+        self.assertIn('Eleni Stroulia', [_coauth['name'] for _coauth in author['coauthors']])
+        self.assertIn('TyM1dLwAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
+
+        author = scholarly.search_author_id('PA9La6oAAAAJ')
+        scholarly.fill(author, sections=['basics', 'coauthors'])
+        self.assertEqual(author['name'], "Panos Ipeirotis")
+        self.assertGreaterEqual(len(author['coauthors']), 20)
+        # Don't break the build if the long list cannot be fetch.
+        # Chrome/Geckodriver are mentioned only as optional dependencies.
+        if (len(author['coauthors']) > 20):
+            self.assertIn('Eduardo Ruiz', [_coauth['name'] for _coauth in author['coauthors']])
+            self.assertIn('hWq7jFQAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_public_access(self):
         """
@@ -473,6 +534,73 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author["scholar_id"], "ImhakoAAAAAJ")
         self.assertGreaterEqual(author["public_access"]["available"], 6)
 
+    def test_related_articles_from_author(self):
+        """
+        Test that we obtain related articles to an article from an author
+        """
+        author = scholarly.search_author_id("ImhakoAAAAAJ")
+        scholarly.fill(author, sections=['basics', 'publications'])
+        pub = author['publications'][0]
+        self.assertEqual(pub['bib']['title'], 'Prospect theory: An analysis of decision under risk')
+        related_articles = scholarly.get_related_articles(pub)
+        # Typically, the same publication is returned as the most related article
+        same_article = next(related_articles)
+        for key in {'pub_url', 'num_citations'}:
+            self.assertEqual(pub[key], same_article[key])
+        for key in {'title', 'pub_year'}:
+            self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
+
+        # These may change with time
+        related_article = next(related_articles)
+        self.assertEqual(related_article['bib']['title'], 'Choices, values, and frames')
+        self.assertEqual(related_article['bib']['pub_year'], '2013')
+        self.assertGreaterEqual(related_article['num_citations'], 16561)
+        self.assertIn("A Tversky", related_article['bib']['author'])
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_related_articles_from_publication(self):
+        """
+        Test that we obtain related articles to an article from a search
+        """
+        pub = scholarly.search_single_pub("Planck 2018 results-VI. Cosmological parameters")
+        related_articles = scholarly.get_related_articles(pub)
+        # Typically, the same publication is returned as the most related article
+        same_article = next(related_articles)
+        for key in {'author_id', 'pub_url', 'num_citations'}:
+            self.assertEqual(pub[key], same_article[key])
+        for key in {'title', 'pub_year'}:
+            self.assertEqual(pub['bib'][key], same_article['bib'][key])
+
+        # These may change with time
+        related_article = next(related_articles)
+        self.assertEqual(related_article['bib']['title'], 'Large Magellanic Cloud Cepheid standards provide '
+                         'a 1% foundation for the determination of the Hubble constant and stronger evidence '
+                         'for physics beyond ΛCDM')
+        self.assertEqual(related_article['bib']['pub_year'], '2019')
+        self.assertGreaterEqual(related_article['num_citations'], 1388)
+        self.assertIn("AG Riess", related_article['bib']['author'])
+
+    def test_author_custom_url(self):
+        """
+        Test that we can use custom URLs for retrieving author data
+        """
+        query_url = "/citations?hl=en&view_op=search_authors&mauthors=label%3A3d_shape"
+        authors = scholarly.search_author_custom_url(query_url)
+        self.assertIn(u'Steven A. Cholewiak, PhD', [author['name'] for author in authors])
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_pubs_custom_url(self):
+        """
+        Test that we can use custom URLs for retrieving publication data
+        """
+        query_url = ('/scholar?as_q=&as_epq=&as_oq=SFDI+"modulated+imaging"&as_eq=&as_occt=any&as_sauthors=&'
+                     'as_publication=&as_ylo=2005&as_yhi=2020&hl=en&as_sdt=0%2C31')
+        pubs = scholarly.search_pubs_custom_url(query_url)
+        pub = next(pubs)
+        self.assertEqual(pub['bib']['title'], 'Quantitation and mapping of tissue optical properties using modulated imaging')
+        self.assertEqual(set(pub['author_id']), {'V-ab9U4AAAAJ', '4k-k6SEAAAAJ', 'GLm-SaQAAAAJ'})
+        self.assertEqual(pub['bib']['pub_year'], '2009')
+        self.assertGreaterEqual(pub['num_citations'], 581)
 
 if __name__ == '__main__':
     unittest.main()

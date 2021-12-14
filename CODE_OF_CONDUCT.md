@@ -1,3 +1,6 @@
+---
+permalink: /coc.html
+---
 # Code of Conduct
 
 ## Our Pledge

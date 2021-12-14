@@ -22,16 +22,24 @@ or `pip` to install from github:
 pip3 install -U git+https://github.com/scholarly-python-package/scholarly.git
 ```
 
+We are constantly developing new features.
+Please update your local package regularly.
 `scholarly` follows [Semantic Versioning](https://semver.org/).
+This means your code that uses an earlier version of `scholarly` is guaranteed to work with newer versions.
 
 ### Optional dependencies
 
-- **geckodriver** provides the browser capabilities that may be needed to fully utilize the library. Currently, if a Scholar profile has more than 20 co-authors, `geckodriver` is needed to fetch the complete list.
-If not installed, `scholarly` will fetch only up to 20 co-authors.
+- **geckodriver** or **chrome-driver** provide the browser capabilities that may be needed to fully utilize the library.
+Installing at least one of `geckodriver` or `chrome-driver` if you need to fetch the complete list of co-authors from an author's profile.
+If neither installed, `scholarly` will fetch only up to 20 co-authors.
 
     To install `geckodriver`, download the latest version from their [Github repo](https://github.com/mozilla/geckodriver/releases) and the executable should be in the system path.
     Follow the appropriate installation instructions:
     [macOS](https://stackoverflow.com/a/67211136) | [Ubuntu](https://askubuntu.com/a/871077) | [Windows](https://stackoverflow.com/a/56926716)
+
+    To install `chrome-driver`, [download](https://chromedriver.chromium.org/downloads) the ChromeDriver binary for your platform and include its location in the PATH environment variable.
+    See their [getting-started](https://chromedriver.chromium.org/getting-started) page for instructions.
+    Alternatively, if you are on Ubuntu, you can run [scripts/setup-chrome-ubuntu-latest.sh](.scripts/setup-chrome-ubuntu-latest.sh) to install the latest version of ChromeDriver.
 
 - **Tor**:
 
@@ -115,7 +123,13 @@ It is therefore recommended to always set up a proxy in the beginning of your ap
 The developers use `ScraperAPI` to run the tests in Github Actions.
 The developers of `scholarly` are not affiliated with any of the proxy services and do not profit from them. If your favorite service is not supported, please submit an issue or even better, follow it up with a pull request.
 
-## Citing
+## Contributing
+
+We welcome contributions from you.
+Please create an issue, fork this repository and submit a pull request.
+Read the [contributing document](.github/CONTRIBUTING.md) for more information.
+
+## Acknowledging `scholarly`
 
 If you have used this codebase in a scientific publication, please cite this software as following:
 
@@ -124,10 +138,10 @@ If you have used this codebase in a scientific publication, please cite this sof
   author  = {Cholewiak, Steven A. and Ipeirotis, Panos and Silva, Victor and Kannawadi, Arun},
   title   = {{SCHOLARLY: Simple access to Google Scholar authors and citation using Python}},
   year    = {2021},
-  doi     = {10.5821/zenodo.5764802},
+  doi     = {10.5281/zenodo.5764801},
   license = {Unlicense},
   url = {https://github.com/scholarly-python-package/scholarly},
-  version = {1.5.0}
+  version = {1.5.1}
 }
 ```
 
