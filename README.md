@@ -136,7 +136,7 @@ If you have used this codebase in a scientific publication, please cite this sof
   doi     = {10.5281/zenodo.5764801},
   license = {Unlicense},
   url = {https://github.com/scholarly-python-package/scholarly},
-  version = {1.5.0}
+  version = {1.5.1}
 }
 ```
 
