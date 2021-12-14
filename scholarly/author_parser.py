@@ -215,9 +215,7 @@ class AuthorParser:
         Opens the dialog box to get the complete list of coauthors.
         To be called by _fill_coauthors method.
         """
-        # TODO: Use the webdriver as contextmanager
-        wd = self.nav.pm2._get_webdriver()
-        try:
+        with self.nav.pm2._get_webdriver() as wd:
             wd.get(_COAUTH.format(author['scholar_id']))
             # Wait up to 30 seconds for the various elements to be available.
             # The wait may be better set elsewhere.
@@ -232,8 +230,6 @@ class AuthorParser:
                                wd.find_elements(By.CLASS_NAME, 'gs_ai_aff')]
 
             return coauthor_ids, coauthor_names, coauthor_affils
-        finally:
-            wd.quit()
 
     def _fill_coauthors(self, soup, author):
         # If "View All" is not found, scrape the page for coauthors
