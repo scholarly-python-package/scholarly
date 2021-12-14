@@ -10,4 +10,3 @@ fake_useragent
 selenium
 python-dotenv
 free-proxy
-sphinx_rtd_theme

@@ -7,13 +7,10 @@ import requests
 import tempfile
 import urllib3
 
-from requests.exceptions import Timeout
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from urllib.parse import urlparse
 from fake_useragent import UserAgent
 from contextlib import contextmanager
@@ -34,16 +31,6 @@ class DOSException(Exception):
 
 class MaxTriesExceededException(Exception):
     """Maximum number of tries by scholarly reached"""
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args,
-                                                                 **kwargs)
-        return cls._instances[cls]
 
 
 class ProxyGenerator(object):
@@ -386,10 +373,10 @@ class ProxyGenerator(object):
                 self.logger.info(f"Unexpected alert while waiting for captcha completion: {e.args}")
                 time.sleep(15)
             except DOSException as e:
-                self.logger.info(f"Google thinks we are DOSing the captcha.")
+                self.logger.info("Google thinks we are DOSing the captcha.")
                 raise e
             except (WebDriverException) as e:
-                self.logger.info(f"Browser seems to be disfunctional - closed by user?")
+                self.logger.info("Browser seems to be disfunctional - closed by user?")
                 raise e
             except Exception as e:
                 # TODO: This exception handler should eventually be removed when

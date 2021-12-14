@@ -1,0 +1,11 @@
+[flake8]
+count = True
+exclude =
+    scholarly/__init__.py
+    docs/conf.py
+ignore = E261, E265
+max-complexity = 10
+max-line-length = 127
+select = E9, E111, F63, F7, F82, F401
+show-source = True
+statistics = True

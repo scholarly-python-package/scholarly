@@ -25,18 +25,19 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Lint with flake8
+        run: |
+          if [ -f requirements-dev.txt ]; then pip3 install -r requirements-dev.txt; fi
+          # Stop the build if there are Python syntax errors, undefined names or unused imports etc.
+          flake8
+          # Do not stop the build, but indicate room for improvement.
+          # exit-zero treats all errors as warnings.
+          flake8 . --exit-zero --ignore= --select=
       - name: Install dependencies
         run: |
           sudo apt-get install -y tor
           python3 -m pip install --upgrade pip
-          pip3 install flake8 coverage
           if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       #- name: Typilus, Suggest Python Type Annotations
       #  uses: typilus/typilus-action@v0.9
       - name: Setup Tor to allow for password-based refresh of ID
