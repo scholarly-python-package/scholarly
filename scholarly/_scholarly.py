@@ -356,6 +356,10 @@ class _Scholarly:
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'
 
+        A typical use case is to generate the URL by first typing in search
+        parameters in the Advanced Search dialog box and then use the URL here
+        to programmatically fetch the results.
+
         :param url: custom url to seach for the publication
         :type url: string
         """
