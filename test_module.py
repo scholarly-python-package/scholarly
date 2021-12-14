@@ -282,11 +282,6 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.fill(authors[0])
         self.assertEqual(author['name'], u'Steven A. Cholewiak, PhD')
         self.assertEqual(author['scholar_id'], u'4bahYMkAAAAJ')
-        # Currently, fetching more than 20 coauthors works only if a browser can be opened.
-        self.assertGreaterEqual(len(author['coauthors']), 20)
-        if len(author['coauthors'])>20:
-            self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
-            self.assertGreaterEqual(len(author['coauthors']), 36, "Full coauthor list not fetched")
 
         self.assertEqual(author['homepage'], "http://steven.cholewiak.com/")
         self.assertEqual(author['organization'], 6518679690484165796)
@@ -302,6 +297,11 @@ class TestScholarly(unittest.TestCase):
         with self.suppress_stdout():
             scholarly.pprint(author)
             scholarly.pprint(pub)
+        # Check for the complete list of coauthors
+        self.assertGreaterEqual(len(author['coauthors']), 20)
+        if len(author['coauthors']) > 20:
+            self.assertGreaterEqual(len(author['coauthors']), 36)
+            self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_search_author_multiple_authors(self):
         """
@@ -489,6 +489,29 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['email_domain'], "@princeton.edu")
         self.assertEqual(author['affiliation'], "Princeton University (Emeritus)")
         self.assertGreaterEqual(author['citedby'], 438891)
+
+    def test_coauthors(self):
+        """
+        Test that we can fetch long (20+) and short list of coauthors
+        """
+        author = scholarly.search_author_id('7Jl3PIoAAAAJ')
+        scholarly.fill(author, sections=['basics', 'coauthors'])
+        self.assertEqual(author['name'], "Victor Silva")
+        self.assertLessEqual(len(author['coauthors']), 20)
+        # If the above assertion fails, pick a different author profile
+        self.assertGreaterEqual(len(author['coauthors']), 6)
+        self.assertIn('Eleni Stroulia', [_coauth['name'] for _coauth in author['coauthors']])
+        self.assertIn('TyM1dLwAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
+
+        author = scholarly.search_author_id('PA9La6oAAAAJ')
+        scholarly.fill(author, sections=['basics', 'coauthors'])
+        self.assertEqual(author['name'], "Panos Ipeirotis")
+        self.assertGreaterEqual(len(author['coauthors']), 20)
+        # Don't break the build if the long list cannot be fetch.
+        # Chrome/Geckodriver are mentioned only as optional dependencies.
+        if (len(author['coauthors']) > 20):
+            self.assertIn('Eduardo Ruiz', [_coauth['name'] for _coauth in author['coauthors']])
+            self.assertIn('hWq7jFQAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_public_access(self):
         """
