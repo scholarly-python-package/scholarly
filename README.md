@@ -133,7 +133,7 @@ If you have used this codebase in a scientific publication, please cite this sof
   author  = {Cholewiak, Steven A. and Ipeirotis, Panos and Silva, Victor and Kannawadi, Arun},
   title   = {{SCHOLARLY: Simple access to Google Scholar authors and citation using Python}},
   year    = {2021},
-  doi     = {10.5821/zenodo.5764802},
+  doi     = {10.5281/zenodo.5764801},
   license = {Unlicense},
   url = {https://github.com/scholarly-python-package/scholarly},
   version = {1.5.0}
