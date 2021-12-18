@@ -2,11 +2,9 @@ arrow
 beautifulsoup4
 bibtexparser
 deprecated
-PySocks
-requests[security]
-requests[socks]
-stem
 fake_useragent
-selenium
-python-dotenv
 free-proxy
+python-dotenv
+requests[socks]
+selenium
+stem
