@@ -3,12 +3,13 @@
 [![Documentation Status](https://readthedocs.org/projects/scholarly/badge/?version=latest)](https://scholarly.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/27442991.svg)](https://zenodo.org/badge/latestdoi/27442991)
 
-
 # scholarly
 
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way without having to solve CAPTCHAs.
 
 ## Installation
+
+[![PyPI version](https://badge.fury.io/py/scholarly.svg)](https://badge.fury.io/py/scholarly)
 
 Use `pip` to install the latest release from pypi:
 
