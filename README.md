@@ -9,9 +9,16 @@ scholarly is a module that allows you to retrieve author and publication informa
 
 ## Installation
 
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/scholarly/badges/installer/conda.svg)](https://conda.anaconda.org/conda-forge)
 [![PyPI version](https://badge.fury.io/py/scholarly.svg)](https://badge.fury.io/py/scholarly)
 
-Use `pip` to install the latest release from pypi:
+`scholarly` can be installed either with `conda` or with `pip`.
+To install using `conda`, simply run
+```bash
+conda install -c conda-forge scholarly
+```
+
+Alternatively, use `pip` to install the latest release from pypi:
 
 ```bash
 pip3 install scholarly
@@ -50,6 +57,9 @@ If neither installed, `scholarly` will fetch only up to 20 co-authors.
     ```bash
     pip3 install scholarly[tor]
     ```
+    
+    **Note:** Tor option is unavailable with conda installation.
+    
 ## Tests
 
 To check if your installation is succesful, run the tests by executing the `test_module.py` file as:
