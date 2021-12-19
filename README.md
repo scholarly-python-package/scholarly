@@ -3,14 +3,22 @@
 [![Documentation Status](https://readthedocs.org/projects/scholarly/badge/?version=latest)](https://scholarly.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/27442991.svg)](https://zenodo.org/badge/latestdoi/27442991)
 
-
 # scholarly
 
 scholarly is a module that allows you to retrieve author and publication information from [Google Scholar](https://scholar.google.com) in a friendly, Pythonic way without having to solve CAPTCHAs.
 
 ## Installation
 
-Use `pip` to install the latest release from pypi:
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/scholarly/badges/installer/conda.svg)](https://conda.anaconda.org/conda-forge)
+[![PyPI version](https://badge.fury.io/py/scholarly.svg)](https://badge.fury.io/py/scholarly)
+
+`scholarly` can be installed either with `conda` or with `pip`.
+To install using `conda`, simply run
+```bash
+conda install -c conda-forge scholarly
+```
+
+Alternatively, use `pip` to install the latest release from pypi:
 
 ```bash
 pip3 install scholarly
@@ -39,7 +47,7 @@ If neither installed, `scholarly` will fetch only up to 20 co-authors.
 
     To install `chrome-driver`, [download](https://chromedriver.chromium.org/downloads) the ChromeDriver binary for your platform and include its location in the PATH environment variable.
     See their [getting-started](https://chromedriver.chromium.org/getting-started) page for instructions.
-    Alternatively, if you are on Ubuntu, you can run [scripts/setup-chrome-ubuntu-latest.sh](.scripts/setup-chrome-ubuntu-latest.sh) to install the latest version of ChromeDriver.
+    Alternatively, if you are on Ubuntu, you can run [scripts/setup-chrome-ubuntu-latest.sh](scripts/setup-chrome-ubuntu-latest.sh) to install the latest version of ChromeDriver.
 
 - **Tor**:
 
@@ -49,6 +57,9 @@ If neither installed, `scholarly` will fetch only up to 20 co-authors.
     ```bash
     pip3 install scholarly[tor]
     ```
+    
+    **Note:** Tor option is unavailable with conda installation.
+    
 ## Tests
 
 To check if your installation is succesful, run the tests by executing the `test_module.py` file as:
