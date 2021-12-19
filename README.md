@@ -47,7 +47,7 @@ If neither installed, `scholarly` will fetch only up to 20 co-authors.
 
     To install `chrome-driver`, [download](https://chromedriver.chromium.org/downloads) the ChromeDriver binary for your platform and include its location in the PATH environment variable.
     See their [getting-started](https://chromedriver.chromium.org/getting-started) page for instructions.
-    Alternatively, if you are on Ubuntu, you can run [scripts/setup-chrome-ubuntu-latest.sh](.scripts/setup-chrome-ubuntu-latest.sh) to install the latest version of ChromeDriver.
+    Alternatively, if you are on Ubuntu, you can run [scripts/setup-chrome-ubuntu-latest.sh](scripts/setup-chrome-ubuntu-latest.sh) to install the latest version of ChromeDriver.
 
 - **Tor**:
 
