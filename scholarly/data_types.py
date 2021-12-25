@@ -134,6 +134,27 @@ class BibEntry(TypedDict, total=False):
     publisher: str
 
 
+class Mandate(TypedDict, total=False):
+    """
+    :class:`Mandate <Mandate>` A funding mandate for a given year
+
+    :param agency: name of the funding agency
+    :param url_policy: url of the policy for this mandate
+    :param url_policy_cached: url of the policy cached by Google Scholar
+    :param effective_date: date from which the policy is effective
+    :param embargo: period within which the article must be publicly available
+    :param acknowledgement: text in the paper acknowledging the funding
+    :param grant: grant ID that supported this work
+    """
+    agency: str
+    url_policy: str
+    url_policy_cached: str
+    effective_date: str
+    embargo: str
+    acknowledgement: str
+    grant: str
+
+
 class Publication(TypedDict, total=False):
     """
     :class:`Publication <Publication>` object used to represent a publication entry on Google Scholar.
@@ -170,6 +191,7 @@ class Publication(TypedDict, total=False):
                           values.
                           (source: AUTHOR_PUBLICATION_ENTRY)
     :param public_access: Boolean corresponding to whether the article is available or not in accordance with public access mandates.
+    :param mandates: List of mandates with funding information and public access requirements.
     :param url_related_articles: the url containing link for related articles of a publication (needs fill() for AUTHOR_PUBLICATION_ENTRIES)
     :param url_add_sclib: (source: PUBLICATION_SEARCH_SNIPPET)
     :param url_scholarbib: the url containing links for
@@ -189,6 +211,7 @@ class Publication(TypedDict, total=False):
     cites_per_year: CitesPerYear
     author_pub_id: str
     public_access: bool
+    mandates: List[Mandate]
     eprint_url: str
     pub_url: str
     url_add_sclib: str

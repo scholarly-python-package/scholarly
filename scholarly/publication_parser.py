@@ -2,7 +2,7 @@ import re
 import bibtexparser
 import arrow
 from bibtexparser.bibdatabase import BibDatabase
-from .data_types import BibEntry, Publication, PublicationSource
+from .data_types import BibEntry, Mandate, Publication, PublicationSource
 
 
 _HOST = 'https://scholar.google.com{0}'
@@ -13,6 +13,7 @@ _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
 _BIBCITE = '/scholar?q=info:{0}:scholar.google.com/\
 &output=cite&scirp={1}&hl=en'
 _CITEDBYLINK = '/scholar?cites={0}'
+_MANDATES_URL = '/citations?view_op=view_mandate&hl=en&citation_for_view={0}'
 
 _BIB_MAPPING = {
     'ENTRYTYPE': 'pub_type',
@@ -346,6 +347,11 @@ class PublicationParser(object):
             if soup.find('div', class_='gsc_vcd_title_ggi'):
                 publication['eprint_url'] = soup.find(
                     'div', class_='gsc_vcd_title_ggi').a['href']
+
+            if publication.get('public_access', None):
+                publication['mandates'] = []
+                self._fill_public_access_mandates(publication)
+
             publication['filled'] = True
         elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             bibtex_url = self._get_bibtex(publication['url_scholarbib'])
@@ -400,3 +406,31 @@ class PublicationParser(object):
             if link.string.lower() == "bibtex":
                 return link.get('href')
         return ''
+
+    def _fill_public_access_mandates(self, publication: Publication) -> None:
+        """Fills the public access mandates"""
+        if publication.get('public_access', None):
+            soup = self.nav._get_soup(_MANDATES_URL.format(publication['author_pub_id']))
+            mandates = soup.find_all('li')
+            for mandate in mandates:
+                m = Mandate()
+                m['agency'] = mandate.find('span', class_='gsc_md_mndt_name').text
+                m['url_policy'] = mandate.find('div', class_='gsc_md_mndt_title').a['href']
+                m['url_policy_cached'] = mandate.find('span', class_='gs_a').a['href']
+                for desc in mandate.find_all('div', class_='gsc_md_mndt_desc'):
+                    match = re.search("Effective date: [0-9]{4}/[0-9]{1,2}]", desc.text)
+                    if match:
+                        m['effective_date'] = re.sub(pattern="Effective date: ", repl="",
+                                                     string=desc.text[match.start() : match.end()])
+
+                    match = re.search("Embargo: ", desc.text)
+                    if match:
+                        m['embargo'] = re.sub(pattern="Embargo: ", repl="", string=desc.text[match.end():])
+
+                    if "Grant: " in desc.text:
+                        m['grant'] = desc.text[7:]
+
+                    if "Funding acknowledgement" in desc.text:
+                        m['acknowledgement'] = desc.find('span', class_='gs_gray').text
+
+                publication['mandates'].append(m)

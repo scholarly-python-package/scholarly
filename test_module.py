@@ -293,6 +293,8 @@ class TestScholarly(unittest.TestCase):
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
+        scholarly.fill(pub)
+        self.assertEqual(pub['mandates'][0]['agency'], "US National Science Foundation")
         # Trigger the pprint method, but suppress the output
         with self.suppress_stdout():
             scholarly.pprint(author)
@@ -601,6 +603,47 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(set(pub['author_id']), {'V-ab9U4AAAAJ', '4k-k6SEAAAAJ', 'GLm-SaQAAAAJ'})
         self.assertEqual(pub['bib']['pub_year'], '2009')
         self.assertGreaterEqual(pub['num_citations'], 581)
+
+    def test_download_mandates_csv(self):
+        # Try storing the file temporarily as `scholarly.csv` and delete it.
+        # If there exists already a file with that name, generate a random name
+        # that does not exist yet, so we can safely delete it.
+        filename = "scholarly.csv"
+        while os.path.exists(filename):
+            filename = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10)) + ".csv"
+
+        # Delete the file with a finally block no matter what happens
+        try:
+            scholarly.download_mandates_csv(filename)
+            funder, policy, percentage2017 = [], [], []
+            with open(filename, "r") as f:
+                csv_reader = csv.DictReader(f)
+                for row in csv_reader:
+                    funder.append(row['\ufeffFunder'])
+                    policy.append(row['Policy'])
+                    percentage2017.append(row['2017'])
+
+            agency_policy = {
+                "US National Science Foundation": "https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
+                "Department of Science & Technology, India": "http://www.dst.gov.in/sites/default/files/APPROVED%20OPEN%20ACCESS%20POLICY-DBT%26DST%2812.12.2014%29_1.pdf",
+                "Swedish Research Council": "https://www.vr.se/english/applying-for-funding/requirements-terms-and-conditions/publishing-open-access.html",
+                "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": ""
+            }
+            agency_2017 = {
+                "US National Science Foundation": "82%",
+                "Department of Science & Technology, India": "53%",
+                "Swedish Research Council": "83%",
+                "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "80%"
+            }
+
+            for agency in agency_policy:
+                agency_index = funder.index(agency)
+                self.assertEqual(policy[agency_index], agency_policy[agency])
+                self.assertEqual(percentage2017[agency_index], agency_2017[agency])
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -17,6 +17,7 @@ _KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 _CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
 _ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
+_MANDATES_URL = "https://scholar.google.com/citations?view_op=mandates_leaderboard_csv"
 
 
 class _Scholarly:
@@ -464,6 +465,40 @@ class _Scholarly:
         """
         url = _ORGSEARCH.format(organization_id)
         return self.__nav.search_authors(url)
+
+    def download_mandates_csv(self, filename: str, overwrite: bool = False,
+                              include_links: bool =True):
+        """
+        Download the CSV file of the current mandates.
+        """
+        if (not overwrite) and os.path.exists(filename):
+            raise ValueError(f"{filename} already exists. Either provide a "
+                              "different filename or allow overwriting by "
+                              "setting overwrite=True")
+        text = self.__nav._get_page(_MANDATES_URL, premium=False)
+        if include_links:
+            soup = self.__nav._get_soup("/citations?view_op=mandates_leaderboard")
+            text = text.replace("Funder,", "Funder,Policy,Cached,", 1)
+            for agency in soup.find_all("td", class_="gsc_mlt_t"):
+                cached = agency.find("span", class_="gs_a").a["href"]
+                name = agency.a.text
+                if name != "cached":
+                    policy = agency.a['href']
+                else:
+                    name = agency.text[:-10]
+                    policy = ""
+
+                if "," in name:
+                    text = text.replace(f'"{name}",', f'"{name}",{policy},{cached},')
+                else:
+                    text = text.replace(f"{name},", f"{name},{policy},{cached},")
+        try:
+            with open(filename, 'w') as f:
+                f.write(text)
+        except IOError:
+            self.logger.error("Error writing mandates as %s", filename)
+        finally:
+            return text
 
     # TODO: Make it a public method in v1.6
     def _construct_url(self, baseurl: str, patents: bool = True,
