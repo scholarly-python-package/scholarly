@@ -504,6 +504,10 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(author['coauthors']), 6)
         self.assertIn('Eleni Stroulia', [_coauth['name'] for _coauth in author['coauthors']])
         self.assertIn('TyM1dLwAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
+        # Fill co-authors
+        for _coauth in author['coauthors']:
+            scholarly.fill(_coauth, sections=['basics'])
+        self.assertIn("16627554827500071773", [_coauth['organization'] for _coauth in author['coauthors']])
 
         author = scholarly.search_author_id('PA9La6oAAAAJ')
         scholarly.fill(author, sections=['basics', 'coauthors'])
