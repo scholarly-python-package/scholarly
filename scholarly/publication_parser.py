@@ -418,7 +418,7 @@ class PublicationParser(object):
                 m['url_policy'] = mandate.find('div', class_='gsc_md_mndt_title').a['href']
                 m['url_policy_cached'] = mandate.find('span', class_='gs_a').a['href']
                 for desc in mandate.find_all('div', class_='gsc_md_mndt_desc'):
-                    match = re.search("Effective date: [0-9]{4}/[0-9]{1,2}]", desc.text)
+                    match = re.search("Effective date: [0-9]{4}/[0-9]{1,2}", desc.text)
                     if match:
                         m['effective_date'] = re.sub(pattern="Effective date: ", repl="",
                                                      string=desc.text[match.start() : match.end()])
@@ -428,9 +428,9 @@ class PublicationParser(object):
                         m['embargo'] = re.sub(pattern="Embargo: ", repl="", string=desc.text[match.end():])
 
                     if "Grant: " in desc.text:
-                        m['grant'] = desc.text[7:]
+                        m['grant'] = desc.text.split("Grant: ")[1]
 
-                    if "Funding acknowledgement" in desc.text:
+                    if "Funding acknowledgment" in desc.text:
                         m['acknowledgement'] = desc.find('span', class_='gs_gray').text
 
                 publication['mandates'].append(m)
