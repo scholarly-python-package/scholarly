@@ -2,14 +2,15 @@
 import requests
 import os
 import copy
+import csv
 import pprint
-from typing import List
+from typing import Dict, List
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser, _SearchScholarIterator
-from .data_types import Author, AuthorSource, Publication, PublicationSource
+from .data_types import Author, AuthorSource, Journal, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -28,6 +29,13 @@ class _Scholarly:
         self.env = os.environ.copy()
         self.__nav = Navigator()
         self.logger = self.__nav.logger
+        self._journal_categories = None
+
+    @property
+    def journal_categories(self):
+        if self._journal_categories is None:
+            self._journal_categories = self.get_journal_categories()
+        return self._journal_categories
 
     def set_retries(self, num_retries: int)->None:
         """Sets the number of retries in case of errors
@@ -530,3 +538,86 @@ class _Scholarly:
 
         # improve str below
         return url + yr_lo + yr_hi + citations + patents + sortby + start
+
+    def get_journal_categories(self):
+        """
+        Get a dict of journal categories and subcategories.
+        """
+        soup = self.__nav._get_soup("/citations?view_op=top_venues&hl=en&vq=en")
+        categories = {}
+        for category in soup.find_all("a", class_="gs_md_li"):
+            if not "vq=" in category['href']:
+                continue
+            vq = category['href'].split("&vq=")[1]
+            categories[category.text] = {}
+            categories[category.text][None] = vq
+
+        for category in categories:
+            vq = categories[category][None]
+            if vq=="en":
+                continue
+            soup = self.__nav._get_soup(f"/citations?view_op=top_venues&hl=en&vq={vq}")
+            for subcategory in soup.find_all("a", class_="gs_md_li"):
+                if not f"&vq={vq}_" in subcategory['href']:
+                    continue
+                categories[category][subcategory.text] = subcategory['href'].split("&vq=")[1]
+
+        #print(categories)
+        return categories
+
+    def get_journals(self, category='English', subcategory=None, include_comments: bool = False) -> Dict[int, Journal]:
+        try:
+            cat = self.journal_categories[category]
+            try:
+                subcat = cat[subcategory]
+                url = f"/citations?view_op=top_venues&hl=en&vq={subcat}"
+                soup = self.__nav._get_soup(url)
+
+                ranks = soup.find_all("td", class_="gsc_mvt_p")
+                names = soup.find_all("td", class_="gsc_mvt_t")
+                h5indices = soup.find_all("a", class_="gs_ibl gsc_mp_anchor")
+                h5medians = soup.find_all("span", class_="gs_ibl")
+
+
+                #import pdb; pdb.set_trace()
+                result = {}
+                for rank, name, h5index, h5median in zip(ranks, names, h5indices, h5medians):
+                    url_citations = h5index['href']
+                    comment = ""
+                    if include_comments:
+                        soup = self.__nav._get_soup(url_citations)
+                        try:
+                            for cmt in soup.find_all('ul', class_='gsc_mlhd_list')[1].find_all('li'):
+                                comment += cmt.text+"; "
+                        except IndexError:
+                            pass
+                    result[int(rank.text[:-1])] = Journal(name=name.text,
+                                                          h5_index=int(h5index.text),
+                                                          h5_median=int(h5median.text),
+                                                          url_citations=url_citations,
+                                                          comment=comment
+                                                         )
+                #print(result)
+                return result
+            except KeyError:
+                raise ValueError("Invalid subcategory: %s for %s. Choose one from %s" % (subcategory, category, cat.keys()))
+        except KeyError:
+            raise ValueError("Invalid category: %s. Choose one from %s", category, self.journal_categories.keys())
+
+    def save_journals_csv(self, filename, category="English", subcategory=None, include_comments=False):
+        """
+        Save a list of journals to a file in CSV format.
+        """
+        journals = self.get_journals(category, subcategory, include_comments)
+        try:
+            with open(filename, 'w') as f:
+                csv_writer = csv.writer(f)
+                header = ['Publication', 'h5-index', 'h5-median'] + ['Comment']*include_comments
+                csv_writer.writerow(header)
+                for rank, journal in journals.items():
+                    row = [journal['name'], journal['h5_index'], journal['h5_median']] + [journal.get('comment', '')]*include_comments
+                    csv_writer.writerow(row)
+        except IOError:
+            self.logger.error("Error writing journals as %s", filename)
+        finally:
+            return journals

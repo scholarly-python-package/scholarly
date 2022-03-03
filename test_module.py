@@ -6,6 +6,7 @@ from scholarly.data_types import Mandate
 from scholarly.publication_parser import PublicationParser
 import random
 import json
+import csv
 from contextlib import contextmanager
 
 
@@ -664,6 +665,31 @@ class TestScholarly(unittest.TestCase):
                 agency_index = funder.index(agency)
                 self.assertEqual(policy[agency_index], agency_policy[agency])
                 self.assertEqual(percentage2020[agency_index], agency_2020[agency])
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+
+
+    def test_save_journal_leaderboard(self):
+        """
+        Test that we can save the journal leaderboard to a file
+        """
+        filename = "journals.csv"
+        while os.path.exists(filename):
+            filename = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10)) + ".csv"
+
+        try:
+            scholarly.save_journals_csv(category="Physics & Mathematics", subcategory="Astronomy & Astrophysics",
+                                        filename=filename, include_comments=True)
+            with open(filename, "r") as f:
+                csv_reader = csv.DictReader(f)
+                for row in csv_reader:
+                    #import pdb; pdb.set_trace()
+                    self.assertEqual(row['Publication'], 'The Astrophysical Journal')
+                    self.assertEqual(row['h5-index'], '161')
+                    self.assertEqual(row['h5-median'], '239')
+                    self.assertEqual(row['Comment'], '#1 Astronomy & Astrophysics; #2 Physics & Mathematics; ')
+                    break
         finally:
             if os.path.exists(filename):
                 os.remove(filename)

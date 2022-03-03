@@ -5,7 +5,6 @@ from bibtexparser.bibdatabase import BibDatabase
 from .data_types import BibEntry, Mandate, Publication, PublicationSource
 
 
-_HOST = 'https://scholar.google.com{0}'
 _SCHOLARPUBRE = r'cites=([\d,]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
 _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
@@ -49,6 +48,7 @@ class _SearchScholarIterator(object):
 
     def __init__(self, nav, url: str):
         self._url = url
+        self._pubtype = PublicationSource.PUBLICATION_SEARCH_SNIPPET if "/scholar?" in url else PublicationSource.JOURNAL_CITATION_LIST
         self._nav = nav
         self._load_url(url)
         self.total_results = self._get_total_results()
@@ -58,7 +58,7 @@ class _SearchScholarIterator(object):
         # this is temporary until setup json file
         self._soup = self._nav._get_soup(url)
         self._pos = 0
-        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl')
+        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl') + self._soup.find_all('div', class_='gsc_mpat_ttl')
 
     def _get_total_results(self):
         if self._soup.find("div", class_="gs_pda"):
@@ -81,7 +81,7 @@ class _SearchScholarIterator(object):
         if self._pos < len(self._rows):
             row = self._rows[self._pos]
             self._pos += 1
-            res = self.pub_parser.get_publication(row, PublicationSource.PUBLICATION_SEARCH_SNIPPET)
+            res = self.pub_parser.get_publication(row, self._pubtype)
             return res
         elif self._soup.find(class_='gs_ico gs_ico_nav_next'):
             url = self._soup.find(
@@ -142,6 +142,9 @@ class PublicationParser(object):
             return self._citation_pub(__data, publication)
         elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             return self._scholar_pub(__data, publication)
+        elif publication['source'] == PublicationSource.JOURNAL_CITATION_LIST:
+            return publication
+            # TODO: self._journal_pub(__data, publication)
         else:
             return publication
 

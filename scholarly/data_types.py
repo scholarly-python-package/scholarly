@@ -61,6 +61,7 @@ class PublicationSource(str, Enum):
     '''
     PUBLICATION_SEARCH_SNIPPET = "PUBLICATION_SEARCH_SNIPPET"
     AUTHOR_PUBLICATION_ENTRY = "AUTHOR_PUBLICATION_ENTRY"
+    JOURNAL_CITATION_LIST = "JOURNAL_CITATION_LIST"
 
 
 class AuthorSource(str, Enum):
@@ -271,3 +272,23 @@ class Author(TypedDict, total=False):
     coauthors: List # List of authors. No self dict functionality available
     container_type: str
     source: AuthorSource
+
+class Journal(TypedDict, total=False):
+    """
+    :class:`Journal <Journal>` object used to represent a journal entry on Google Scholar.
+           (When source is not specified, the field is present in all sources)
+
+
+    :param name: The name of the journal
+    :param h5-index: h5-index is the h-index for articles published in the journal during the last 5 complete years.
+    :param h5-median: h5-median for a publication is the median number of citations for the articles that make up its h5-index.
+    :param url_citations: The URL for the cached citations page of the journal
+    :param comment: String representing the ranking for the journal in various categories
+
+    """
+
+    name: str
+    h5_index: int
+    h5_median: int
+    url_citations: str
+    comment: str
