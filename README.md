@@ -57,9 +57,12 @@ If neither installed, `scholarly` will fetch only up to 20 co-authors.
     ```bash
     pip3 install scholarly[tor]
     ```
-    
+    If you use `zsh` (which is now the default in latest macOS), you should type this as
+    ```zsh
+    pip3 install scholarly'[tor]'
+    ```
     **Note:** Tor option is unavailable with conda installation.
-    
+
 ## Tests
 
 To check if your installation is succesful, run the tests by executing the `test_module.py` file as:

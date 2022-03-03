@@ -56,8 +56,11 @@ class AuthorParser:
                 author['email_domain'] = re.sub(_EMAILAUTHORRE, r'@', email.text)
 
             int_class = self._find_tag_class_name(__data, 'a', 'one_int')
-            interests = __data.find_all('a', class_=int_class)
-            author['interests'] = [i.text.strip() for i in interests]
+            if int_class:
+                interests = __data.find_all('a', class_=int_class)
+                author['interests'] = [i.text.strip() for i in interests]
+            else:
+                author['interests'] = []
 
             citedby_class = self._find_tag_class_name(__data, 'div', 'cby')
             citedby = __data.find('div', class_=citedby_class)
