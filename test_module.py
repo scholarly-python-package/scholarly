@@ -2,9 +2,11 @@ import unittest
 import os
 import sys
 from scholarly import scholarly, ProxyGenerator
+from scholarly.data_types import Mandate
 from scholarly.publication_parser import PublicationParser
 import random
 import json
+import csv
 from contextlib import contextmanager
 
 
@@ -204,7 +206,7 @@ class TestScholarly(unittest.TestCase):
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    @unittest.skip(reason="The BiBTeX comparison is not reliable")
     def test_bibtex(self):
         """
         Test that we get the BiBTeX entry correctly
@@ -265,7 +267,6 @@ class TestScholarly(unittest.TestCase):
         for key in author:
             if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
                 self.assertEqual(author[key], expected_author[key])
-        self.assertGreaterEqual(author["citedby"], expected_author["citedby"])
         self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
     def test_search_keywords(self):
@@ -293,6 +294,12 @@ class TestScholarly(unittest.TestCase):
         pub = author['publications'][2]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
+        scholarly.fill(pub)
+        mandate = Mandate(agency="US National Science Foundation", effective_date="2016/1", embargo="12 months",
+                          url_policy="https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
+                          url_policy_cached="/mandates/nsf-2021-02-13.pdf",
+                          acknowledgement=" …NSF grant BCS-1354029 …")
+        self.assertIn(mandate, pub['mandates'])
         # Trigger the pprint method, but suppress the output
         with self.suppress_stdout():
             scholarly.pprint(author)
@@ -333,13 +340,14 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
         self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
-        self.assertEqual(author['public_access']['available'], 0)
+        self.assertEqual(author['interests'], [])
+        self.assertEqual(author['public_access']['available'], 1)
         self.assertEqual(author['public_access']['not_available'], 0)
         self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
         self.assertGreaterEqual(len(author['publications']), 179)
         pub = author['publications'][1]
         self.assertEqual(pub["citedby_url"],
-                         "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
+                         "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=6983837810323809551")
 
     @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs(self):
@@ -502,6 +510,10 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(author['coauthors']), 6)
         self.assertIn('Eleni Stroulia', [_coauth['name'] for _coauth in author['coauthors']])
         self.assertIn('TyM1dLwAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
+        # Fill co-authors
+        for _coauth in author['coauthors']:
+            scholarly.fill(_coauth, sections=['basics'])
+        self.assertIn(16627554827500071773, [_coauth.get('organization', None) for _coauth in author['coauthors']])
 
         author = scholarly.search_author_id('PA9La6oAAAAJ')
         scholarly.fill(author, sections=['basics', 'coauthors'])
@@ -530,9 +542,26 @@ class TestScholarly(unittest.TestCase):
                          sum(pub.get("public_access", None) is False for pub in author["publications"]))
 
         author = next(scholarly.search_author("Daniel Kahneman"))
-        scholarly.fill(author, sections=["basics", "indices", "public_access"])
         self.assertEqual(author["scholar_id"], "ImhakoAAAAAJ")
-        self.assertGreaterEqual(author["public_access"]["available"], 6)
+        self.assertEqual(author["interests"], [])
+        scholarly.fill(author, sections=["public_access"])
+        self.assertGreaterEqual(author["public_access"]["available"], 5)
+
+    def test_mandates(self):
+        """
+        Test that we can fetch the funding information of a paper from an author
+        """
+        author = scholarly.search_author_id("kUDCLXAAAAAJ")
+        scholarly.fill(author, sections=['public_access', 'publications'])
+        for pub in author['publications']:
+            if pub['author_pub_id'] == "kUDCLXAAAAAJ:tzM49s52ZIMC":
+                scholarly.fill(pub)
+                break
+        mandate = Mandate(agency="European Commission", effective_date="2013/12", embargo="6 months", grant="279396",
+                          url_policy="https://erc.europa.eu/sites/default/files/document/file/ERC%20Open%20Access%20guidelines-Version%201.1._10.04.2017.pdf",
+                          url_policy_cached="/mandates/horizon2020_eu-2021-02-13-en.pdf",
+        )
+        self.assertIn(mandate, pub['mandates'])
 
     def test_related_articles_from_author(self):
         """
@@ -601,6 +630,72 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(set(pub['author_id']), {'V-ab9U4AAAAJ', '4k-k6SEAAAAJ', 'GLm-SaQAAAAJ'})
         self.assertEqual(pub['bib']['pub_year'], '2009')
         self.assertGreaterEqual(pub['num_citations'], 581)
+
+    def test_download_mandates_csv(self):
+        # Try storing the file temporarily as `scholarly.csv` and delete it.
+        # If there exists already a file with that name, generate a random name
+        # that does not exist yet, so we can safely delete it.
+        filename = "scholarly.csv"
+        while os.path.exists(filename):
+            filename = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10)) + ".csv"
+
+        # Delete the file with a finally block no matter what happens
+        try:
+            scholarly.download_mandates_csv(filename)
+            funder, policy, percentage2020 = [], [], []
+            with open(filename, "r") as f:
+                csv_reader = csv.DictReader(f)
+                for row in csv_reader:
+                    funder.append(row['\ufeffFunder'])
+                    policy.append(row['Policy'])
+                    percentage2020.append(row['2020'])
+
+            agency_policy = {
+                "US National Science Foundation": "https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
+                "Department of Science & Technology, India": "http://www.dst.gov.in/sites/default/files/APPROVED%20OPEN%20ACCESS%20POLICY-DBT%26DST%2812.12.2014%29_1.pdf",
+                "Swedish Research Council": "https://www.vr.se/english/applying-for-funding/requirements-terms-and-conditions/publishing-open-access.html",
+                "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": ""
+            }
+            agency_2020 = {
+                "US National Science Foundation": "86%",
+                "Department of Science & Technology, India": "47%",
+                "Swedish Research Council": "88%",
+                "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
+            }
+
+            for agency in agency_policy:
+                agency_index = funder.index(agency)
+                self.assertEqual(policy[agency_index], agency_policy[agency])
+                self.assertEqual(percentage2020[agency_index], agency_2020[agency])
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+
+
+    def test_save_journal_leaderboard(self):
+        """
+        Test that we can save the journal leaderboard to a file
+        """
+        filename = "journals.csv"
+        while os.path.exists(filename):
+            filename = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10)) + ".csv"
+
+        try:
+            scholarly.save_journals_csv(category="Physics & Mathematics", subcategory="Astronomy & Astrophysics",
+                                        filename=filename, include_comments=True)
+            with open(filename, "r") as f:
+                csv_reader = csv.DictReader(f)
+                for row in csv_reader:
+                    #import pdb; pdb.set_trace()
+                    self.assertEqual(row['Publication'], 'The Astrophysical Journal')
+                    self.assertEqual(row['h5-index'], '161')
+                    self.assertEqual(row['h5-median'], '239')
+                    self.assertEqual(row['Comment'], '#1 Astronomy & Astrophysics; #2 Physics & Mathematics; ')
+                    break
+        finally:
+            if os.path.exists(filename):
+                os.remove(filename)
+
 
 if __name__ == '__main__':
     unittest.main()
