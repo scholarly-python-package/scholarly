@@ -340,6 +340,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
         self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
+        self.assertEqual(author['interests'], [])
         self.assertEqual(author['public_access']['available'], 1)
         self.assertEqual(author['public_access']['not_available'], 0)
         self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
@@ -541,8 +542,9 @@ class TestScholarly(unittest.TestCase):
                          sum(pub.get("public_access", None) is False for pub in author["publications"]))
 
         author = next(scholarly.search_author("Daniel Kahneman"))
-        scholarly.fill(author, sections=["basics", "indices", "public_access"])
         self.assertEqual(author["scholar_id"], "ImhakoAAAAAJ")
+        self.assertEqual(author["interests"], [])
+        scholarly.fill(author, sections=["public_access"])
         self.assertGreaterEqual(author["public_access"]["available"], 5)
 
     def test_mandates(self):
