@@ -48,6 +48,7 @@ class ProxyGenerator(object):
         self._can_refresh_tor = False
         self._tor_control_port = None
         self._tor_password = None
+        self._webdriver = None
         self._session = None
         self._TIMEOUT = 5
         self._new_session()
