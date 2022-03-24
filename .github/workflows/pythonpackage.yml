@@ -13,11 +13,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.8]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -49,10 +51,16 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
-          curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
           coverage run -m unittest -v test_module.TestScholarly
           coverage xml
+      - name: Validate the repository yaml for codecov
+        if:
+          "matrix.os == 'ubuntu-latest'"
+        run:
+          curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
       - name: Upload code coverage
+        if:
+          "matrix.os != 'windows-latest'"
         uses: codecov/codecov-action@v2
         with:
           directory: ./
