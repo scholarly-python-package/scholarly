@@ -347,7 +347,7 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(len(author['publications']), 179)
         pub = author['publications'][1]
         self.assertEqual(pub["citedby_url"],
-                         "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=6983837810323809551")
+                         "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
 
     @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs(self):
@@ -658,8 +658,8 @@ class TestScholarly(unittest.TestCase):
             }
             agency_2020 = {
                 "US National Science Foundation": "86%",
-                "Department of Science & Technology, India": "47%",
-                "Swedish Research Council": "88%",
+                "Department of Science & Technology, India": "48%",
+                "Swedish Research Council": "89%",
                 "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
             }
 
