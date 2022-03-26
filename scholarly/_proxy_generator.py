@@ -49,6 +49,7 @@ class ProxyGenerator(object):
         self._tor_control_port = None
         self._tor_password = None
         self._session = None
+        self._webdriver = None
         self._TIMEOUT = 5
         self._new_session()
 
@@ -458,7 +459,10 @@ class ProxyGenerator(object):
         if self._session:
             self._session.close()
         if self._webdriver:
-            self._webdriver.quit()
+            try:
+                self._webdriver.quit()
+            except Exception as e:
+                self.logger.warning("Could not close webdriver cleanly: %s", e)
 
     def _fp_coroutine(self, timeout=1, wait_time=120):
         """A coroutine to continuosly yield free proxies
