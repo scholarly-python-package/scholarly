@@ -43,7 +43,12 @@ jobs:
       #  uses: typilus/typilus-action@v0.9
       - name: Install Chrome
         uses: browser-actions/setup-chrome@latest
-      - name: Test with unittest
+        continue-on-error: true
+        with:
+          fail_ci_if_error: false
+      - name: Run unittests
+        id: unittests
+        continue-on-error: true
         env:
           CONNECTION_METHOD: ${{ secrets.CONNECTION_METHOD }}
           PASSWORD: ${{ secrets.PASSWORD }}
@@ -52,20 +57,23 @@ jobs:
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
           coverage run -m unittest -v test_module.TestScholarly
-          coverage xml
-      - name: Validate the repository yaml for codecov
+      - name: Generate coverage report (macOS only)
         if:
-          "matrix.os == 'ubuntu-latest'"
-        run:
+          "matrix.os == 'macos-latest'"
+        run: |
           curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
-      - name: Upload code coverage
+          coverage xml
+      - name: Upload code coverage (macOS only)
         if:
-          "matrix.os != 'windows-latest'"
+          "matrix.os == 'macos-latest'"
         uses: codecov/codecov-action@v2
         with:
           directory: ./
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           files: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           verbose: true
+      - name: Check if unittests failed
+        if: "steps.unittests.outcome == 'failure'"
+        run: exit 1
