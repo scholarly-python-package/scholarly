@@ -9,9 +9,7 @@ _HOST = 'https://scholar.google.com{0}'
 _PAGESIZE = 100
 _EMAILAUTHORRE = r'Verified email at '
 _CITATIONAUTH = '/citations?hl=en&user={0}'
-_COAUTH = ('https://scholar.google.com/citations?user={0}&hl=en'
-           '#d=gsc_md_cod&u=%2Fcitations%3Fview_op%3Dlist_colleagues'
-           '%26hl%3Den%26json%3D%26user%3D{0}%23t%3Dgsc_cod_lc')
+_COAUTH = 'https://scholar.google.com/citations?view_op=list_colleagues&hl=en&user={0}'
 _MANDATES = "/citations?hl=en&tzom=300&user={0}&view_op=list_mandates&pagesize={1}"
 
 
