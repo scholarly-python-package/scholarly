@@ -1,6 +1,7 @@
 from .publication_parser import PublicationParser
 import re
 from .data_types import Author, AuthorSource, PublicationSource, PublicAccess
+from selenium.webdriver.common.by import By
 import codecs
 
 _CITATIONAUTHRE = r'user=([\w-]*)'
@@ -8,7 +9,9 @@ _HOST = 'https://scholar.google.com{0}'
 _PAGESIZE = 100
 _EMAILAUTHORRE = r'Verified email at '
 _CITATIONAUTH = '/citations?hl=en&user={0}'
-_COAUTH = '/citations?view_op=list_colleagues&hl=en&user={0}'
+_COAUTH = ('https://scholar.google.com/citations?user={0}&hl=en'
+           '#d=gsc_md_cod&u=%2Fcitations%3Fview_op%3Dlist_colleagues'
+           '%26hl%3Den%26json%3D%26user%3D{0}%23t%3Dgsc_cod_lc')
 _MANDATES = "/citations?hl=en&tzom=300&user={0}&view_op=list_mandates&pagesize={1}"
 
 
@@ -132,9 +135,9 @@ class AuthorParser:
         not_available = soup.find('div', class_='gsc_rsb_m_na')
         n_available, n_not_available = 0, 0
         if available:
-            n_available = int(available.text.split(" ")[0].replace(",", ""))
+            n_available = int(available.text.split(" ")[0])
         if not_available:
-            n_not_available = int(not_available.text.split(" ")[0].replace(",", ""))
+            n_not_available = int(not_available.text.split(" ")[0])
 
         author["public_access"] = PublicAccess(available=n_available,
                                                not_available=n_not_available)
@@ -195,13 +198,7 @@ class AuthorParser:
     def _get_coauthors_short(self, soup):
         """Get the short list of coauthors from the profile page.
 
-        This method fetches the list of coauthors visible from an author's
-        prilfe page alone. This may or may not be the complete list of
-        coauthors.
-
-        Note:
-        -----
-        This method is to be called by _fill_coauthors method.
+        To be called by _fill_coauthors method.
         """
         coauthors = soup.find_all('span', class_='gsc_rsb_a_desc')
         coauthor_ids = [re.findall(_CITATIONAUTHRE,
@@ -218,24 +215,24 @@ class AuthorParser:
     def _get_coauthors_long(self, author):
         """Get the long (>20) list of coauthors.
 
-        This method fetches the complete list of coauthors bu opening a new
-        page filled with the complete coauthor list.
-
-        Note:
-        -----
-        This method is to be called by _fill_coauthors method.
+        Opens the dialog box to get the complete list of coauthors.
+        To be called by _fill_coauthors method.
         """
-        soup = self.nav._get_soup(_COAUTH.format(author['scholar_id']))
-        coauthors = soup.find_all('div', 'gs_ai gs_scl')
-        coauthor_ids = [re.findall(_CITATIONAUTHRE,
-                        coauth('a')[0].get('href'))[0]
-                        for coauth in coauthors]
+        with self.nav.pm2._get_webdriver() as wd:
+            wd.get(_COAUTH.format(author['scholar_id']))
+            # Wait up to 30 seconds for the various elements to be available.
+            # The wait may be better set elsewhere.
+            wd.implicitly_wait(30)
+            coauthors = wd.find_elements(By.CLASS_NAME, 'gs_ai_pho')
+            coauthor_ids = [re.findall(_CITATIONAUTHRE,
+                            coauth.get_attribute('href'))[0]
+                            for coauth in coauthors]
+            coauthor_names = [name.text for name in
+                              wd.find_elements(By.CLASS_NAME, 'gs_ai_name')]
+            coauthor_affils = [affil.text for affil in
+                               wd.find_elements(By.CLASS_NAME, 'gs_ai_aff')]
 
-        coauthor_names = [coauth.find(class_="gs_ai_name").text for coauth in coauthors]
-        coauthor_affils = [coauth.find(class_="gs_ai_aff").text
-                           for coauth in coauthors]
-
-        return coauthor_ids, coauthor_names, coauthor_affils
+            return coauthor_ids, coauthor_names, coauthor_affils
 
     def _fill_coauthors(self, soup, author):
         # If "View All" is not found, scrape the page for coauthors

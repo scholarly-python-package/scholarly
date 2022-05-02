@@ -37,6 +37,18 @@ This means your code that uses an earlier version of `scholarly` is guaranteed t
 
 ### Optional dependencies
 
+- **geckodriver** or **chrome-driver** provide the browser capabilities that may be needed to fully utilize the library.
+Installing at least one of `geckodriver` or `chrome-driver` if you need to fetch the complete list of co-authors from an author's profile.
+If neither installed, `scholarly` will fetch only up to 20 co-authors.
+
+    To install `geckodriver`, download the latest version from their [Github repo](https://github.com/mozilla/geckodriver/releases) and the executable should be in the system path.
+    Follow the appropriate installation instructions:
+    [macOS](https://stackoverflow.com/a/67211136) | [Ubuntu](https://askubuntu.com/a/871077) | [Windows](https://stackoverflow.com/a/56926716)
+
+    To install `chrome-driver`, [download](https://chromedriver.chromium.org/downloads) the ChromeDriver binary for your platform and include its location in the PATH environment variable.
+    See their [getting-started](https://chromedriver.chromium.org/getting-started) page for instructions.
+    Alternatively, if you are on Ubuntu, you can run [scripts/setup-chrome-ubuntu-latest.sh](scripts/setup-chrome-ubuntu-latest.sh) to install the latest version of ChromeDriver.
+
 - **Tor**:
 
     `scholarly` comes with a handful of APIs to set up proxies to circumvent anti-bot measures.
