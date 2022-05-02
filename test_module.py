@@ -518,12 +518,10 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.search_author_id('PA9La6oAAAAJ')
         scholarly.fill(author, sections=['basics', 'coauthors'])
         self.assertEqual(author['name'], "Panos Ipeirotis")
-        self.assertGreaterEqual(len(author['coauthors']), 20)
-        # Don't break the build if the long list cannot be fetch.
-        # Chrome/Geckodriver are mentioned only as optional dependencies.
-        if (len(author['coauthors']) > 20):
-            self.assertIn('Eduardo Ruiz', [_coauth['name'] for _coauth in author['coauthors']])
-            self.assertIn('hWq7jFQAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
+        self.assertGreaterEqual(len(author['coauthors']), 66)
+        # Break the build if the long list cannot be fetched.
+        self.assertIn('Eduardo Ruiz', [_coauth['name'] for _coauth in author['coauthors']])
+        self.assertIn('hWq7jFQAAAAJ', [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_public_access(self):
         """
