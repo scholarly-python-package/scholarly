@@ -132,9 +132,9 @@ class AuthorParser:
         not_available = soup.find('div', class_='gsc_rsb_m_na')
         n_available, n_not_available = 0, 0
         if available:
-            n_available = int(available.text.split(" ")[0])
+            n_available = int(available.text.split(" ")[0].replace(",", ""))
         if not_available:
-            n_not_available = int(not_available.text.split(" ")[0])
+            n_not_available = int(not_available.text.split(" ")[0].replace(",", ""))
 
         author["public_access"] = PublicAccess(available=n_available,
                                                not_available=n_not_available)
