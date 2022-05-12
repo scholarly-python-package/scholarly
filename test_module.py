@@ -655,8 +655,8 @@ class TestScholarly(unittest.TestCase):
                 "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": ""
             }
             agency_2020 = {
-                "US National Science Foundation": "86%",
-                "Department of Science & Technology, India": "48%",
+                "US National Science Foundation": "87%",
+                "Department of Science & Technology, India": "49%",
                 "Swedish Research Council": "89%",
                 "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
             }
