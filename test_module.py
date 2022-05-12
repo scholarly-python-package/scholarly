@@ -533,7 +533,7 @@ class TestScholarly(unittest.TestCase):
         """
         author = scholarly.search_author_id("f4KlrXIAAAAJ")
         scholarly.fill(author, sections=['basics', 'public_access', 'publications'])
-        self.assertGreaterEqual(author["public_access"]["available"], 1180)
+        self.assertGreaterEqual(author["public_access"]["available"], 1150)
         self.assertEqual(author["public_access"]["available"],
                          sum(pub.get("public_access", None) is True for pub in author["publications"]))
         self.assertEqual(author["public_access"]["not_available"],
@@ -655,8 +655,8 @@ class TestScholarly(unittest.TestCase):
                 "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": ""
             }
             agency_2020 = {
-                "US National Science Foundation": "86%",
-                "Department of Science & Technology, India": "48%",
+                "US National Science Foundation": "87%",
+                "Department of Science & Technology, India": "49%",
                 "Swedish Research Council": "89%",
                 "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
             }
