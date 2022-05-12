@@ -533,7 +533,7 @@ class TestScholarly(unittest.TestCase):
         """
         author = scholarly.search_author_id("f4KlrXIAAAAJ")
         scholarly.fill(author, sections=['basics', 'public_access', 'publications'])
-        self.assertGreaterEqual(author["public_access"]["available"], 1180)
+        self.assertGreaterEqual(author["public_access"]["available"], 1150)
         self.assertEqual(author["public_access"]["available"],
                          sum(pub.get("public_access", None) is True for pub in author["publications"]))
         self.assertEqual(author["public_access"]["not_available"],
