@@ -7,6 +7,8 @@ from scholarly.publication_parser import PublicationParser
 import random
 import json
 import csv
+import requests
+from bs4 import BeautifulSoup
 from contextlib import contextmanager
 
 
@@ -640,13 +642,14 @@ class TestScholarly(unittest.TestCase):
         # Delete the file with a finally block no matter what happens
         try:
             scholarly.download_mandates_csv(filename)
-            funder, policy, percentage2020 = [], [], []
+            funder, policy, percentage2020, percentageOverall = [], [], [], []
             with open(filename, "r") as f:
                 csv_reader = csv.DictReader(f)
                 for row in csv_reader:
                     funder.append(row['\ufeffFunder'])
                     policy.append(row['Policy'])
                     percentage2020.append(row['2020'])
+                    percentageOverall.append(row['Overall'])
 
             agency_policy = {
                 "US National Science Foundation": "https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
@@ -661,10 +664,16 @@ class TestScholarly(unittest.TestCase):
                 "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
             }
 
-            for agency in agency_policy:
+            response = requests.get("https://scholar.google.com/citations?view_op=mandates_leaderboard&hl=en")
+            soup = BeautifulSoup(response.text, "html.parser")
+            agency_overall = soup.find_all("td", class_="gsc_mlt_n gsc_mlt_bd")
+
+            for agency, index in zip(agency_policy, [4-1,10-1, 19-1, 64-1]):
                 agency_index = funder.index(agency)
                 self.assertEqual(policy[agency_index], agency_policy[agency])
                 self.assertEqual(percentage2020[agency_index], agency_2020[agency])
+                # Check that the percentage values from CSV and on the page agree.
+                self.assertEqual(percentageOverall[agency_index], agency_overall[index].text)
         finally:
             if os.path.exists(filename):
                 os.remove(filename)
