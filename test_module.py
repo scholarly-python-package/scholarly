@@ -671,9 +671,10 @@ class TestScholarly(unittest.TestCase):
             for agency, index in zip(agency_policy, [4-1,10-1, 19-1, 64-1]):
                 agency_index = funder.index(agency)
                 self.assertEqual(policy[agency_index], agency_policy[agency])
-                self.assertEqual(percentage2020[agency_index], agency_2020[agency])
                 # Check that the percentage values from CSV and on the page agree.
                 self.assertEqual(percentageOverall[agency_index], agency_overall[index].text)
+                # The percentage fluctuates, so we can't check the exact value.
+                self.assertAlmostEquals(int(percentage2020[agency_index][:-1]), int(agency_2020[agency][:-1]), delta=2)
         finally:
             if os.path.exists(filename):
                 os.remove(filename)
