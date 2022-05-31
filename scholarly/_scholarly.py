@@ -434,7 +434,7 @@ class _Scholarly:
                     del publication['container_type']
 
         del to_print['container_type']
-        print(pprint.pformat(to_print))
+        print(pprint.pformat(to_print).encode("utf-8"))
 
     def search_org(self, name: str, fromauthor: bool = False) -> list:
         """
