@@ -674,7 +674,7 @@ class TestScholarly(unittest.TestCase):
                 # Check that the percentage values from CSV and on the page agree.
                 self.assertEqual(percentageOverall[agency_index], agency_overall[index].text)
                 # The percentage fluctuates, so we can't check the exact value.
-                self.assertAlmostEquals(int(percentage2020[agency_index][:-1]), int(agency_2020[agency][:-1]), delta=2)
+                self.assertAlmostEqual(int(percentage2020[agency_index][:-1]), int(agency_2020[agency][:-1]), delta=2)
         finally:
             if os.path.exists(filename):
                 os.remove(filename)
