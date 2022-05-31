@@ -10,6 +10,10 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 from contextlib import contextmanager
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 class TestLuminati(unittest.TestCase):
@@ -139,6 +143,21 @@ class TestScholarly(unittest.TestCase):
             scholarly.use_proxy(None)
 
         scholarly.use_proxy(proxy_generator, secondary_proxy_generator)
+
+        # Try storing the file temporarily as `scholarly.csv` and delete it.
+        # If there exists already a file with that name, generate a random name
+        # that does not exist yet, so we can safely delete it.
+        cls.mandates_filename = "scholarly.csv"
+        while os.path.exists(cls.mandates_filename):
+            cls.mandates_filename = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10)) + ".csv"
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Clean up the mandates csv fiile downloaded.
+        """
+        if os.path.exists(cls.mandates_filename):
+            os.remove(cls.mandates_filename)
 
     @staticmethod
     @contextmanager
@@ -632,53 +651,79 @@ class TestScholarly(unittest.TestCase):
         self.assertGreaterEqual(pub['num_citations'], 581)
 
     def test_download_mandates_csv(self):
-        # Try storing the file temporarily as `scholarly.csv` and delete it.
-        # If there exists already a file with that name, generate a random name
-        # that does not exist yet, so we can safely delete it.
-        filename = "scholarly.csv"
-        while os.path.exists(filename):
-            filename = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10)) + ".csv"
+        """
+        Test that we can download the mandates CSV and read it.
+        """
+        if not os.path.exists(self.mandates_filename):
+            text = scholarly.download_mandates_csv(self.mandates_filename)
+            self.assertGreater(len(text), 0)
+        funder, policy, percentage2020, percentageOverall = [], [], [], []
+        with open(self.mandates_filename, "r") as f:
+            csv_reader = csv.DictReader(f)
+            for row in csv_reader:
+                funder.append(row['\ufeffFunder'])
+                policy.append(row['Policy'])
+                percentage2020.append(row['2020'])
+                percentageOverall.append(row['Overall'])
 
-        # Delete the file with a finally block no matter what happens
-        try:
-            scholarly.download_mandates_csv(filename)
-            funder, policy, percentage2020, percentageOverall = [], [], [], []
-            with open(filename, "r") as f:
-                csv_reader = csv.DictReader(f)
-                for row in csv_reader:
-                    funder.append(row['\ufeffFunder'])
-                    policy.append(row['Policy'])
-                    percentage2020.append(row['2020'])
-                    percentageOverall.append(row['Overall'])
+        agency_policy = {
+            "US National Science Foundation": "https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
+            "Department of Science & Technology, India": "http://www.dst.gov.in/sites/default/files/APPROVED%20OPEN%20ACCESS%20POLICY-DBT%26DST%2812.12.2014%29_1.pdf",
+            "Swedish Research Council": "https://www.vr.se/english/applying-for-funding/requirements-terms-and-conditions/publishing-open-access.html",
+            "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": ""
+        }
+        agency_2020 = {
+            "US National Science Foundation": "87%",
+            "Department of Science & Technology, India": "49%",
+            "Swedish Research Council": "89%",
+            "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
+        }
 
-            agency_policy = {
-                "US National Science Foundation": "https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
-                "Department of Science & Technology, India": "http://www.dst.gov.in/sites/default/files/APPROVED%20OPEN%20ACCESS%20POLICY-DBT%26DST%2812.12.2014%29_1.pdf",
-                "Swedish Research Council": "https://www.vr.se/english/applying-for-funding/requirements-terms-and-conditions/publishing-open-access.html",
-                "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": ""
-            }
-            agency_2020 = {
-                "US National Science Foundation": "87%",
-                "Department of Science & Technology, India": "49%",
-                "Swedish Research Council": "89%",
-                "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning": "88%"
-            }
+        response = requests.get("https://scholar.google.com/citations?view_op=mandates_leaderboard&hl=en")
+        soup = BeautifulSoup(response.text, "html.parser")
+        agency_overall = soup.find_all("td", class_="gsc_mlt_n gsc_mlt_bd")
 
-            response = requests.get("https://scholar.google.com/citations?view_op=mandates_leaderboard&hl=en")
-            soup = BeautifulSoup(response.text, "html.parser")
-            agency_overall = soup.find_all("td", class_="gsc_mlt_n gsc_mlt_bd")
+        for agency, index in zip(agency_policy, [4-1,10-1, 19-1, 64-1]):
+            agency_index = funder.index(agency)
+            self.assertEqual(policy[agency_index], agency_policy[agency])
+            # Check that the percentage values from CSV and on the page agree.
+            self.assertEqual(percentageOverall[agency_index], agency_overall[index].text)
+            # The percentage fluctuates, so we can't check the exact value.
+            self.assertAlmostEqual(int(percentage2020[agency_index][:-1]), int(agency_2020[agency][:-1]), delta=2)
 
-            for agency, index in zip(agency_policy, [4-1,10-1, 19-1, 64-1]):
-                agency_index = funder.index(agency)
-                self.assertEqual(policy[agency_index], agency_policy[agency])
-                # Check that the percentage values from CSV and on the page agree.
-                self.assertEqual(percentageOverall[agency_index], agency_overall[index].text)
-                # The percentage fluctuates, so we can't check the exact value.
-                self.assertAlmostEqual(int(percentage2020[agency_index][:-1]), int(agency_2020[agency][:-1]), delta=2)
-        finally:
-            if os.path.exists(filename):
-                os.remove(filename)
+    @unittest.skipIf(pd is None, reason="pandas is not installed")
+    def test_download_mandates_csv_with_pandas(self):
+        """
+        Test that we can use pandas to read the CSV file
+        """
+        if not os.path.exists(self.mandates_filename):
+            text = scholarly.download_mandates_csv(self.mandates_filename)
+            self.assertGreater(len(text), 0)
+        df = pd.read_csv(self.mandates_filename, usecols=["Funder", "Policy", "2020", "Overall"]).fillna("")
+        self.assertGreater(len(df), 0)
 
+        funders = ["US National Science Foundation",
+                   "Department of Science & Technology, India",
+                   "Swedish Research Council",
+                   "Swedish Research Council for Environment, Agricultural Sciences and Spatial Planning"
+                   ]
+
+        policies = ["https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
+                    "http://www.dst.gov.in/sites/default/files/APPROVED%20OPEN%20ACCESS%20POLICY-DBT%26DST%2812.12.2014%29_1.pdf",
+                    "https://www.vr.se/english/applying-for-funding/requirements-terms-and-conditions/publishing-open-access.html",
+                    ""
+                    ]
+        percentage_overall = [84, 54, 83, 83]
+        percentage_2020 = [87, 49, 89, 88]
+
+        rows = df["Funder"].isin(funders)
+        self.assertEqual(rows.sum(), 4)
+        self.assertEqual(df["Policy"][rows].tolist(), policies)
+        df_overall = df["Overall"][rows].tolist()
+        df_2020 = df["2020"][rows].tolist()
+        for idx in range(4):
+            self.assertAlmostEqual(int(df_overall[idx][:-1]), percentage_overall[idx], delta=2)
+            self.assertAlmostEqual(int(df_2020[idx][:-1]), percentage_2020[idx], delta=2)
 
     def test_save_journal_leaderboard(self):
         """
@@ -694,7 +739,6 @@ class TestScholarly(unittest.TestCase):
             with open(filename, "r") as f:
                 csv_reader = csv.DictReader(f)
                 for row in csv_reader:
-                    #import pdb; pdb.set_trace()
                     self.assertEqual(row['Publication'], 'The Astrophysical Journal')
                     self.assertEqual(row['h5-index'], '161')
                     self.assertEqual(row['h5-median'], '239')
