@@ -5,7 +5,7 @@ name: Python package
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 0 1,10,20 * *"
   push:
     branches: [main, develop]
   pull_request:
@@ -22,9 +22,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Lint with flake8

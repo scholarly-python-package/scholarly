@@ -119,6 +119,7 @@ class BibEntry(TypedDict, total=False):
     :param number: NA number of a publication
     :param pages: range of pages
     :param publisher: The publisher's name
+    :param citation: Formatted citation string, usually containing journal name, volume and page numbers (source: AUTHOR_PUBLICATION_ENTRY)
     :param pub_url: url of the website providing the publication
     """
     pub_type: str
@@ -133,6 +134,7 @@ class BibEntry(TypedDict, total=False):
     number: str
     pages: str
     publisher: str
+    citation: str
 
 
 class Mandate(TypedDict, total=False):
