@@ -650,6 +650,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(pub['bib']['pub_year'], '2009')
         self.assertGreaterEqual(pub['num_citations'], 581)
 
+    @unittest.skipIf(sys.platform.startswith("win"), reason="File read is empty in Windows")
     def test_download_mandates_csv(self):
         """
         Test that we can download the mandates CSV and read it.
@@ -691,6 +692,7 @@ class TestScholarly(unittest.TestCase):
             # The percentage fluctuates, so we can't check the exact value.
             self.assertAlmostEqual(int(percentage2020[agency_index][:-1]), int(agency_2020[agency][:-1]), delta=2)
 
+    @unittest.skipIf(sys.platform.startswith("win"), reason="File read is empty in Windows")
     @unittest.skipIf(pd is None, reason="pandas is not installed")
     def test_download_mandates_csv_with_pandas(self):
         """
