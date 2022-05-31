@@ -9,9 +9,9 @@ _SCHOLARPUBRE = r'cites=([\d,]*)'
 _CITATIONPUB = '/citations?hl=en&view_op=view_citation&citation_for_view={0}'
 _SCHOLARPUB = '/scholar?hl=en&oi=bibs&cites={0}'
 _CITATIONPUBRE = r'citation_for_view=([\w-]*:[\w-]*)'
-_BIBCITE = '/scholar?q=info:{0}:scholar.google.com/\
+_BIBCITE = '/scholar?hl=en&q=info:{0}:scholar.google.com/\
 &output=cite&scirp={1}&hl=en'
-_CITEDBYLINK = '/scholar?cites={0}'
+_CITEDBYLINK = '/scholar?hl=en&cites={0}'
 _MANDATES_URL = '/citations?view_op=view_mandate&hl=en&citation_for_view={0}'
 
 _BIB_MAPPING = {

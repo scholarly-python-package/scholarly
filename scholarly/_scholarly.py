@@ -18,7 +18,7 @@ _KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 _CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
 _ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
-_MANDATES_URL = "https://scholar.google.com/citations?view_op=mandates_leaderboard_csv"
+_MANDATES_URL = "https://scholar.google.com/citations?view_op=mandates_leaderboard_csv&hl=en"
 
 
 class _Scholarly:
@@ -485,7 +485,7 @@ class _Scholarly:
                               "setting overwrite=True")
         text = self.__nav._get_page(_MANDATES_URL, premium=False)
         if include_links:
-            soup = self.__nav._get_soup("/citations?view_op=mandates_leaderboard")
+            soup = self.__nav._get_soup("/citations?hl=en&view_op=mandates_leaderboard")
             text = text.replace("Funder,", "Funder,Policy,Cached,", 1)
             for agency in soup.find_all("td", class_="gsc_mlt_t"):
                 cached = agency.find("span", class_="gs_a").a["href"]
