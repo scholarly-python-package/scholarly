@@ -501,6 +501,22 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(pub['bib']['title'],
                          u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
 
+        self.assertEqual(pub['bib']['citation'], "")
+
+        for i in range(len(author['publications'])):
+            if author['publications'][i]['author_pub_id'] == 'Xxjj6IsAAAAJ:ldfaerwXgEUC':
+                pub_index = i
+        self.assertGreaterEqual(i, 0)
+        # elided title
+        self.assertEqual(author['publications'][pub_index]['bib']['title'],
+                         u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary …')
+        # full text
+        pub = scholarly.fill(author['publications'][pub_index])
+        self.assertEqual(pub['bib']['title'],
+                         u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary …')
+
+        self.assertEqual(pub['bib']['citation'], "Journal of Fisheries and Life Sciences 5 (2), 74-84, 2020")
+
     def test_author_organization(self):
         """
         """
@@ -590,6 +606,7 @@ class TestScholarly(unittest.TestCase):
         scholarly.fill(author, sections=['basics', 'publications'])
         pub = author['publications'][0]
         self.assertEqual(pub['bib']['title'], 'Prospect theory: An analysis of decision under risk')
+        self.assertEqual(pub['bib']['citation'], 'Handbook of the fundamentals of financial decision making: Part I, 99-127, 2013')
         related_articles = scholarly.get_related_articles(pub)
         # Typically, the same publication is returned as the most related article
         same_article = next(related_articles)

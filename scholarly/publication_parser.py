@@ -127,6 +127,13 @@ class PublicationParser(object):
                 and len(year.text) > 0):
             publication['bib']['pub_year'] = year.text.strip()
 
+        author_citation = __data.find_all('div', class_='gs_gray')
+        try:
+            citation = author_citation[1].text
+        except IndexError:
+            citation = ""
+        publication['bib']['citation'] = citation
+
         return publication
 
     def get_publication(self, __data, pubtype: PublicationSource)->Publication:
