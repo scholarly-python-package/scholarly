@@ -1,4 +1,7 @@
-"""scholarly.py"""
+"""
+scholarly.py
+From https://github.com/scholarly-python-package/scholarly
+"""
 import requests
 import os
 import copy
