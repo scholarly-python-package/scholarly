@@ -1,3 +1,5 @@
+from typing import Callable
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -272,7 +274,10 @@ class Navigator(object, metaclass=Singleton):
             pub = publication_parser.fill(pub)
         return pub
 
-    def search_publications(self, url: str) -> _SearchScholarIterator:
+    def search_publications(self, url: str,
+                            delay_in_seconds: float = None,
+                            delay_from_function: Callable = None
+                            ) -> _SearchScholarIterator:
         """Returns a Publication Generator given a url
 
         :param url: the url where publications can be found.
@@ -280,7 +285,9 @@ class Navigator(object, metaclass=Singleton):
         :returns: An iterator of Publications
         :rtype: {_SearchScholarIterator}
         """
-        return _SearchScholarIterator(self, url)
+        return _SearchScholarIterator(self, url,
+                                      delay_in_seconds,
+                                      delay_from_function)
 
     def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0) -> Author:
         """Search by author ID and return a Author object
