@@ -1,6 +1,7 @@
 import re
 import bibtexparser
 import arrow
+import time
 from bibtexparser.bibdatabase import BibDatabase
 from .data_types import BibEntry, Mandate, Publication, PublicationSource
 
@@ -46,13 +47,17 @@ class _SearchScholarIterator(object):
     I have removed all logging from here for simplicity. -V
     """
 
-    def __init__(self, nav, url: str):
+    def __init__(self, nav, url: str,
+                 delay_in_seconds: float = None,
+                 delay_from_function: any = None):
         self._url = url
         self._pubtype = PublicationSource.PUBLICATION_SEARCH_SNIPPET if "/scholar?" in url else PublicationSource.JOURNAL_CITATION_LIST
         self._nav = nav
         self._load_url(url)
         self.total_results = self._get_total_results()
         self.pub_parser = PublicationParser(self._nav)
+        self._delay_in_seconds = delay_in_seconds
+        self._delay_from_function = delay_from_function
 
     def _load_url(self, url: str):
         # this is temporary until setup json file
@@ -87,6 +92,16 @@ class _SearchScholarIterator(object):
             url = self._soup.find(
                 class_='gs_ico gs_ico_nav_next').parent['href']
             self._url = url
+            # Optional creation of time delays between page requests;
+            # a user could use both at once if desired.
+            seconds = 0
+            fseconds = 0               
+            if self._delay_in_seconds is not None:
+                seconds = self._delay_in_seconds
+                time.sleep(seconds)
+            if self._delay_from_function is not None:
+                fseconds = self._delay_from_function()
+                time.sleep(fseconds)
             self._load_url(url)
             return self.__next__()
         else:
