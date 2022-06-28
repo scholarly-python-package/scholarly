@@ -89,6 +89,8 @@ class _Scholarly:
                     citations: bool = True, year_low: int = None,
                     year_high: int = None, sort_by: str = "relevance",
                     include_last_year: str = "abstracts",
+                    delay_in_seconds: float = None,
+                    delay_from_function: any = None,
                     start_index: int = 0)->_SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
 
@@ -153,7 +155,9 @@ class _Scholarly:
         url = self._construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
                                   citations=citations, year_low=year_low, year_high=year_high,
                                   sort_by=sort_by, include_last_year=include_last_year, start_index=start_index)
-        return self.__nav.search_publications(url)
+        return self.__nav.search_publications(url,
+                                              delay_in_seconds,
+                                              delay_from_function)
 
     def search_citedby(self, publication_id: int, **kwargs):
         """Searches by Google Scholar publication id and returns a generator of Publication objects.

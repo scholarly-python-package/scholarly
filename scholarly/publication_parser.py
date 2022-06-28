@@ -1,3 +1,4 @@
+from typing import Callable
 import re
 import bibtexparser
 import arrow
@@ -49,7 +50,7 @@ class _SearchScholarIterator(object):
 
     def __init__(self, nav, url: str,
                  delay_in_seconds: float = None,
-                 delay_from_function: any = None):
+                 delay_from_function: Callable = None):
         self._url = url
         self._pubtype = PublicationSource.PUBLICATION_SEARCH_SNIPPET if "/scholar?" in url else PublicationSource.JOURNAL_CITATION_LIST
         self._nav = nav
@@ -95,12 +96,12 @@ class _SearchScholarIterator(object):
             # Optional creation of time delays between page requests;
             # a user could use both at once if desired.
             seconds = 0
-            fseconds = 0               
+            fseconds = 0
             if self._delay_in_seconds is not None:
                 seconds = self._delay_in_seconds
                 time.sleep(seconds)
             if self._delay_from_function is not None:
-                fseconds = self._delay_from_function()
+                fseconds = self._delay_from_function
                 time.sleep(fseconds)
             self._load_url(url)
             return self.__next__()
