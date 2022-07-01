@@ -112,7 +112,7 @@ class BibEntry(TypedDict, total=False):
     :param abstract: description of the publication
     :param title: title of the publication
     :param author: list of author the author names that contributed to this publication
-    :param year: the year the publication was first published
+    :param pub_year: the year the publication was first published
     :param venue: the venue of the publication (source: PUBLICATION_SEARCH_SNIPPET)
     :param journal: Journal Name
     :param volume: number of years a publication has been circulated
@@ -127,7 +127,7 @@ class BibEntry(TypedDict, total=False):
     abstract: str
     title: str
     author: str
-    year: str
+    pub_year: str
     venue: str
     journal: str
     volume: str

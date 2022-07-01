@@ -18,6 +18,7 @@ _MANDATES_URL = '/citations?view_op=view_mandate&hl=en&citation_for_view={0}'
 _BIB_MAPPING = {
     'ENTRYTYPE': 'pub_type',
     'ID': 'bib_id',
+    'year': 'pub_year',
 }
 
 _BIB_DATATYPES = {
@@ -139,7 +140,7 @@ class PublicationParser(object):
         if (year and year.text
                 and not year.text.isspace()
                 and len(year.text) > 0):
-            publication['bib']['year'] = year.text.strip()
+            publication['bib']['pub_year'] = year.text.strip()
 
         author_citation = __data.find_all('div', class_='gs_gray')
         try:
@@ -236,18 +237,18 @@ class PublicationParser(object):
         venueyear = authorinfo.split(' - ')
         # If there is no middle part (A) then venue and year are unknown.
         if len(venueyear) <= 2:
-            publication['bib']['venue'], publication['bib']['year'] = 'NA', 'NA'
+            publication['bib']['venue'], publication['bib']['pub_year'] = 'NA', 'NA'
         else:
             venueyear = venueyear[1].split(',')
             venue = 'NA'
             year = venueyear[-1].strip()
             if year.isnumeric() and len(year) == 4:
-                publication['bib']['year'] = year
+                publication['bib']['pub_year'] = year
                 if len(venueyear) >= 2:
                     venue = ','.join(venueyear[0:-1]) # everything but last
             else:
                 venue = ','.join(venueyear) # everything
-                publication['bib']['year'] = 'NA'
+                publication['bib']['pub_year'] = 'NA'
             publication['bib']['venue'] = venue
 
         if databox.find('div', class_='gs_rs'):
@@ -326,7 +327,7 @@ class PublicationParser(object):
                                 'YYYY/M/DD',
                                 'YYYY/M/D',
                                 'YYYY/MM/D']
-                    publication['bib']['year'] = arrow.get(val.text, patterns).year
+                    publication['bib']['pub_year'] = arrow.get(val.text, patterns).year
                 elif key == 'description':
                     # try to find all the gsh_csp if they exist
                     abstract = val.find_all(class_='gsh_csp')

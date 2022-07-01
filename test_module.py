@@ -242,7 +242,7 @@ class TestScholarly(unittest.TestCase):
          booktitle = {kdd},
          number = {34},
          pages = {226--231},
-         year = {1996},
+         pub_year = {1996},
          title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
          venue = {kdd},
          volume = {96}
@@ -385,7 +385,7 @@ class TestScholarly(unittest.TestCase):
         # Checking for quality holds for non-dict entries only.
         for key in {'author_id', 'pub_url', 'num_citations'}:
             self.assertEqual(pub[key], pubs[0][key])
-        for key in {'title', 'year', 'venue'}:
+        for key in {'title', 'pub_year', 'venue'}:
             self.assertEqual(pub['bib'][key], pubs[0]['bib'][key])
         self.assertGreaterEqual(len(pubs), 27)
         titles = [p['bib']['title'] for p in pubs]
@@ -429,7 +429,7 @@ class TestScholarly(unittest.TestCase):
         self.assertTrue(f['bib']['title'] == u'Creating correct blur and its effect on accommodation')
         self.assertTrue(f['pub_url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(f['bib']['volume'] == '18')
-        self.assertTrue(f['bib']['year'] == u'2018')
+        self.assertTrue(f['bib']['pub_year'] == u'2018')
 
     def test_extract_author_id_list(self):
         '''
@@ -612,13 +612,13 @@ class TestScholarly(unittest.TestCase):
         same_article = next(related_articles)
         for key in {'pub_url', 'num_citations'}:
             self.assertEqual(pub[key], same_article[key])
-        for key in {'title', 'year'}:
+        for key in {'title', 'pub_year'}:
             self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
 
         # These may change with time
         related_article = next(related_articles)
         self.assertEqual(related_article['bib']['title'], 'Choices, values, and frames')
-        self.assertEqual(related_article['bib']['year'], '2013')
+        self.assertEqual(related_article['bib']['pub_year'], '2013')
         self.assertGreaterEqual(related_article['num_citations'], 16561)
         self.assertIn("A Tversky", related_article['bib']['author'])
 
@@ -633,7 +633,7 @@ class TestScholarly(unittest.TestCase):
         same_article = next(related_articles)
         for key in {'author_id', 'pub_url', 'num_citations'}:
             self.assertEqual(pub[key], same_article[key])
-        for key in {'title', 'year'}:
+        for key in {'title', 'pub_year'}:
             self.assertEqual(pub['bib'][key], same_article['bib'][key])
 
         # These may change with time
@@ -641,7 +641,7 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(related_article['bib']['title'], 'Large Magellanic Cloud Cepheid standards provide '
                          'a 1% foundation for the determination of the Hubble constant and stronger evidence '
                          'for physics beyond ΛCDM')
-        self.assertEqual(related_article['bib']['year'], '2019')
+        self.assertEqual(related_article['bib']['pub_year'], '2019')
         self.assertGreaterEqual(related_article['num_citations'], 1388)
         self.assertIn("AG Riess", related_article['bib']['author'])
 
@@ -664,7 +664,7 @@ class TestScholarly(unittest.TestCase):
         pub = next(pubs)
         self.assertEqual(pub['bib']['title'], 'Quantitation and mapping of tissue optical properties using modulated imaging')
         self.assertEqual(set(pub['author_id']), {'V-ab9U4AAAAJ', '4k-k6SEAAAAJ', 'GLm-SaQAAAAJ'})
-        self.assertEqual(pub['bib']['year'], '2009')
+        self.assertEqual(pub['bib']['pub_year'], '2009')
         self.assertGreaterEqual(pub['num_citations'], 581)
 
     @unittest.skipIf(sys.platform.startswith("win"), reason="File read is empty in Windows")
