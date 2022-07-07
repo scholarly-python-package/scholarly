@@ -99,7 +99,7 @@ class _SearchScholarIterator(object):
                 seconds = self._delay_in_seconds
                 time.sleep(seconds)
             if self._delay_from_function is not None:
-                fseconds = self._delay_from_function()
+                fseconds = self._delay_from_function
                 time.sleep(fseconds)
             self._load_url(url)
             return self.__next__()
