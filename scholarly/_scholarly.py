@@ -15,8 +15,8 @@ from .data_types import Author, AuthorSource, Journal, Publication, PublicationS
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
 _KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
-_PUBSEARCH = '/scholar?hl=en&num=20&q={0}'
-_CITEDBYSEARCH = '/scholar?hl=en&num=20&cites={0}'
+_PUBSEARCH = '/scholar?hl=en&q={0}'
+_CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
 _ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
 _MANDATES_URL = "https://scholar.google.com/citations?view_op=mandates_leaderboard_csv&hl=en"
 
