@@ -185,7 +185,17 @@ class ProxyGenerator(object):
             https = http
 
         proxies = {'http': http, 'https': https}
-        self._proxy_works = self._check_proxy(proxies)
+        if self.proxy_mode == ProxyMode.SCRAPERAPI:
+            r = requests.get("http://api.scraperapi.com/account", params={'api_key': self._API_KEY}).json()
+            if "error" in r:
+                self.logger.warning(r["error"])
+                self._proxy_works = False
+            else:
+                self._proxy_works = r["requestCount"] < int(r["requestLimit"])
+                self.logger.info("Successful ScraperAPI requests %d / %d",
+                                 r["requestCount"], r["requestLimit"])
+        else:
+            self._proxy_works = self._check_proxy(proxies)
 
         if self._proxy_works:
             self._session.proxies = proxies
@@ -562,6 +572,9 @@ class ProxyGenerator(object):
             self.logger.warning(r["error"])
             return False
 
+        self._API_KEY = API_KEY
+        self.proxy_mode = ProxyMode.SCRAPERAPI
+
         r["requestLimit"] = int(r["requestLimit"])
         self.logger.info("Successful ScraperAPI requests %d / %d",
                          r["requestCount"], r["requestLimit"])
@@ -586,7 +599,6 @@ class ProxyGenerator(object):
             proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
             if proxy_works:
                 self.logger.info("ScraperAPI proxy setup successfully")
-                self.proxy_mode = ProxyMode.SCRAPERAPI
                 self._session.verify = False
                 return proxy_works
 
