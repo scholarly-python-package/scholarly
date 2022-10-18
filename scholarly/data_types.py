@@ -1,7 +1,6 @@
 import sys
-
 from enum import Enum
-from typing import List, Dict
+from typing import Dict, List
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -10,9 +9,9 @@ else:
 
 
 class PublicationSource(str, Enum):
-    '''
-    Defines the source of the publication. In general, a publication
-    on Google Scholar has two forms:
+    """Defines the source of the publication.
+
+    In general, a publication on Google Scholar has two forms:
     * Appearing as a PUBLICATION SNIPPET and
     * Appearing as a paper in an AUTHOR PAGE
 
@@ -49,7 +48,7 @@ class PublicationSource(str, Enum):
     We also have publications that appear in the "author pages" of Google Scholar.
     These publications are often a set of publications "merged" together.
 
-    The snippet version of these publications conains the title of the publication,
+    The snippet version of these publications contains the title of the publication,
     a subset of the authors, the (sometimes truncated) venue, and the year of the publication
     and the number of papers that cite the publication.
 
@@ -58,31 +57,31 @@ class PublicationSource(str, Enum):
     To fill in the publication, we open the "detailed view" of the paper
 
     Detailed view page: https://scholar.google.com/citations?view_op=view_citation&hl=en&citation_for_view=-Km63D4AAAAJ:d1gkVwhDpl0C
-    '''
+    """
+
     PUBLICATION_SEARCH_SNIPPET = "PUBLICATION_SEARCH_SNIPPET"
     AUTHOR_PUBLICATION_ENTRY = "AUTHOR_PUBLICATION_ENTRY"
     JOURNAL_CITATION_LIST = "JOURNAL_CITATION_LIST"
 
 
 class AuthorSource(str, Enum):
-    '''
-    Defines the source of the HTML that will be parsed.
+    """Defines the source of the HTML that will be parsed.
 
     Author page: https://scholar.google.com/citations?hl=en&user=yxUduqMAAAAJ
 
     Search authors: https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=jordan&btnG=
 
     Coauthors: From the list of co-authors from an Author page
-    '''
+    """
+
     AUTHOR_PROFILE_PAGE = "AUTHOR_PROFILE_PAGE"
     SEARCH_AUTHOR_SNIPPETS = "SEARCH_AUTHOR_SNIPPETS"
     CO_AUTHORS_LIST = "CO_AUTHORS_LIST"
 
 
 class ProxyMode(str, Enum):
-    """
-    Defines the different types supported.
-    """
+    """Defines the different types supported."""
+
     FREE_PROXIES = "FREE_PROXIES"
     SCRAPERAPI = "SCRAPERAPI"
     LUMINATI = "LUMINATI"
@@ -92,21 +91,21 @@ class ProxyMode(str, Enum):
     TOR_INTERNAL = "TOR_INTERNAL"
 
 
-''' Lightweight Data Structure to keep distribution of citations of the years '''
+""" Lightweight Data Structure to keep distribution of citations of the years. """
 CitesPerYear = Dict[int, int]
 
 
-''' Lightweight Data Structure to hold the numbers articles available or
-    not available publicly according to funding mandates
-'''
-PublicAccess = TypedDict('PublicAccess', {"available": int, "not_available": int})
+class PublicAccess(TypedDict):
+    """Lightweight Data Structure to hold the numbers articles available or not available publicly according to funding mandates."""
+
+    available: int
+    not_available: int
 
 
 class BibEntry(TypedDict, total=False):
-    """
-    :class:`BibEntry <BibEntry>` The bibliographic entry for a publication
-            (When source is not specified, the field is present in all sources)
+    """:class:`BibEntry <BibEntry>` The bibliographic entry for a publication.
 
+    (When source is not specified, the field is present in all sources)
     :param pub_type: the type of entry for this bib (for example 'article') (source: PUBLICATION_SEARCH_SNIPPET)
     :param bib_id: bib entry id (source: PUBLICATION_SEARCH_SNIPPET)
     :param abstract: description of the publication
@@ -122,6 +121,7 @@ class BibEntry(TypedDict, total=False):
     :param citation: Formatted citation string, usually containing journal name, volume and page numbers (source: AUTHOR_PUBLICATION_ENTRY)
     :param pub_url: url of the website providing the publication
     """
+
     pub_type: str
     bib_id: str
     abstract: str
@@ -138,8 +138,7 @@ class BibEntry(TypedDict, total=False):
 
 
 class Mandate(TypedDict, total=False):
-    """
-    :class:`Mandate <Mandate>` A funding mandate for a given year
+    """:class:`Mandate <Mandate>` A funding mandate for a given year.
 
     :param agency: name of the funding agency
     :param url_policy: url of the policy for this mandate
@@ -149,6 +148,7 @@ class Mandate(TypedDict, total=False):
     :param acknowledgement: text in the paper acknowledging the funding
     :param grant: grant ID that supported this work
     """
+
     agency: str
     url_policy: str
     url_policy_cached: str
@@ -159,10 +159,9 @@ class Mandate(TypedDict, total=False):
 
 
 class Publication(TypedDict, total=False):
-    """
-    :class:`Publication <Publication>` object used to represent a publication entry on Google Scholar.
-           (When source is not specified, the field is present in all sources)
+    """:class:`Publication <Publication>` object used to represent a publication entry on Google Scholar.
 
+    (When source is not specified, the field is present in all sources)
     :param BibEntryCitation: contains additional information about the publication
     :param gsrank: position of the publication in the query (source: PUBLICATION_SEARCH_SNIPPET)
     :param author_id: list of the corresponding author ids of the authors that contributed to the Publication (source: PUBLICATION_SEARCH_SNIPPET)
@@ -183,7 +182,7 @@ class Publication(TypedDict, total=False):
                        the "citedby_url" will be a comma-separated list of values.
                        It is also used to return the "cluster" of all the different versions of the paper.
                        https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
-    :param cites_per_year: a dictionay containing the number of citations per year for this Publication
+    :param cites_per_year: a dictionary containing the number of citations per year for this Publication
                            (source: AUTHOR_PUBLICATION_ENTRY)
     :param eprint_url: digital version of the Publication. Usually it is a pdf.
     :param pub_url: url of the website providing the publication
@@ -224,11 +223,11 @@ class Publication(TypedDict, total=False):
     source: PublicationSource
     container_type: str
 
-class Author(TypedDict, total=False):
-    """
-    :class:`Author <Author>` object used to represent an author entry on Google Scholar.
-           (When source is not specified, the field is present in all sources)
 
+class Author(TypedDict, total=False):
+    """:class:`Author <Author>` object used to represent an author entry on Google Scholar.
+
+    (When source is not specified, the field is present in all sources)
     :param scholar_id: The id of the author on Google Scholar
     :param name: The name of the author
     :param affiliation: The affiliation of the author
@@ -271,16 +270,15 @@ class Author(TypedDict, total=False):
     cites_per_year: CitesPerYear
     public_access: PublicAccess
     publications: List[Publication]
-    coauthors: List # List of authors. No self dict functionality available
+    coauthors: List  # List of authors. No self dict functionality available
     container_type: str
     source: AuthorSource
 
+
 class Journal(TypedDict, total=False):
-    """
-    :class:`Journal <Journal>` object used to represent a journal entry on Google Scholar.
-           (When source is not specified, the field is present in all sources)
+    """:class:`Journal <Journal>` object used to represent a journal entry on Google Scholar.
 
-
+    (When source is not specified, the field is present in all sources)
     :param name: The name of the journal
     :param h5-index: h5-index is the h-index for articles published in the journal during the last 5 complete years.
     :param h5-median: h5-median for a publication is the median number of citations for the articles that make up its h5-index.
