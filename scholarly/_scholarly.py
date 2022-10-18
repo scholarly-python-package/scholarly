@@ -269,8 +269,8 @@ class _Scholarly:
             try:
                 year_low = int(object["bib"]["pub_year"])
                 year_end = int(datetime.date.today().year)
-            except:
-                warnings.warn(f"Unknown publication year for paper {object}, may result in incorrect number of citedby papers.")
+            except KeyError:
+                warnings.warn(f"Unknown publication year for paper {object['bib']['title']}, may result in incorrect number of citedby papers.")
                 return PublicationParser(self.__nav).citedby(object)
 
             pub_id = int(object["citedby_url"].split("=")[1].split("&")[0])
