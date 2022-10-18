@@ -5,6 +5,9 @@ import os
 import copy
 import csv
 import pprint
+import datetime
+import itertools
+import warnings
 from typing import Dict, List
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
@@ -257,12 +260,28 @@ class _Scholarly:
         :param object: The Publication object for the bibtex exportation
         :type object: Publication
         """
-        if object['container_type'] == "Publication":
-            publication_parser = PublicationParser(self.__nav)
-            return publication_parser.citedby(object)
-        else:
+
+        if object['container_type'] != "Publication":
             self.logger.warning("Object not supported for bibtex exportation")
             return
+
+        if object["bib"]["citedby"] < 999:
+            return PublicationParser(self.__nav).citedby(object)
+        else:
+            try:
+                year_low = int(object["bib"]["pub_year"])
+                year_end = int(datetime.date.today().year)
+            except KeyError:
+                self.logger.warning("Unknown publication year for paper %s, may result in incorrect number of citedby papers.", object["bib"]["title"])
+                return PublicationParser(self.__nav).citedby(object)
+
+            pub_id = int(object["citedby_url"].split("=")[1].split("&")[0])
+            iter_list = []
+            while year_low < year_end:
+                iter_list.append(self.search_citedby(publication_id=pub_id, year_low=year_low, year_high=year_low+1))
+                year_low += 1
+
+            return itertools.chain(*iter_list)
 
     def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0)->Author:
         """Search by author id and return a single Author object
