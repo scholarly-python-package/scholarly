@@ -4,14 +4,8 @@
 name: Python package (with methods that need proxy)
 
 on:
-  workflow_run:
-    workflows: ["Python package"]
-    branches: [main]
-    types:
-      - completed
   pull_request:
     branches: [main]
-
 
 jobs:
   build:
