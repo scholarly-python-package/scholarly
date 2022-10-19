@@ -6,9 +6,8 @@ import copy
 import csv
 import pprint
 import datetime
-import itertools
-import warnings
 from typing import Dict, List
+import re
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -284,23 +283,38 @@ class _Scholarly:
             self.logger.warning("Object not supported for bibtex exportation")
             return
 
-        if object["bib"]["citedby"] < 999:
+        if object["num_citations"] <= 1000:
             return PublicationParser(self.__nav).citedby(object)
+
+        self.logger.debug("Since the paper titled %s has %d citations (>1000), "
+                          "fetching it on an annual basis.", object["bib"]["title"], object["num_citations"])
+
+        year_end = int(datetime.date.today().year)
+
+        if object["source"] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
+            self.fill(object)
+            years = self._bin_citations_by_year(object.get("cites_per_year", {}), year_end)
         else:
             try:
                 year_low = int(object["bib"]["pub_year"])
-                year_end = int(datetime.date.today().year)
             except KeyError:
-                self.logger.warning("Unknown publication year for paper %s, may result in incorrect number of citedby papers.", object["bib"]["title"])
+                self.logger.warning("Unknown publication year for paper %s, may result in incorrect number "
+                                    "of citedby papers.", object["bib"]["title"])
                 return PublicationParser(self.__nav).citedby(object)
 
-            pub_id = int(object["citedby_url"].split("=")[1].split("&")[0])
-            iter_list = []
-            while year_low < year_end:
-                iter_list.append(self.search_citedby(publication_id=pub_id, year_low=year_low, year_high=year_low+1))
-                year_low += 1
+            # Go one year at a time in decreasing order
+            years = zip(range(year_end, year_low-1, -1), range(year_end, year_low-1, -1))
 
-            return itertools.chain(*iter_list)
+        # Extract cites_id. Note: There could be multiple ones, separated by commas.
+        m = re.search("cites=[\d+,]*", object["citedby_url"])
+        pub_id = m.group()[6:]
+        for y_hi, y_lo in years:
+            sub_citations = self.search_citedby(publication_id=pub_id, year_low=y_lo, year_high=y_hi)
+            if sub_citations.total_results and (sub_citations.total_results > 1000):
+                self.logger.warn("The paper titled %s has %d citations in the year %d. "
+                                 "Due to the limitation in Google Scholar, fetching only 1000 results "
+                                 "from that year.", object["bib"]["title"], sub_citations.total_results, y_lo)
+            yield from sub_citations
 
     def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0)->Author:
         """Search by author id and return a single Author object
