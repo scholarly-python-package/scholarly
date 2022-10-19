@@ -11,8 +11,8 @@ on:
   pull_request:
     branches: [main, develop]
   workflow_run:
-    workflows: ["lint"]
-#    branches: [main]
+    workflows: ["lint", lint]
+    branches: [main, develop]
     types:
       - completed
 
