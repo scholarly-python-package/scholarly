@@ -372,29 +372,6 @@ class TestScholarly(unittest.TestCase):
         )
         self.assertIn(mandate, pub['mandates'])
 
-    def test_related_articles_from_author(self):
-        """
-        Test that we obtain related articles to an article from an author
-        """
-        author = scholarly.search_author_id("ImhakoAAAAAJ")
-        scholarly.fill(author, sections=['basics', 'publications'])
-        pub = author['publications'][0]
-        self.assertEqual(pub['bib']['title'], 'Prospect theory: An analysis of decision under risk')
-        self.assertEqual(pub['bib']['citation'], 'Handbook of the fundamentals of financial decision making: Part I, 99-127, 2013')
-        related_articles = scholarly.get_related_articles(pub)
-        # Typically, the same publication is returned as the most related article
-        same_article = next(related_articles)
-        self.assertEqual(pub["pub_url"], same_article["pub_url"])
-        for key in {'title', 'pub_year'}:
-            self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
-
-        # These may change with time
-        related_article = next(related_articles)
-        self.assertEqual(related_article['bib']['title'], 'Advances in prospect theory: Cumulative representation of uncertainty')
-        self.assertEqual(related_article['bib']['pub_year'], '1992')
-        self.assertGreaterEqual(related_article['num_citations'], 18673)
-        self.assertIn("A Tversky", related_article['bib']['author'])
-
     def test_author_custom_url(self):
         """
         Test that we can use custom URLs for retrieving author data
@@ -744,6 +721,30 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertTrue(f['pub_url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
         self.assertTrue(f['bib']['volume'] == '18')
         self.assertTrue(f['bib']['pub_year'] == u'2018')
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_related_articles_from_author(self):
+        """
+        Test that we obtain related articles to an article from an author
+        """
+        author = scholarly.search_author_id("ImhakoAAAAAJ")
+        scholarly.fill(author, sections=['basics', 'publications'])
+        pub = author['publications'][0]
+        self.assertEqual(pub['bib']['title'], 'Prospect theory: An analysis of decision under risk')
+        self.assertEqual(pub['bib']['citation'], 'Handbook of the fundamentals of financial decision making: Part I, 99-127, 2013')
+        related_articles = scholarly.get_related_articles(pub)
+        # Typically, the same publication is returned as the most related article
+        same_article = next(related_articles)
+        self.assertEqual(pub["pub_url"], same_article["pub_url"])
+        for key in {'title', 'pub_year'}:
+            self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
+
+        # These may change with time
+        related_article = next(related_articles)
+        self.assertEqual(related_article['bib']['title'], 'Advances in prospect theory: Cumulative representation of uncertainty')
+        self.assertEqual(related_article['bib']['pub_year'], '1992')
+        self.assertGreaterEqual(related_article['num_citations'], 18673)
+        self.assertIn("A Tversky", related_article['bib']['author'])
 
     @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_related_articles_from_publication(self):
