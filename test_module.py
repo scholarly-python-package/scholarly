@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+from collections import Counter
 from scholarly import scholarly, ProxyGenerator
 from scholarly.data_types import Mandate
 from scholarly.publication_parser import PublicationParser
@@ -549,6 +550,16 @@ class TestScholarly(unittest.TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
 
+    def test_bin_citations_by_year(self):
+        """Test an internal optimization function to bin cites_per_year
+           while keeping the citation counts less than 1000 per bin.
+        """
+        cpy = {2022: 490, 2021: 340, 2020:327, 2019:298, 2018: 115, 2017: 49, 2016: 20, 2015: 8, 2014: 3, 2013: 1, 2012: 1}
+        years = scholarly._bin_citations_by_year(cpy, 2022)
+        for y_hi, y_lo in years:
+            self.assertLessEqual(y_lo, y_hi)
+            self.assertLessEqual(sum(cpy[y] for y in range(y_lo, y_hi+1)), 1000)
+
 
 class TestScholarlyWithProxy(unittest.TestCase):
     @classmethod
@@ -794,6 +805,42 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertEqual(set(pub['author_id']), {'V-ab9U4AAAAJ', '4k-k6SEAAAAJ', 'GLm-SaQAAAAJ'})
         self.assertEqual(pub['bib']['pub_year'], '2009')
         self.assertGreaterEqual(pub['num_citations'], 581)
+
+    def check_citedby_1k(self, pub):
+        """A common checking method to check
+        """
+        original_citation_count = pub["num_citations"]
+        # Trigger a different code path
+        if original_citation_count <= 1000:
+            pub["num_citations"] = 1001
+        citations = scholarly.citedby(pub)
+        citation_list = list(citations)
+        self.assertEqual(len(citation_list), original_citation_count)
+        return citation_list
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_citedby_1k_citations(self):
+        """Test that scholarly can fetch 1000+ citations from an author
+        """
+        author = scholarly.search_author_id('QoX9bu8AAAAJ')
+        scholarly.fill(author, sections=['publications'])
+        pub = [_p for _p in  author['publications'] if _p["author_pub_id"]=="QoX9bu8AAAAJ:L8Ckcad2t8MC"][0]
+        scholarly.fill(pub)
+        citation_list = self.check_citedby_1k(pub)
+
+        yearwise_counter = Counter([c["bib"]["pub_year"] for c in citation_list])
+        for year, count in pub["cites_per_year"].items():
+            self.assertEqual(yearwise_counter.get(str(year), 0), count)
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_citedby_1k_scholar(self):
+        """Test that scholarly can fetch 1000+ citations from a pub search.
+        """
+        title = "Persistent entanglement in a class of eigenstates of quantum Heisenberg spin glasses"
+        pubs = scholarly.search_pubs(title)
+        pub = next(pubs)
+        self.check_citedby_1k(pub)
+
 
 if __name__ == '__main__':
     unittest.main()
