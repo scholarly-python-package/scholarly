@@ -14,7 +14,7 @@ from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser, _SearchScholarIterator
-from .data_types import Author, AuthorSource, Journal, Publication, PublicationSource
+from .data_types import Author, AuthorSource, CitesPerYear, Journal, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
@@ -252,6 +252,25 @@ class _Scholarly:
         else:
             self.logger.warning("Object not supported for bibtex exportation")
             return
+
+    @staticmethod
+    def _bin_citations_by_year(cites_per_year: CitesPerYear, year_end):
+        years = []
+        y_hi, y_lo = year_end, year_end
+        running_count = 0
+        for y in sorted(cites_per_year, reverse=True):
+            if running_count + cites_per_year[y] <= 1000:
+                running_count += cites_per_year[y]
+                y_lo = y
+            else:
+                running_count = cites_per_year[y]
+                years.append((y_hi, y_lo))
+                y_hi = y
+
+        if running_count > 0:
+            years.append((y_hi, y_lo))
+
+        return years
 
     def citedby(self, object: Publication)->_SearchScholarIterator:
         """Searches Google Scholar for other articles that cite this Publication
