@@ -1,0 +1,67 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python package (with methods that need proxy)
+
+on:
+  workflow_run:
+    workflows: ["lint"]
+    branches: [main]
+    types:
+      - completed
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install -r requirements-dev.txt
+          pip3 install -r requirements.txt
+      #- name: Typilus, Suggest Python Type Annotations
+      #  uses: typilus/typilus-action@v0.9
+      - name: Run unittests
+        id: unittests
+        if: ${{ github.event.pull_request.draft == false }}
+        continue-on-error: true
+        env:
+          CONNECTION_METHOD: ${{ secrets.CONNECTION_METHOD }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          PORT: ${{ secrets.PORT }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
+        run: |
+          coverage run -m unittest -v test_module.TestScholarlyWithProxy
+      - name: Generate coverage report
+        if:
+          "matrix.os == 'macos-latest'"
+        run: |
+          curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
+          coverage xml
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./
+          fail_ci_if_error: false
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          verbose: true
+      - name: Check if unittests failed
+        if: "steps.unittests.outcome == 'failure'"
+        run: exit 1
