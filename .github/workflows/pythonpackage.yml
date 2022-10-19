@@ -17,6 +17,8 @@ on:
       - completed
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yaml
   build:
     runs-on: ${{ matrix.os }}
     needs: [lint]
