@@ -344,6 +344,7 @@ class PublicationParser(object):
                     for entry in val.find_all('a'):
                         if entry.text.lower() == 'related articles':
                             publication['url_related_articles'] = entry.get('href')[26:]
+                            break
             # number of citation per year
             years = [int(y.text) for y in soup.find_all(class_='gsc_oci_g_t')]
             cites = [int(c.text) for c in soup.find_all(class_='gsc_oci_g_al')]
