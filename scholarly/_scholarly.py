@@ -6,8 +6,8 @@ import copy
 import csv
 import pprint
 import datetime
-from typing import Dict, List
 import re
+from typing import Dict, List, Union
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -159,11 +159,11 @@ class _Scholarly:
                                   sort_by=sort_by, include_last_year=include_last_year, start_index=start_index)
         return self.__nav.search_publications(url)
 
-    def search_citedby(self, publication_id: int, **kwargs):
+    def search_citedby(self, publication_id: Union[int, str], **kwargs):
         """Searches by Google Scholar publication id and returns a generator of Publication objects.
 
         :param publication_id: Google Scholar publication id
-        :type publication_id: int
+        :type publication_id: int or str
 
         For the remaining parameters, see documentation of `search_pubs`.
         """
