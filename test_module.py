@@ -151,7 +151,7 @@ class TestScholarly(unittest.TestCase):
         mandate = Mandate(agency="US National Science Foundation", effective_date="2016/1", embargo="12 months",
                           url_policy="https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
                           url_policy_cached="/mandates/nsf-2021-02-13.pdf",
-                          acknowledgement=" …NSF grant BCS-1354029 …")
+                          grant="BCS-1354029")
         self.assertIn(mandate, pub['mandates'])
         # Trigger the pprint method, but suppress the output
         with self.suppress_stdout():
@@ -194,10 +194,10 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['affiliation'],
                          u'Institut du radium, University of Paris')
         self.assertEqual(author['interests'], [])
-        self.assertEqual(author['public_access']['available'], 1)
+        self.assertEqual(author['public_access']['available'], 0)
         self.assertEqual(author['public_access']['not_available'], 0)
-        self.assertGreaterEqual(author['citedby'], 1963) # TODO: maybe change
-        self.assertGreaterEqual(len(author['publications']), 179)
+        self.assertGreaterEqual(author['citedby'], 2067) # TODO: maybe change
+        self.assertGreaterEqual(len(author['publications']), 218)
         pub = author['publications'][1]
         self.assertEqual(pub["citedby_url"],
                          "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
@@ -260,19 +260,21 @@ class TestScholarly(unittest.TestCase):
         author = scholarly.search_author_id('Xxjj6IsAAAAJ')
         author = scholarly.fill(author, sections=['publications'])
         pub_index = -1
-        for i in range(len(author['publications'])):
-            if author['publications'][i]['author_pub_id'] == 'Xxjj6IsAAAAJ:u_35RYKgDlwC':
-                pub_index = i
-        self.assertGreaterEqual(i, 0)
-        # elided title
-        self.assertEqual(author['publications'][pub_index]['bib']['title'],
-                         u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary …')
-        # full text
-        pub = scholarly.fill(author['publications'][pub_index])
-        self.assertEqual(pub['bib']['title'],
-                         u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
+        # Skip this part of the test since u_35RYKgDlwC has vanished from Google Scholar
+        if False:
+            for i in range(len(author['publications'])):
+                if author['publications'][i]['author_pub_id'] == 'Xxjj6IsAAAAJ:u_35RYKgDlwC':
+                    pub_index = i
+            self.assertGreaterEqual(i, 0)
+            # elided title
+            self.assertEqual(author['publications'][pub_index]['bib']['title'],
+                             u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary …')
+            # full text
+            pub = scholarly.fill(author['publications'][pub_index])
+            self.assertEqual(pub['bib']['title'],
+                             u'Evaluation of toxicity of Dichlorvos (Nuvan) to fresh water fish Anabas testudineus and possible modulation by crude aqueous extract of Andrographis paniculata: A preliminary investigation')
 
-        self.assertEqual(pub['bib']['citation'], "")
+            self.assertEqual(pub['bib']['citation'], "")
 
         for i in range(len(author['publications'])):
             if author['publications'][i]['author_pub_id'] == 'Xxjj6IsAAAAJ:ldfaerwXgEUC':
@@ -363,7 +365,8 @@ class TestScholarly(unittest.TestCase):
             if pub['author_pub_id'] == "kUDCLXAAAAAJ:tzM49s52ZIMC":
                 scholarly.fill(pub)
                 break
-        mandate = Mandate(agency="European Commission", effective_date="2013/12", embargo="6 months", grant="279396",
+        # The hard-coded reference mandate may need regular updates.
+        mandate = Mandate(agency="European Commission", effective_date="2013/12", embargo="6 months", grant="647112",
                           url_policy="https://erc.europa.eu/sites/default/files/document/file/ERC%20Open%20Access%20guidelines-Version%201.1._10.04.2017.pdf",
                           url_policy_cached="/mandates/horizon2020_eu-2021-02-13-en.pdf",
         )
@@ -381,16 +384,15 @@ class TestScholarly(unittest.TestCase):
         related_articles = scholarly.get_related_articles(pub)
         # Typically, the same publication is returned as the most related article
         same_article = next(related_articles)
-        for key in {'pub_url', 'num_citations'}:
-            self.assertEqual(pub[key], same_article[key])
+        self.assertEqual(pub["pub_url"], same_article["pub_url"])
         for key in {'title', 'pub_year'}:
             self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
 
         # These may change with time
         related_article = next(related_articles)
-        self.assertEqual(related_article['bib']['title'], 'Choices, values, and frames')
-        self.assertEqual(related_article['bib']['pub_year'], '2013')
-        self.assertGreaterEqual(related_article['num_citations'], 16561)
+        self.assertEqual(related_article['bib']['title'], 'Advances in prospect theory: Cumulative representation of uncertainty')
+        self.assertEqual(related_article['bib']['pub_year'], '1992')
+        self.assertGreaterEqual(related_article['num_citations'], 18673)
         self.assertIn("A Tversky", related_article['bib']['author'])
 
     def test_author_custom_url(self):
@@ -435,7 +437,8 @@ class TestScholarly(unittest.TestCase):
         soup = BeautifulSoup(response.text, "html.parser")
         agency_overall = soup.find_all("td", class_="gsc_mlt_n gsc_mlt_bd")
 
-        for agency, index in zip(agency_policy, [4-1,10-1, 19-1, 64-1]):
+        # These hardcoded numbers need some regular updates.
+        for agency, index in zip(agency_policy, [5-1,9-1, 21-1, 63-1]):
             agency_index = funder.index(agency)
             self.assertEqual(policy[agency_index], agency_policy[agency])
             # Check that the percentage values from CSV and on the page agree.
@@ -492,9 +495,10 @@ class TestScholarly(unittest.TestCase):
             with open(filename, "r") as f:
                 csv_reader = csv.DictReader(f)
                 for row in csv_reader:
+                    # These hard-coded values need regular updates.
                     self.assertEqual(row['Publication'], 'The Astrophysical Journal')
-                    self.assertEqual(row['h5-index'], '161')
-                    self.assertEqual(row['h5-median'], '239')
+                    self.assertEqual(row['h5-index'], '167')
+                    self.assertEqual(row['h5-median'], '234')
                     self.assertEqual(row['Comment'], '#1 Astronomy & Astrophysics; #2 Physics & Mathematics; ')
                     break
         finally:
