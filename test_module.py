@@ -656,6 +656,29 @@ class TestScholarlyWithProxy(unittest.TestCase):
                 self.assertEqual(author[key], expected_author[key])
         self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
+        # Example 3
+        expected_author = {'affiliation': "CEA, Département d'Astrophysique",
+                           'citedby': 98936,
+                           'email_domain': '@cea.fr',
+                           'filled': [],
+                           'interests': ['Cosmology (CMB',
+                                         'weak-lensing',
+                                         'large scale structure)',
+                                         'Statistics',
+                                         'Image Processing'],
+                           'name': 'Jean-Luc Starck',
+                           'scholar_id': 'IAaAiXgAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=IAaAiXgAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('large-scale structure')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        scholarly.pprint(author)
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
+
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
