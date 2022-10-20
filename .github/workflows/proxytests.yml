@@ -4,14 +4,8 @@
 name: Python package (with methods that need proxy)
 
 on:
-  workflow_run:
-    workflows: ["lint"]
-    branches: [main]
-    types:
-      - completed
   pull_request:
     branches: [main]
-
 
 jobs:
   build:
@@ -37,7 +31,7 @@ jobs:
       #  uses: typilus/typilus-action@v0.9
       - name: Run unittests
         id: unittests
-        if: ${{ github.event.pull_request.draft == false }}
+        if: ${{ github.event.pull_request.ready_for_review == true }}
         continue-on-error: true
         env:
           CONNECTION_METHOD: ${{ secrets.CONNECTION_METHOD }}
@@ -48,8 +42,6 @@ jobs:
         run: |
           coverage run -m unittest -v test_module.TestScholarlyWithProxy
       - name: Generate coverage report
-        if:
-          "matrix.os == 'macos-latest'"
         run: |
           curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
           coverage xml

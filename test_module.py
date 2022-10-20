@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+from collections import Counter
 from scholarly import scholarly, ProxyGenerator
 from scholarly.data_types import Mandate
 from scholarly.publication_parser import PublicationParser
@@ -128,6 +129,73 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['scholar_id'], '_cMw1IUAAAAJ')
         self.assertEqual(author['name'], 'Arpita Ghosh')
         self.assertEqual(author['affiliation'], 'Cornell University')
+
+    def test_search_keyword_empty_keyword(self):
+        """
+        As of 2020-04-30, there are  6 individuals that match the name 'label'
+        """
+        # TODO this seems like undesirable functionality for
+        # scholarly.search_keyword() with empty string. Surely, no authors
+        # should be returned. Consider modifying the method itself.
+        authors = [a for a in scholarly.search_keyword('')]
+        self.assertGreaterEqual(len(authors), 6)
+
+    def test_search_keyword(self):
+        """
+        Test that we can search based on specific keywords
+
+        When we search for the keyword "3d shape" the author
+        Steven A. Cholewiak should be among those listed.
+        When we search for the keyword "Haptics", Oussama Khatib
+        should be listed first.
+        """
+        # Example 1
+        authors = [a['name'] for a in scholarly.search_keyword('3d shape')]
+        self.assertIsNot(len(authors), 0)
+        self.assertIn(u'Steven A. Cholewiak, PhD', authors)
+
+        # Example 2
+        expected_author = {'affiliation': 'Stanford University',
+                           'citedby': 43856,
+                           'email_domain': '@cs.stanford.edu',
+                           'filled': [],
+                           'interests': ['Robotics',
+                                         'Haptics',
+                                         'Human Motion Understanding'],
+                           'name': 'Oussama Khatib',
+                           'scholar_id': '4arkOLcAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('Haptics')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
+
+        # Example 3
+        expected_author = {'affiliation': "CEA, Département d'Astrophysique",
+                           'citedby': 98936,
+                           'email_domain': '@cea.fr',
+                           'filled': [],
+                           'interests': ['Cosmology (CMB',
+                                         'weak-lensing',
+                                         'large scale structure)',
+                                         'Statistics',
+                                         'Image Processing'],
+                           'name': 'Jean-Luc Starck',
+                           'scholar_id': 'IAaAiXgAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=IAaAiXgAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('large-scale structure')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        scholarly.pprint(author)
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
     def test_search_author_single_author(self):
         query = 'Steven A. Cholewiak'
@@ -372,29 +440,6 @@ class TestScholarly(unittest.TestCase):
         )
         self.assertIn(mandate, pub['mandates'])
 
-    def test_related_articles_from_author(self):
-        """
-        Test that we obtain related articles to an article from an author
-        """
-        author = scholarly.search_author_id("ImhakoAAAAAJ")
-        scholarly.fill(author, sections=['basics', 'publications'])
-        pub = author['publications'][0]
-        self.assertEqual(pub['bib']['title'], 'Prospect theory: An analysis of decision under risk')
-        self.assertEqual(pub['bib']['citation'], 'Handbook of the fundamentals of financial decision making: Part I, 99-127, 2013')
-        related_articles = scholarly.get_related_articles(pub)
-        # Typically, the same publication is returned as the most related article
-        same_article = next(related_articles)
-        self.assertEqual(pub["pub_url"], same_article["pub_url"])
-        for key in {'title', 'pub_year'}:
-            self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
-
-        # These may change with time
-        related_article = next(related_articles)
-        self.assertEqual(related_article['bib']['title'], 'Advances in prospect theory: Cumulative representation of uncertainty')
-        self.assertEqual(related_article['bib']['pub_year'], '1992')
-        self.assertGreaterEqual(related_article['num_citations'], 18673)
-        self.assertIn("A Tversky", related_article['bib']['author'])
-
     def test_author_custom_url(self):
         """
         Test that we can use custom URLs for retrieving author data
@@ -505,6 +550,16 @@ class TestScholarly(unittest.TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
 
+    def test_bin_citations_by_year(self):
+        """Test an internal optimization function to bin cites_per_year
+           while keeping the citation counts less than 1000 per bin.
+        """
+        cpy = {2022: 490, 2021: 340, 2020:327, 2019:298, 2018: 115, 2017: 49, 2016: 20, 2015: 8, 2014: 3, 2013: 1, 2012: 1}
+        years = scholarly._bin_citations_by_year(cpy, 2022)
+        for y_hi, y_lo in years:
+            self.assertLessEqual(y_lo, y_hi)
+            self.assertLessEqual(sum(cpy[y] for y in range(y_lo, y_hi+1)), 1000)
+
 
 class TestScholarlyWithProxy(unittest.TestCase):
     @classmethod
@@ -571,18 +626,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
 
         scholarly.use_proxy(proxy_generator, secondary_proxy_generator)
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
-    def test_search_keyword_empty_keyword(self):
-        """
-        As of 2020-04-30, there are  6 individuals that match the name 'label'
-        """
-        # TODO this seems like undesirable functionality for
-        # scholarly.search_keyword() with empty string. Surely, no authors
-        # should be returned. Consider modifying the method itself.
-        authors = [a for a in scholarly.search_keyword('')]
-        self.assertGreaterEqual(len(authors), 6)
-
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_empty_publication(self):
         """
         Test that searching for an empty publication returns zero results
@@ -590,7 +633,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         pubs = [p for p in scholarly.search_pubs('')]
         self.assertIs(len(pubs), 0)
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby(self):
         """
         Testing that when we retrieve the list of publications that cite
@@ -607,7 +649,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         cites = [c for c in scholarly.citedby(filled)]
         self.assertEqual(len(cites), filled['num_citations'])
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_citedby_id(self):
         """
         Test querying for citations by paper ID.
@@ -649,42 +690,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         result = scholarly.bibtex(pub)
         self.assertEqual(result, expected_result.replace("\n        ", "\n"))
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
-    def test_search_keyword(self):
-        """
-        Test that we can search based on specific keywords
-
-        When we search for the keyword "3d_shape" the author
-        Steven A. Cholewiak should be among those listed.
-        When we search for the keyword "Haptics", Oussama Khatib
-        should be listed first.
-        """
-        # Example 1
-        authors = [a['name'] for a in scholarly.search_keyword('3d_shape')]
-        self.assertIsNot(len(authors), 0)
-        self.assertIn(u'Steven A. Cholewiak, PhD', authors)
-
-        # Example 2
-        expected_author = {'affiliation': 'Stanford University',
-                           'citedby': 43856,
-                           'email_domain': '@cs.stanford.edu',
-                           'filled': [],
-                           'interests': ['Robotics',
-                                         'Haptics',
-                                         'Human Motion Understanding'],
-                           'name': 'Oussama Khatib',
-                           'scholar_id': '4arkOLcAAAAJ',
-                           'source': 'SEARCH_AUTHOR_SNIPPETS',
-                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
-                           }
-        search_query = scholarly.search_keyword('Haptics')
-        author = next(search_query)
-        for key in author:
-            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
-                self.assertEqual(author[key], expected_author[key])
-        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
-
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs(self):
         """
         As of May 12, 2020 there are at least 29 pubs that fit the search term:
@@ -705,7 +710,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         titles = [p['bib']['title'] for p in pubs]
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', titles)
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_total_results(self):
         """
         As of September 16, 2021 there are 32 pubs that fit the search term:
@@ -723,7 +727,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         pubs = scholarly.search_pubs('sdfsdf+24r+asdfasdf')
         self.assertEqual(pubs.total_results, 0)
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_search_pubs_filling_publication_contents(self):
         '''
         This process  checks the process of filling a publication that is derived
@@ -745,7 +748,29 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertTrue(f['bib']['volume'] == '18')
         self.assertTrue(f['bib']['pub_year'] == u'2018')
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_related_articles_from_author(self):
+        """
+        Test that we obtain related articles to an article from an author
+        """
+        author = scholarly.search_author_id("ImhakoAAAAAJ")
+        scholarly.fill(author, sections=['basics', 'publications'])
+        pub = author['publications'][0]
+        self.assertEqual(pub['bib']['title'], 'Prospect theory: An analysis of decision under risk')
+        self.assertEqual(pub['bib']['citation'], 'Handbook of the fundamentals of financial decision making: Part I, 99-127, 2013')
+        related_articles = scholarly.get_related_articles(pub)
+        # Typically, the same publication is returned as the most related article
+        same_article = next(related_articles)
+        self.assertEqual(pub["pub_url"], same_article["pub_url"])
+        for key in {'title', 'pub_year'}:
+            self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
+
+        # These may change with time
+        related_article = next(related_articles)
+        self.assertEqual(related_article['bib']['title'], 'Advances in prospect theory: Cumulative representation of uncertainty')
+        self.assertEqual(related_article['bib']['pub_year'], '1992')
+        self.assertGreaterEqual(related_article['num_citations'], 18673)
+        self.assertIn("A Tversky", related_article['bib']['author'])
+
     def test_related_articles_from_publication(self):
         """
         Test that we obtain related articles to an article from a search
@@ -768,7 +793,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertGreaterEqual(related_article['num_citations'], 1388)
         self.assertIn("AG Riess", related_article['bib']['author'])
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_pubs_custom_url(self):
         """
         Test that we can use custom URLs for retrieving publication data
@@ -781,6 +805,42 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertEqual(set(pub['author_id']), {'V-ab9U4AAAAJ', '4k-k6SEAAAAJ', 'GLm-SaQAAAAJ'})
         self.assertEqual(pub['bib']['pub_year'], '2009')
         self.assertGreaterEqual(pub['num_citations'], 581)
+
+    def check_citedby_1k(self, pub):
+        """A common checking method to check
+        """
+        original_citation_count = pub["num_citations"]
+        # Trigger a different code path
+        if original_citation_count <= 1000:
+            pub["num_citations"] = 1001
+        citations = scholarly.citedby(pub)
+        citation_list = list(citations)
+        self.assertEqual(len(citation_list), original_citation_count)
+        return citation_list
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_citedby_1k_citations(self):
+        """Test that scholarly can fetch 1000+ citations from an author
+        """
+        author = scholarly.search_author_id('QoX9bu8AAAAJ')
+        scholarly.fill(author, sections=['publications'])
+        pub = [_p for _p in  author['publications'] if _p["author_pub_id"]=="QoX9bu8AAAAJ:L8Ckcad2t8MC"][0]
+        scholarly.fill(pub)
+        citation_list = self.check_citedby_1k(pub)
+
+        yearwise_counter = Counter([c["bib"]["pub_year"] for c in citation_list])
+        for year, count in pub["cites_per_year"].items():
+            self.assertEqual(yearwise_counter.get(str(year), 0), count)
+
+    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
+    def test_citedby_1k_scholar(self):
+        """Test that scholarly can fetch 1000+ citations from a pub search.
+        """
+        title = "Persistent entanglement in a class of eigenstates of quantum Heisenberg spin glasses"
+        pubs = scholarly.search_pubs(title)
+        pub = next(pubs)
+        self.check_citedby_1k(pub)
+
 
 if __name__ == '__main__':
     unittest.main()
