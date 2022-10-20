@@ -1,5 +1,6 @@
 """scholarly.py"""
 import requests
+import re
 import os
 import copy
 import csv
@@ -15,6 +16,7 @@ from .data_types import Author, AuthorSource, Journal, Publication, PublicationS
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
 _KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
 _KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
+_KEYWORDSEARCH_PATTERN = "[-: #(),;]+"  # Unallowed characters in the keywords.
 _PUBSEARCH = '/scholar?hl=en&q={0}'
 _CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
 _ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
@@ -321,7 +323,9 @@ class _Scholarly:
              'source': 'SEARCH_AUTHOR_SNIPPETS',
              'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
         """
-        url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
+
+        reg_keyword = re.sub(_KEYWORDSEARCH_PATTERN, "_", keyword)
+        url = _KEYWORDSEARCH.format(requests.utils.quote(reg_keyword))
         return self.__nav.search_authors(url)
 
     def search_keywords(self, keywords: List[str]):
@@ -355,8 +359,8 @@ class _Scholarly:
                  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=_cMw1IUAAAAJ'}
 
         """
-
-        formated_keywords = ['label:'+requests.utils.quote(keyword) for keyword in keywords]
+        reg_keywords = (re.sub(_KEYWORDSEARCH_PATTERN, "_", keyword) for keyword in keywords)
+        formated_keywords = ['label:'+requests.utils.quote(keyword) for keyword in reg_keywords]
         formated_keywords = '+'.join(formated_keywords)
         url = _KEYWORDSEARCHBASE.format(formated_keywords)
         return self.__nav.search_authors(url)
