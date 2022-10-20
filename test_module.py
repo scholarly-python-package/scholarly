@@ -626,13 +626,13 @@ class TestScholarlyWithProxy(unittest.TestCase):
         """
         Test that we can search based on specific keywords
 
-        When we search for the keyword "3d_shape" the author
+        When we search for the keyword "3d shape" the author
         Steven A. Cholewiak should be among those listed.
         When we search for the keyword "Haptics", Oussama Khatib
         should be listed first.
         """
         # Example 1
-        authors = [a['name'] for a in scholarly.search_keyword('3d_shape')]
+        authors = [a['name'] for a in scholarly.search_keyword('3d shape')]
         self.assertIsNot(len(authors), 0)
         self.assertIn(u'Steven A. Cholewiak, PhD', authors)
 
