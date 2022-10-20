@@ -129,6 +129,73 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['name'], 'Arpita Ghosh')
         self.assertEqual(author['affiliation'], 'Cornell University')
 
+    def test_search_keyword_empty_keyword(self):
+        """
+        As of 2020-04-30, there are  6 individuals that match the name 'label'
+        """
+        # TODO this seems like undesirable functionality for
+        # scholarly.search_keyword() with empty string. Surely, no authors
+        # should be returned. Consider modifying the method itself.
+        authors = [a for a in scholarly.search_keyword('')]
+        self.assertGreaterEqual(len(authors), 6)
+
+    def test_search_keyword(self):
+        """
+        Test that we can search based on specific keywords
+
+        When we search for the keyword "3d shape" the author
+        Steven A. Cholewiak should be among those listed.
+        When we search for the keyword "Haptics", Oussama Khatib
+        should be listed first.
+        """
+        # Example 1
+        authors = [a['name'] for a in scholarly.search_keyword('3d shape')]
+        self.assertIsNot(len(authors), 0)
+        self.assertIn(u'Steven A. Cholewiak, PhD', authors)
+
+        # Example 2
+        expected_author = {'affiliation': 'Stanford University',
+                           'citedby': 43856,
+                           'email_domain': '@cs.stanford.edu',
+                           'filled': [],
+                           'interests': ['Robotics',
+                                         'Haptics',
+                                         'Human Motion Understanding'],
+                           'name': 'Oussama Khatib',
+                           'scholar_id': '4arkOLcAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('Haptics')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
+
+        # Example 3
+        expected_author = {'affiliation': "CEA, Département d'Astrophysique",
+                           'citedby': 98936,
+                           'email_domain': '@cea.fr',
+                           'filled': [],
+                           'interests': ['Cosmology (CMB',
+                                         'weak-lensing',
+                                         'large scale structure)',
+                                         'Statistics',
+                                         'Image Processing'],
+                           'name': 'Jean-Luc Starck',
+                           'scholar_id': 'IAaAiXgAAAAJ',
+                           'source': 'SEARCH_AUTHOR_SNIPPETS',
+                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=IAaAiXgAAAAJ'
+                           }
+        search_query = scholarly.search_keyword('large-scale structure')
+        author = next(search_query)
+        for key in author:
+            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
+                self.assertEqual(author[key], expected_author[key])
+        scholarly.pprint(author)
+        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
+
     def test_search_author_single_author(self):
         query = 'Steven A. Cholewiak'
         authors = [a for a in scholarly.search_author(query)]
@@ -548,16 +615,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
 
         scholarly.use_proxy(proxy_generator, secondary_proxy_generator)
 
-    def test_search_keyword_empty_keyword(self):
-        """
-        As of 2020-04-30, there are  6 individuals that match the name 'label'
-        """
-        # TODO this seems like undesirable functionality for
-        # scholarly.search_keyword() with empty string. Surely, no authors
-        # should be returned. Consider modifying the method itself.
-        authors = [a for a in scholarly.search_keyword('')]
-        self.assertGreaterEqual(len(authors), 6)
-
     def test_search_pubs_empty_publication(self):
         """
         Test that searching for an empty publication returns zero results
@@ -621,63 +678,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
                                           "spatial databases with noise", filled=True)
         result = scholarly.bibtex(pub)
         self.assertEqual(result, expected_result.replace("\n        ", "\n"))
-
-    def test_search_keyword(self):
-        """
-        Test that we can search based on specific keywords
-
-        When we search for the keyword "3d shape" the author
-        Steven A. Cholewiak should be among those listed.
-        When we search for the keyword "Haptics", Oussama Khatib
-        should be listed first.
-        """
-        # Example 1
-        authors = [a['name'] for a in scholarly.search_keyword('3d shape')]
-        self.assertIsNot(len(authors), 0)
-        self.assertIn(u'Steven A. Cholewiak, PhD', authors)
-
-        # Example 2
-        expected_author = {'affiliation': 'Stanford University',
-                           'citedby': 43856,
-                           'email_domain': '@cs.stanford.edu',
-                           'filled': [],
-                           'interests': ['Robotics',
-                                         'Haptics',
-                                         'Human Motion Understanding'],
-                           'name': 'Oussama Khatib',
-                           'scholar_id': '4arkOLcAAAAJ',
-                           'source': 'SEARCH_AUTHOR_SNIPPETS',
-                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=4arkOLcAAAAJ'
-                           }
-        search_query = scholarly.search_keyword('Haptics')
-        author = next(search_query)
-        for key in author:
-            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
-                self.assertEqual(author[key], expected_author[key])
-        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
-
-        # Example 3
-        expected_author = {'affiliation': "CEA, Département d'Astrophysique",
-                           'citedby': 98936,
-                           'email_domain': '@cea.fr',
-                           'filled': [],
-                           'interests': ['Cosmology (CMB',
-                                         'weak-lensing',
-                                         'large scale structure)',
-                                         'Statistics',
-                                         'Image Processing'],
-                           'name': 'Jean-Luc Starck',
-                           'scholar_id': 'IAaAiXgAAAAJ',
-                           'source': 'SEARCH_AUTHOR_SNIPPETS',
-                           'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=IAaAiXgAAAAJ'
-                           }
-        search_query = scholarly.search_keyword('large-scale structure')
-        author = next(search_query)
-        for key in author:
-            if (key not in {"citedby", "container_type", "interests"}) and (key in expected_author):
-                self.assertEqual(author[key], expected_author[key])
-        scholarly.pprint(author)
-        self.assertEqual(set(author["interests"]), set(expected_author["interests"]))
 
     def test_search_pubs(self):
         """
