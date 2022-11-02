@@ -4,11 +4,11 @@ with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="scholarly",
-    version="1.7.2",
-    author="Steven A. Cholewiak, Panos Ipeirotis, Victor Silva, Arun Kannawadi",
-    author_email="steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca, arunkannawadi@astro.princeton.edu",
-    description="Simple access to Google Scholar authors and citations",
+    name='scholarly',
+    version='1.7.3',
+    author='Steven A. Cholewiak, Panos Ipeirotis, Victor Silva, Arun Kannawadi',
+    author_email='steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca, arunkannawadi@astro.princeton.edu',
+    description='Simple access to Google Scholar authors and citations',
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Unlicense",

@@ -1,0 +1,22 @@
+name: lint
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+      - name: Lint with flake8
+        run: |
+          pip3 install -r requirements-dev.txt
+          # Stop the build if there are Python syntax errors, undefined names or unused imports etc.
+          flake8
+          # Do not stop the build, but indicate room for improvement.
+          # exit-zero treats all errors as warnings.
+          flake8 . --exit-zero --ignore= --select=
