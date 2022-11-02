@@ -1,26 +1,35 @@
-"""scholarly.py"""
-import requests
-import re
-import os
+"""Core Scholarly Class."""
+
 import copy
 import csv
+import datetime
 import os
 import pprint
-import datetime
 import re
 from typing import Dict, List, Union
+
+import requests
+from dotenv import find_dotenv, load_dotenv
+
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from .author_parser import AuthorParser
+from .data_types import (
+    Author,
+    AuthorSource,
+    CitesPerYear,
+    Journal,
+    Publication,
+    PublicationSource,
+)
 from .publication_parser import PublicationParser, _SearchScholarIterator
-from .data_types import Author, AuthorSource, CitesPerYear, Journal, Publication, PublicationSource
 
-_AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
-_KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
-_KEYWORDSEARCHBASE = '/citations?hl=en&view_op=search_authors&mauthors={}'
+_AUTHSEARCH = "/citations?hl=en&view_op=search_authors&mauthors={0}"
+_KEYWORDSEARCH = "/citations?hl=en&view_op=search_authors&mauthors=label:{0}"
+_KEYWORDSEARCHBASE = "/citations?hl=en&view_op=search_authors&mauthors={}"
 _KEYWORDSEARCH_PATTERN = "[-: #(),;]+"  # Unallowed characters in the keywords.
-_PUBSEARCH = '/scholar?hl=en&q={0}'
-_CITEDBYSEARCH = '/scholar?hl=en&cites={0}'
+_PUBSEARCH = "/scholar?hl=en&q={0}"
+_CITEDBYSEARCH = "/scholar?hl=en&cites={0}"
 _ORGSEARCH = "/citations?view_op=view_org&hl=en&org={0}"
 _MANDATES_URL = (
     "https://scholar.google.com/citations?view_op=mandates_leaderboard_csv&hl=en"
@@ -291,53 +300,76 @@ class _Scholarly:
 
         return years
 
-    def citedby(self, object: Publication)->_SearchScholarIterator:
-        """Searches Google Scholar for other articles that cite this Publication
-        and returns a Publication generator.
+    def citedby(self, object: Publication) -> _SearchScholarIterator:
+        """Searches Google Scholar for other articles that cite this Publication and returns a Publication generator.
 
         :param object: The Publication object for the bibtex exportation
         :type object: Publication
         """
-
-        if object['container_type'] != "Publication":
+        if object["container_type"] != "Publication":
             self.logger.warning("Object not supported for bibtex exportation")
             return
 
         if object["num_citations"] <= 1000:
             return PublicationParser(self.__nav).citedby(object)
 
-        self.logger.debug("Since the paper titled %s has %d citations (>1000), "
-                          "fetching it on an annual basis.", object["bib"]["title"], object["num_citations"])
+        self.logger.debug(
+            "Since the paper titled %s has %d citations (>1000), "
+            "fetching it on an annual basis.",
+            object["bib"]["title"],
+            object["num_citations"],
+        )
 
         year_end = int(datetime.date.today().year)
 
         if object["source"] == PublicationSource.AUTHOR_PUBLICATION_ENTRY:
             self.fill(object)
-            years = self._bin_citations_by_year(object.get("cites_per_year", {}), year_end)
+            years = self._bin_citations_by_year(
+                object.get("cites_per_year", {}), year_end
+            )
         else:
             try:
                 year_low = int(object["bib"]["pub_year"])
             except KeyError:
-                self.logger.warning("Unknown publication year for paper %s, may result in incorrect number "
-                                    "of citedby papers.", object["bib"]["title"])
+                self.logger.warning(
+                    "Unknown publication year for paper %s, may result in incorrect number "
+                    "of citedby papers.",
+                    object["bib"]["title"],
+                )
                 return PublicationParser(self.__nav).citedby(object)
 
             # Go one year at a time in decreasing order
-            years = zip(range(year_end, year_low-1, -1), range(year_end, year_low-1, -1))
+            years = zip(
+                range(year_end, year_low - 1, -1), range(year_end, year_low - 1, -1)
+            )
 
         # Extract cites_id. Note: There could be multiple ones, separated by commas.
-        m = re.search("cites=[\d+,]*", object["citedby_url"])
+        m = re.search(r"cites=[\d+,]*", object["citedby_url"])
         pub_id = m.group()[6:]
         for y_hi, y_lo in years:
-            sub_citations = self.search_citedby(publication_id=pub_id, year_low=y_lo, year_high=y_hi)
+            sub_citations = self.search_citedby(
+                publication_id=pub_id, year_low=y_lo, year_high=y_hi
+            )
             if sub_citations.total_results and (sub_citations.total_results > 1000):
-                self.logger.warn("The paper titled %s has %d citations in the year %d. "
-                                 "Due to the limitation in Google Scholar, fetching only 1000 results "
-                                 "from that year.", object["bib"]["title"], sub_citations.total_results, y_lo)
+                self.logger.warn(
+                    "The paper titled %s has %d citations in the year %d. "
+                    "Due to the limitation in Google Scholar, fetching only 1000 results "
+                    "from that year.",
+                    object["bib"]["title"],
+                    sub_citations.total_results,
+                    y_lo,
+                )
             yield from sub_citations
 
-    def search_author_id(self, id: str, filled: bool = False, sortby: str = "citedby", publication_limit: int = 0)->Author:
-        """Search by author id and return a single Author object
+    def search_author_id(
+        self,
+        id: str,
+        filled: bool = False,
+        sortby: str = "citedby",
+        publication_limit: int = 0,
+    ) -> Author:
+        """Search by author id and return a single Author object.
+
         :param sortby: select the order of the citations in the author page. Either by 'citedby' or 'year'. Defaults to 'citedby'.
         :type sortby: string
         :param publication_limit: if the object is an author, select the max number of publications you want you want to fill for the author. Defaults to no limit.
@@ -395,7 +427,6 @@ class _Scholarly:
              'source': 'SEARCH_AUTHOR_SNIPPETS',
              'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=lHrs3Y4AAAAJ'}
         """
-
         reg_keyword = re.sub(_KEYWORDSEARCH_PATTERN, "_", keyword)
         url = _KEYWORDSEARCH.format(requests.utils.quote(reg_keyword))
         return self.__nav.search_authors(url)
@@ -431,9 +462,13 @@ class _Scholarly:
                  'url_picture': 'https://scholar.google.com/citations?view_op=medium_photo&user=_cMw1IUAAAAJ'}
 
         """
-        reg_keywords = (re.sub(_KEYWORDSEARCH_PATTERN, "_", keyword) for keyword in keywords)
-        formated_keywords = ['label:'+requests.utils.quote(keyword) for keyword in reg_keywords]
-        formated_keywords = '+'.join(formated_keywords)
+        reg_keywords = (
+            re.sub(_KEYWORDSEARCH_PATTERN, "_", keyword) for keyword in keywords
+        )
+        formated_keywords = [
+            "label:" + requests.utils.quote(keyword) for keyword in reg_keywords
+        ]
+        formated_keywords = "+".join(formated_keywords)
         url = _KEYWORDSEARCHBASE.format(formated_keywords)
         return self.__nav.search_authors(url)
 
