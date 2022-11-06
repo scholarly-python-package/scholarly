@@ -841,6 +841,17 @@ class TestScholarlyWithProxy(unittest.TestCase):
         pub = next(pubs)
         self.check_citedby_1k(pub)
 
+    def test_citedby(self):
+        """Test that we can search citations of a paper from author's profile.
+        """
+        # Retrieve the author's data, fill-in, and print
+        search_query = scholarly.search_author('Steven A Cholewiak')
+        author = scholarly.fill(next(search_query))
+        pub = scholarly.fill(author['publications'][0])
+
+        # Which papers cited that publication?
+        top10_citations = [citation for num, citation in enumerate(scholarly.citedby(pub)) if num<10]
+        self.assertEqual(len(top10_citations), 10)
 
 if __name__ == '__main__':
     unittest.main()
