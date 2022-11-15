@@ -818,7 +818,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertEqual(len(citation_list), original_citation_count)
         return citation_list
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_citedby_1k_citations(self):
         """Test that scholarly can fetch 1000+ citations from an author
         """
@@ -832,7 +831,6 @@ class TestScholarlyWithProxy(unittest.TestCase):
         for year, count in pub["cites_per_year"].items():
             self.assertEqual(yearwise_counter.get(str(year), 0), count)
 
-    @unittest.skipIf(os.getenv("CONNECTION_METHOD") in {None, "none", "freeproxy"}, reason="No robust proxy setup")
     def test_citedby_1k_scholar(self):
         """Test that scholarly can fetch 1000+ citations from a pub search.
         """
@@ -841,6 +839,17 @@ class TestScholarlyWithProxy(unittest.TestCase):
         pub = next(pubs)
         self.check_citedby_1k(pub)
 
+    def test_citedby(self):
+        """Test that we can search citations of a paper from author's profile.
+        """
+        # Retrieve the author's data, fill-in, and print
+        search_query = scholarly.search_author('Steven A Cholewiak')
+        author = scholarly.fill(next(search_query))
+        pub = scholarly.fill(author['publications'][0])
+
+        # Which papers cited that publication?
+        top10_citations = [citation for num, citation in enumerate(scholarly.citedby(pub)) if num<10]
+        self.assertEqual(len(top10_citations), 10)
 
 if __name__ == '__main__':
     unittest.main()
