@@ -433,6 +433,7 @@ class ProxyGenerator(object):
         for cookie in self._get_webdriver().get_cookies():
             cookie.pop("httpOnly", None)
             cookie.pop("expiry", None)
+            cookie.pop("sameSite", None)
             self._session.cookies.set(**cookie)
 
         return self._session
