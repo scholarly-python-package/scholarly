@@ -28,10 +28,10 @@ _MANDATES_URL = "https://scholar.google.com/citations?view_op=mandates_leaderboa
 class _Scholarly:
     """Class that manages the API for scholarly"""
 
-    def __init__(self):
+    def __init__(self,headless=False):
         load_dotenv(find_dotenv())
         self.env = os.environ.copy()
-        self.__nav = Navigator()
+        self.__nav = Navigator(headless=headless)
         self.logger = self.__nav.logger
         self._journal_categories = None
 
