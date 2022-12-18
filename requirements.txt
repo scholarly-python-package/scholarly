@@ -3,7 +3,7 @@ beautifulsoup4
 bibtexparser
 deprecated
 fake_useragent
-free-proxy<1.1.0
+free-proxy
 python-dotenv
 requests[socks]
 selenium
