@@ -28,10 +28,10 @@ _MANDATES_URL = "https://scholar.google.com/citations?view_op=mandates_leaderboa
 class _Scholarly:
     """Class that manages the API for scholarly"""
 
-    def __init__(self):
+    def __init__(self,headless=False):
         load_dotenv(find_dotenv())
         self.env = os.environ.copy()
-        self.__nav = Navigator()
+        self.__nav = Navigator(headless=headless)
         self.logger = self.__nav.logger
         self._journal_categories = None
 
@@ -305,6 +305,9 @@ class _Scholarly:
             # Go one year at a time in decreasing order
             years = zip(range(year_end, year_low-1, -1), range(year_end, year_low-1, -1))
 
+        return self._citedby_long(object,years)
+
+    def _citedby_long(self, object: Publication, years):
         # Extract cites_id. Note: There could be multiple ones, separated by commas.
         m = re.search("cites=[\d+,]*", object["citedby_url"])
         pub_id = m.group()[6:]

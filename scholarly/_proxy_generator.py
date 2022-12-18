@@ -35,9 +35,10 @@ class MaxTriesExceededException(Exception):
 
 
 class ProxyGenerator(object):
-    def __init__(self):
+    def __init__(self,headless=False):
         # setting up logger
         self.logger = logging.getLogger('scholarly')
+        self._headless = headless
 
         self._proxy_gen = None
         # If we use a proxy or Tor, we set this to True
@@ -359,7 +360,8 @@ class ProxyGenerator(object):
             }
 
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        if self._headless:
+            options.add_argument('--headless')
         self._webdriver = webdriver.Chrome('chromedriver', options=options)
         self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
 
@@ -375,7 +377,8 @@ class ProxyGenerator(object):
             }
 
         options = FirefoxOptions()
-        options.add_argument('--headless')
+        if self._headless:
+            options.add_argument('--headless')
         self._webdriver = webdriver.Firefox(options=options)
         self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
 

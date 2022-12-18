@@ -31,7 +31,7 @@ class Singleton(type):
 class Navigator(object, metaclass=Singleton):
     """A class used to navigate pages on google scholar."""
 
-    def __init__(self):
+    def __init__(self,headless=False):
         super(Navigator, self).__init__()
         self.logger = logging.getLogger('scholarly')
         self._TIMEOUT = 5
@@ -39,8 +39,8 @@ class Navigator(object, metaclass=Singleton):
         # A Navigator instance has two proxy managers, each with their session.
         # `pm1` manages the primary, premium proxy.
         # `pm2` manages the secondary, inexpensive proxy.
-        self.pm1 = ProxyGenerator()
-        self.pm2 = ProxyGenerator()
+        self.pm1 = ProxyGenerator(headless=headless)
+        self.pm2 = ProxyGenerator(headless=headless)
         self._session1 = self.pm1.get_session()
         self._session2 = self.pm2.get_session()
         self.got_403 = False
