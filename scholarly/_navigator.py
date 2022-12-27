@@ -11,6 +11,7 @@ import logging
 import random
 import time
 from requests.exceptions import Timeout
+from httpx import TimeoutException
 from selenium.webdriver.common.by import By
 from .publication_parser import _SearchScholarIterator
 from .author_parser import AuthorParser
@@ -111,7 +112,7 @@ class Navigator(object, metaclass=Singleton):
                 w = random.uniform(1,2)
                 time.sleep(w)
                 resp = session.get(pagerequest, timeout=timeout)
-                self.logger.debug("Session proxy config is {}".format(session.proxies))
+                self.logger.debug("Session proxy config is {}".format(pm._proxies))
 
                 has_captcha = self._requests_has_captcha(resp.text)
 
@@ -149,7 +150,7 @@ class Navigator(object, metaclass=Singleton):
                     self.logger.info("Will retry after %.2f seconds (with the same session).", w)
                     time.sleep(w)
                     continue
-            except Timeout as e:
+            except (Timeout, TimeoutException) as e:
                 err = "Timeout Exception %s while fetching page: %s" % (type(e).__name__, e.args)
                 self.logger.info(err)
                 if timeout < 3*self._TIMEOUT:
@@ -164,7 +165,7 @@ class Navigator(object, metaclass=Singleton):
 
             tries += 1
             try:
-                session, timeout = pm.get_next_proxy(num_tries = tries, old_timeout = timeout, old_proxy=session.proxies.get('http', None))
+                session, timeout = pm.get_next_proxy(num_tries = tries, old_timeout = timeout, old_proxy=pm._proxies.get('http', None))
             except Exception:
                 self.logger.info("No other secondary connections possible. "
                                  "Using the primary proxy for all requests.")

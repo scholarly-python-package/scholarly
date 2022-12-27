@@ -4,6 +4,7 @@ import random
 import logging
 import time
 import requests
+import httpx
 import tempfile
 import urllib3
 
@@ -43,6 +44,7 @@ class ProxyGenerator(object):
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         self.proxy_mode = None
+        self._proxies = {}
         # If we have a Tor server that we can refresh, we set this to True
         self._tor_process = None
         self._can_refresh_tor = False
@@ -183,8 +185,12 @@ class ProxyGenerator(object):
         """
         if https is None:
             https = http
+        if http[:4] != "http":
+            http = "http://" + http
+        if https[:5] != "https":
+            https = "https://" + https
 
-        proxies = {'http': http, 'https': https}
+        proxies = {'http://': http, 'https://': https}
         if self.proxy_mode == ProxyMode.SCRAPERAPI:
             r = requests.get("http://api.scraperapi.com/account", params={'api_key': self._API_KEY}).json()
             if "error" in r:
@@ -198,7 +204,7 @@ class ProxyGenerator(object):
             self._proxy_works = self._check_proxy(proxies)
 
         if self._proxy_works:
-            self._session.proxies = proxies
+            self._proxies = proxies
             self._new_session()
 
         return self._proxy_works
@@ -353,8 +359,8 @@ class ProxyGenerator(object):
     def _get_chrome_webdriver(self):
         if self._proxy_works:
             webdriver.DesiredCapabilities.CHROME['proxy'] = {
-                "httpProxy": self._session.proxies['http'],
-                "sslProxy": self._session.proxies['https'],
+                "httpProxy": self._proxies['http'],
+                "sslProxy": self._proxies['https'],
                 "proxyType": "MANUAL"
             }
 
@@ -369,8 +375,8 @@ class ProxyGenerator(object):
         if self._proxy_works:
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
-                "httpProxy": self._session.proxies['http'],
-                "sslProxy": self._session.proxies['https'],
+                "httpProxy": self._proxies['http'],
+                "sslProxy": self._proxies['https'],
                 "proxyType": "MANUAL",
             }
 
@@ -439,11 +445,12 @@ class ProxyGenerator(object):
         return self._session
 
     def _new_session(self):
+        init_kwargs = {}
         proxies = {}
         if self._session:
-            proxies = self._session.proxies
+            proxies = self._proxies
             self._close_session()
-        self._session = requests.Session()
+        # self._session = httpx.Client()
         self.got_403 = False
 
         # Suppress the misleading traceback from UserAgent()
@@ -453,15 +460,18 @@ class ProxyGenerator(object):
                 'accept': 'text/html,application/xhtml+xml,application/xml',
                 'User-Agent': UserAgent().random,
             }
-        self._session.headers.update(_HEADERS)
+        # self._session.headers.update(_HEADERS)
+        init_kwargs.update(headers=_HEADERS)
 
         if self._proxy_works:
-            self._session.proxies = proxies
+            init_kwargs["proxies"] = proxies #.get("http", None)
+            self._proxies = proxies
             if self.proxy_mode is ProxyMode.SCRAPERAPI:
                 # SSL Certificate verification must be disabled for
                 # ScraperAPI requests to work.
                 # https://www.scraperapi.com/documentation/
-                self._session.verify = False
+                init_kwargs["verify"] = False
+        self._session = httpx.Client(**init_kwargs)
         self._webdriver = None
 
         return self._session
@@ -496,7 +506,7 @@ class ProxyGenerator(object):
                 all_proxies = freeproxy.get_proxy_list()
             if proxy in self._dirty_freeproxies:
                 continue
-            proxies = {'http': proxy, 'https': proxy}
+            proxies = {'http://': proxy, 'https://': proxy}
             proxy_works = self._check_proxy(proxies)
             if proxy_works:
                 dirty_proxy = (yield proxy)
