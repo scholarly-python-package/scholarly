@@ -112,7 +112,8 @@ class Navigator(object, metaclass=Singleton):
                 w = random.uniform(1,2)
                 time.sleep(w)
                 resp = session.get(pagerequest, timeout=timeout)
-                self.logger.debug("Session proxy config is {}".format(pm._proxies))
+                if premium is False:  # premium methods may contain sensitive information
+                    self.logger.debug("Session proxy config is {}".format(pm._proxies))
 
                 has_captcha = self._requests_has_captcha(resp.text)
 
