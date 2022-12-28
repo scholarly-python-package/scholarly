@@ -74,12 +74,12 @@ class Navigator(object, metaclass=Singleton):
         self._session1 = self.pm1.get_session()
         self._session2 = self.pm2.get_session()
 
-    def _new_session(self, premium=True):
+    def _new_session(self, premium=True, **kwargs):
         self.got_403 = False
         if premium:
-            self._session1 = self.pm1._new_session()
+            self._session1 = self.pm1._new_session(**kwargs)
         else:
-            self._session2 = self.pm2._new_session()
+            self._session2 = self.pm2._new_session(**kwargs)
 
 
     def _get_page(self, pagerequest: str, premium: bool = False) -> str:
@@ -112,7 +112,8 @@ class Navigator(object, metaclass=Singleton):
                 w = random.uniform(1,2)
                 time.sleep(w)
                 resp = session.get(pagerequest, timeout=timeout)
-                self.logger.debug("Session proxy config is {}".format(pm._proxies))
+                if premium is False:  # premium methods may contain sensitive information
+                    self.logger.debug("Session proxy config is {}".format(pm._proxies))
 
                 has_captcha = self._requests_has_captcha(resp.text)
 

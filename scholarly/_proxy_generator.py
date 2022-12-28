@@ -183,11 +183,11 @@ class ProxyGenerator(object):
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
-        if https is None:
-            https = http
         if http[:4] != "http":
             http = "http://" + http
-        if https[:5] != "https":
+        if https is None:
+            https = http
+        elif https[:5] != "https":
             https = "https://" + https
 
         proxies = {'http://': http, 'https://': https}
@@ -205,7 +205,7 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             self._proxies = proxies
-            self._new_session()
+            self._new_session(proxies=proxies)
 
         return self._proxy_works
 
@@ -444,8 +444,9 @@ class ProxyGenerator(object):
 
         return self._session
 
-    def _new_session(self):
+    def _new_session(self, **kwargs):
         init_kwargs = {}
+        init_kwargs.update(kwargs)
         proxies = {}
         if self._session:
             proxies = self._proxies
@@ -612,8 +613,9 @@ class ProxyGenerator(object):
         for _ in range(3):
             proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
             if proxy_works:
+                proxies = {'http://': f"http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001",}
                 self.logger.info("ScraperAPI proxy setup successfully")
-                self._session.verify = False
+                self._new_session(verify=False, proxies=proxies)
                 return proxy_works
 
         if (r["requestCount"] >= r["requestLimit"]):

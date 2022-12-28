@@ -4,7 +4,7 @@
 name: Python package (with methods that need proxy)
 
 on:
-  pull_request:
+  push:
     branches: [main]
 
 jobs:
@@ -31,7 +31,6 @@ jobs:
       #  uses: typilus/typilus-action@v0.9
       - name: Run unittests
         id: unittests
-        if: ${{ github.event.pull_request.ready_for_review == true }}
         continue-on-error: true
         env:
           CONNECTION_METHOD: ${{ secrets.CONNECTION_METHOD }}
