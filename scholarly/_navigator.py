@@ -140,6 +140,9 @@ class Navigator(object, metaclass=Singleton):
                         continue # Retry request within same session
                     else:
                         self.logger.info("We can use another connection... let's try that.")
+                elif resp.status_code == 302 and resp.has_redirect_location:
+                    self.logger.debug("Got a redirect.")
+                    pagerequest = resp.headers["location"]
                 else:
                     self.logger.info("""Response code %d.
                                     Retrying...""", resp.status_code)
