@@ -205,7 +205,7 @@ class ProxyGenerator(object):
 
         if self._proxy_works:
             self._proxies = proxies
-            self._new_session()
+            self._new_session(proxies=proxies)
 
         return self._proxy_works
 
@@ -444,8 +444,9 @@ class ProxyGenerator(object):
 
         return self._session
 
-    def _new_session(self):
+    def _new_session(self, **kwargs):
         init_kwargs = {}
+        init_kwargs.update(kwargs)
         proxies = {}
         if self._session:
             proxies = self._proxies
