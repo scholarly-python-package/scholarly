@@ -4,7 +4,7 @@
 name: Python package (with methods that need proxy)
 
 on:
-  pull_request:
+  push:
     branches: [main]
 
 jobs:
