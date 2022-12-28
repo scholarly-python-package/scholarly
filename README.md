@@ -12,6 +12,8 @@ scholarly is a module that allows you to retrieve author and publication informa
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/scholarly/badges/version.svg)](https://anaconda.org/conda-forge/scholarly)
 [![PyPI version](https://badge.fury.io/py/scholarly.svg)](https://badge.fury.io/py/scholarly)
 
+**NOTE:** `scholarly v1.7.7` is temporarily incompatible with `ScraperAPI`. If you use `ScraperAPI`, DO NOT update to this version.
+
 `scholarly` can be installed either with `conda` or with `pip`.
 To install using `conda`, simply run
 ```bash
