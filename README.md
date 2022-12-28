@@ -9,7 +9,7 @@ scholarly is a module that allows you to retrieve author and publication informa
 
 ## Installation
 
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/scholarly/badges/installer/conda.svg)](https://conda.anaconda.org/conda-forge)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/scholarly/badges/version.svg)](https://anaconda.org/conda-forge/scholarly)
 [![PyPI version](https://badge.fury.io/py/scholarly.svg)](https://badge.fury.io/py/scholarly)
 
 `scholarly` can be installed either with `conda` or with `pip`.
