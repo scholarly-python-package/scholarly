@@ -14,7 +14,6 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from urllib.parse import urlparse
-from fake_useragent import UserAgent
 from contextlib import contextmanager
 from deprecated import deprecated
 try:
@@ -23,6 +22,13 @@ try:
     from stem.control import Controller
 except ImportError:
     stem = None
+
+try:
+    from fake_useragent import UserAgent
+    FAKE_USERAGENT = True
+except Exception:
+    FAKE_USERAGENT = False
+    DEFAULT_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
 
 from .data_types import ProxyMode
 
@@ -454,13 +460,18 @@ class ProxyGenerator(object):
         # self._session = httpx.Client()
         self.got_403 = False
 
-        # Suppress the misleading traceback from UserAgent()
-        with self._suppress_logger('fake_useragent'):
-            _HEADERS = {
-                'accept-language': 'en-US,en',
-                'accept': 'text/html,application/xhtml+xml,application/xml',
-                'User-Agent': UserAgent().random,
-            }
+        if FAKE_USERAGENT:
+            # Suppress the misleading traceback from UserAgent()
+            with self._suppress_logger('fake_useragent'):
+                user_agent = UserAgent().random
+        else:
+            user_agent = DEFAULT_USER_AGENT
+
+        _HEADERS = {
+            'accept-language': 'en-US,en',
+            'accept': 'text/html,application/xhtml+xml,application/xml',
+            'User-Agent': user_agent,
+        }
         # self._session.headers.update(_HEADERS)
         init_kwargs.update(headers=_HEADERS)
 
