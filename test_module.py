@@ -560,6 +560,15 @@ class TestScholarly(unittest.TestCase):
             self.assertLessEqual(y_lo, y_hi)
             self.assertLessEqual(sum(cpy[y] for y in range(y_lo, y_hi+1)), 1000)
 
+    def test_cites_per_year(self):
+        """Test that the cites_per_year is correctly filled in,
+           including any gap years.
+        """
+        author = scholarly.search_author_id('DW_bVcEAAAAJ')
+        scholarly.fill(author, sections=['counts'])
+        cpy = {2014: 1, 2015: 2, 2016: 2, 2017: 0, 2018: 2, 2019: 1, 2020: 12, 2021: 21, 2022: 35}
+        for year, count in cpy.items():
+            self.assertEqual(author['cites_per_year'][year], count)
 
 class TestScholarlyWithProxy(unittest.TestCase):
     @classmethod
