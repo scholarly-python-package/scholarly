@@ -264,11 +264,15 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['interests'], [])
         self.assertEqual(author['public_access']['available'], 0)
         self.assertEqual(author['public_access']['not_available'], 0)
-        self.assertGreaterEqual(author['citedby'], 2067) # TODO: maybe change
+        self.assertGreaterEqual(author['citedby'], 2090)
         self.assertGreaterEqual(len(author['publications']), 218)
+        cpy = {1986:4, 2011: 137, 2018: 100}
+        for year, count in cpy.items():
+            self.assertEqual(author["cites_per_year"][year], count)
         pub = author['publications'][1]
         self.assertEqual(pub["citedby_url"],
                          "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
+
 
     def test_extract_author_id_list(self):
         '''
