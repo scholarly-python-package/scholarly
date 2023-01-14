@@ -123,8 +123,12 @@ class AuthorParser:
     def _fill_counts(self, soup, author):
         years = [int(y.text)
                  for y in soup.find_all('span', class_='gsc_g_t')]
-        cites = [int(c.text)
-                 for c in soup.find_all('span', class_='gsc_g_al')]
+
+        cites = [0]*len(years)
+        for c in soup.find_all('a', class_='gsc_g_a'):
+            i = int(c['style'].split(':')[-1])
+            cites[-i] = int(c.find('span', class_='gsc_g_al').text)
+
         author['cites_per_year'] = dict(zip(years, cites))
 
     def _fill_public_access(self, soup, author):
