@@ -574,6 +574,15 @@ class TestScholarly(unittest.TestCase):
         for year, count in cpy.items():
             self.assertEqual(author['cites_per_year'][year], count)
 
+    def test_redirect(self):
+        """Test that we can handle redirects when the scholar_id is approximate.
+        """
+        author = scholarly.search_author_id("oMaIg8sAAAAJ")
+        self.assertEqual(author["scholar_id"], "PEJ42J0AAAAJ")
+        scholarly.fill(author, sections=["basics"])
+        self.assertEqual(author["name"], "Kiran Bhatia")
+        self.assertGreaterEqual(author["citedby"], 135)
+
 class TestScholarlyWithProxy(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
