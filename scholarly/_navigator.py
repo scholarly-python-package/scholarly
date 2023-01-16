@@ -119,6 +119,14 @@ class Navigator(object, metaclass=Singleton):
 
                 if resp.status_code == 200 and not has_captcha:
                     return resp.text
+                elif resp.status_code == 404:
+                    # If the scholar_id was approximate, it first appears as
+                    # 404 (or 302), and then gets redirected to the correct profile.
+                    # In such cases, we need to try again with the same session.
+                    # See https://github.com/scholarly-python-package/scholarly/issues/469.
+                    self.logger.debug("Got a 404 error. Attempting with same proxy")
+                    tries += 1
+                    continue
                 elif has_captcha:
                     self.logger.info("Got a captcha request.")
                     session = pm._handle_captcha2(pagerequest)

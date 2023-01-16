@@ -264,11 +264,15 @@ class TestScholarly(unittest.TestCase):
         self.assertEqual(author['interests'], [])
         self.assertEqual(author['public_access']['available'], 0)
         self.assertEqual(author['public_access']['not_available'], 0)
-        self.assertGreaterEqual(author['citedby'], 2067) # TODO: maybe change
+        self.assertGreaterEqual(author['citedby'], 2090)
         self.assertGreaterEqual(len(author['publications']), 218)
+        cpy = {1986:4, 2011: 137, 2018: 100}
+        for year, count in cpy.items():
+            self.assertEqual(author["cites_per_year"][year], count)
         pub = author['publications'][1]
         self.assertEqual(pub["citedby_url"],
                          "https://scholar.google.com/scholar?oi=bibs&hl=en&cites=9976400141451962702")
+
 
     def test_extract_author_id_list(self):
         '''
@@ -569,6 +573,15 @@ class TestScholarly(unittest.TestCase):
         cpy = {2014: 1, 2015: 2, 2016: 2, 2017: 0, 2018: 2, 2019: 1, 2020: 12, 2021: 21, 2022: 35}
         for year, count in cpy.items():
             self.assertEqual(author['cites_per_year'][year], count)
+
+    def test_redirect(self):
+        """Test that we can handle redirects when the scholar_id is approximate.
+        """
+        author = scholarly.search_author_id("oMaIg8sAAAAJ")
+        self.assertEqual(author["scholar_id"], "PEJ42J0AAAAJ")
+        scholarly.fill(author, sections=["basics"])
+        self.assertEqual(author["name"], "Kiran Bhatia")
+        self.assertGreaterEqual(author["citedby"], 135)
 
 class TestScholarlyWithProxy(unittest.TestCase):
     @classmethod
