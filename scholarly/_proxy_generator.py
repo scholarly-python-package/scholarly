@@ -624,7 +624,7 @@ class ProxyGenerator(object):
         for _ in range(3):
             proxy_works = self._use_proxy(http=f'{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001')
             if proxy_works:
-                proxies = {'http://': f"http://scraperapi:{API_KEY}@proxy-server.scraperapi.com:8001",}
+                proxies = {'http://': f"{prefix}:{API_KEY}@proxy-server.scraperapi.com:8001",}
                 self.logger.info("ScraperAPI proxy setup successfully")
                 self._new_session(verify=False, proxies=proxies)
                 return proxy_works
