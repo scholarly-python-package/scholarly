@@ -451,7 +451,7 @@ class ProxyGenerator(object):
         return self._session
 
     def _new_session(self, **kwargs):
-        init_kwargs = {}
+        init_kwargs = {"follow_redirects": True}
         init_kwargs.update(kwargs)
         proxies = {}
         if self._session:
@@ -610,7 +610,7 @@ class ProxyGenerator(object):
         # https://www.scraperapi.com/documentation/
         self._TIMEOUT = 60
 
-        prefix = "http://scraperapi"
+        prefix = "http://scraperapi.retry_404=true"
         if country_code is not None:
             prefix += ".country_code=" + country_code
         if premium:
