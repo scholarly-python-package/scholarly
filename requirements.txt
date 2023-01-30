@@ -2,7 +2,7 @@ arrow
 beautifulsoup4
 bibtexparser
 deprecated
-fake_useragent
+fake_useragent>=1.0
 free-proxy>=1.1.0
 httpx
 python-dotenv
