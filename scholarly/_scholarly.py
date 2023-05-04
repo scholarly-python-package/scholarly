@@ -89,8 +89,9 @@ class _Scholarly:
         self.__nav.set_timeout(timeout)
 
     def search_pubs(self,
-                    query: str, patents: bool = True,
-                    citations: bool = True, year_low: int = None,
+                    query: str, patents: bool = True,  
+                    review_only: bool = False, language: str = "en", 
+                    citations: bool = True, year_low: int = None, 
                     year_high: int = None, sort_by: str = "relevance",
                     include_last_year: str = "abstracts",
                     start_index: int = 0)->_SearchScholarIterator:
@@ -100,6 +101,10 @@ class _Scholarly:
         :type query: str
         :param patents: Whether or not to include patents, defaults to True
         :type patents: bool, optional
+        :param review_only: whether or not to search only review articles
+        :type review_only: bool, optional
+        :param language: search for content in a specific language
+        :type language: string, optional
         :param citations: Whether or not to include citations, defaults to True
         :type citations: bool, optional
         :param year_low: minimum year of publication, defaults to None
@@ -155,6 +160,7 @@ class _Scholarly:
 
         """
         url = self._construct_url(_PUBSEARCH.format(requests.utils.quote(query)), patents=patents,
+                                  review_only=review_only, language=language, 
                                   citations=citations, year_low=year_low, year_high=year_high,
                                   sort_by=sort_by, include_last_year=include_last_year, start_index=start_index)
         return self.__nav.search_publications(url)
@@ -569,6 +575,7 @@ class _Scholarly:
 
     # TODO: Make it a public method in v1.6
     def _construct_url(self, baseurl: str, patents: bool = True,
+                       review_only: bool = False, language: str = "en"
                        citations: bool = True, year_low: int = None,
                        year_high: int = None, sort_by: str = "relevance",
                        include_last_year: str = "abstracts",
@@ -580,6 +587,8 @@ class _Scholarly:
         yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
         citations = '&as_vis={0}'.format(1 - int(citations))
         patents = '&as_sdt={0},33'.format(1 - int(patents))
+        review_only = '&as_rr={}'.format(int(review_only))
+        language = '&lang_{0}'.format(language) if language is not None else''
         sortby = ''
         start = '&start={0}'.format(start_index) if start_index > 0 else ''
 
@@ -596,7 +605,7 @@ class _Scholarly:
             return
 
         # improve str below
-        return url + yr_lo + yr_hi + citations + patents + sortby + start
+        return url + yr_lo + yr_hi + citations + patents + review_only + language + sortby + start 
 
     def get_journal_categories(self):
         """
