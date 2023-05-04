@@ -575,7 +575,7 @@ class _Scholarly:
 
     # TODO: Make it a public method in v1.6
     def _construct_url(self, baseurl: str, patents: bool = True,
-                       review_only: bool = False, language: str = "en"
+                       review_only: bool = False, language: str = "en",
                        citations: bool = True, year_low: int = None,
                        year_high: int = None, sort_by: str = "relevance",
                        include_last_year: str = "abstracts",
