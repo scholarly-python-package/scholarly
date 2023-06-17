@@ -189,11 +189,11 @@ class ProxyGenerator(object):
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
-        if http[:4] != "http":
+        if http[:4] not in ("http", "sock"):
             http = "http://" + http
         if https is None:
             https = http
-        elif https[:5] != "https":
+        elif https[:5] not in ("https", "socks"):
             https = "https://" + https
 
         proxies = {'http://': http, 'https://': https}
