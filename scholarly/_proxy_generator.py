@@ -365,8 +365,8 @@ class ProxyGenerator(object):
     def _get_chrome_webdriver(self):
         if self._proxy_works:
             webdriver.DesiredCapabilities.CHROME['proxy'] = {
-                "httpProxy": self._proxies['http'],
-                "sslProxy": self._proxies['https'],
+                "httpProxy": self._proxies['http://'],
+                "sslProxy": self._proxies['https://'],
                 "proxyType": "MANUAL"
             }
 
@@ -381,8 +381,8 @@ class ProxyGenerator(object):
         if self._proxy_works:
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
-                "httpProxy": self._proxies['http'],
-                "sslProxy": self._proxies['https'],
+                "httpProxy": self._proxies['http://'],
+                "sslProxy": self._proxies['https://'],
                 "proxyType": "MANUAL",
             }
 
