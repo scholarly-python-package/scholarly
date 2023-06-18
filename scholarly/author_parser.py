@@ -152,14 +152,14 @@ class AuthorParser:
         while True:
             rows = soup.find_all('div', 'gsc_mnd_sec_na')
             if rows:
-                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gsc_mnd_link_font'):
                     author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
                                                row['data-href'])[0]
                     publications[author_pub_id]["public_access"] = False
 
             rows = soup.find_all('div', 'gsc_mnd_sec_avl')
             if rows:
-                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gsc_mnd_link_font'):
                     author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
                                                row['data-href'])[0]
                     publications[author_pub_id]["public_access"] = True
