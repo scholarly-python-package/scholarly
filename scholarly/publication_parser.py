@@ -313,6 +313,7 @@ class PublicationParser(object):
                                 'YYYY/M/D',
                                 'YYYY/MM/D']
                     publication['bib']['pub_year'] = arrow.get(val.text, patterns).year
+                    publication['bib']['pub_date'] = val.text
                 elif key == 'description':
                     # try to find all the gsh_csp if they exist
                     abstract = val.find_all(class_='gsh_csp')
