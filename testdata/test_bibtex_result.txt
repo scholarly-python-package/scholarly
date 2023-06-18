@@ -1,0 +1,11 @@
+@inproceedings{xu1998distribution,
+ abstract = {The problem of detecting clusters of points belonging to a spatial point process arises in many applications. In this paper, we introduce the new clustering algorithm DBCLASD (Distribution-Based Clustering of LArge Spatial Databases) to discover clusters of this type. The results of experiments demonstrate that DBCLASD, contrary to partitioning algorithms such as CLARANS (Clustering Large Applications based on RANdomized Search), discovers clusters of arbitrary shape. Furthermore, DBCLASD does not require any input},
+ author = {Xu, Xiaowei and Ester, Martin and Kriegel, H-P and Sander, J{\"o}rg},
+ booktitle = {Proceedings 14th International Conference on Data Engineering},
+ organization = {IEEE},
+ pages = {324--331},
+ pub_year = {1998},
+ title = {A distribution-based clustering algorithm for mining in large spatial databases},
+ url = {https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=933cba585a12e56a8f60511ebeb74b8cb42634b1},
+ venue = {… Conference on Data …}
+}
