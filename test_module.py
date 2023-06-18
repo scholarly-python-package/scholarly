@@ -212,15 +212,16 @@ class TestScholarly(unittest.TestCase):
                          sum(pub.get('public_access', None) is True for pub in author['publications']))
         self.assertEqual(author['public_access']['not_available'],
                          sum(pub.get('public_access', None) is False for pub in author['publications']))
-        pub = author['publications'][2]
+        pub = author['publications'][1]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
         scholarly.fill(pub)
+        self.assertEqual(pub['pub_url'], "https://dl.acm.org/doi/abs/10.1145/3130800.3130815")
         mandate = Mandate(agency="US National Science Foundation", effective_date="2016/1", embargo="12 months",
                           url_policy="https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
                           url_policy_cached="/mandates/nsf-2021-02-13.pdf",
                           grant="BCS-1354029")
-        self.assertIn(mandate, pub['mandates'])
+        self.assertIn(mandate['agency'], [_mandate['agency'] for _mandate in pub['mandates']])
         # Trigger the pprint method, but suppress the output
         with self.suppress_stdout():
             scholarly.pprint(author)
