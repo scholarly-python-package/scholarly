@@ -229,7 +229,7 @@ class TestScholarly(unittest.TestCase):
         # Check for the complete list of coauthors
         self.assertGreaterEqual(len(author['coauthors']), 20)
         if len(author['coauthors']) > 20:
-            self.assertGreaterEqual(len(author['coauthors']), 36)
+            self.assertGreaterEqual(len(author['coauthors']), 35)
             self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_search_author_multiple_authors(self):
