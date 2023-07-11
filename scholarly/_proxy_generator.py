@@ -523,7 +523,6 @@ class ProxyGenerator(object):
             proxies = {'http://': proxy, 'https://': proxy}
             proxy_works = self._check_proxy(proxies)
             if proxy_works:
-                print(proxies)
                 dirty_proxy = (yield proxy)
                 t1 = time.time()
             else:
