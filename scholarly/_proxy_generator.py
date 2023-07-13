@@ -136,7 +136,8 @@ class ProxyGenerator(object):
         :rtype: {bool}
         """
         with requests.Session() as session:
-            session.proxies = proxies
+            # Reformat proxy for requests. Requests and HTTPX use different proxy format.
+            session.proxies = {'http':proxies['http://'], 'https':proxies['https://']}
             try:
                 resp = session.get("http://httpbin.org/ip", timeout=self._TIMEOUT)
                 if resp.status_code == 200:
@@ -189,6 +190,7 @@ class ProxyGenerator(object):
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
+        # Reformat proxy for HTTPX
         if http[:4] not in ("http", "sock"):
             http = "http://" + http
         if https is None:
