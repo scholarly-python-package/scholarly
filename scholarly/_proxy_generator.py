@@ -109,7 +109,7 @@ class ProxyGenerator(object):
 
         :param http: http proxy address
         :type http: string
-        :param https: https proxy adress
+        :param https: https proxy address
         :type https: string
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
@@ -117,7 +117,7 @@ class ProxyGenerator(object):
         :Example::
 
             >>> pg = ProxyGenerator()
-            >>> success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+            >>> success = pg.SingleProxy(http = <http proxy address>, https = <https proxy address>)
         """
         self.logger.info("Enabling proxies: http=%s https=%s", http, https)
         proxy_works = self._use_proxy(http=http, https=https)
@@ -162,7 +162,7 @@ class ProxyGenerator(object):
     def _refresh_tor_id(self, tor_control_port: int, password: str) -> bool:
         """Refreshes the id by using a new Tor node.
 
-        :returns: Whether or not the refresh was succesful
+        :returns: Whether or not the refresh was successful
         :rtype: {bool}
         """
         try:
@@ -434,7 +434,7 @@ class ProxyGenerator(object):
                 self.logger.info("Google thinks we are DOSing the captcha.")
                 raise e
             except (WebDriverException) as e:
-                self.logger.info("Browser seems to be disfunctional - closed by user?")
+                self.logger.info("Browser seems to be dysfunctional - closed by user?")
                 raise e
             except Exception as e:
                 # TODO: This exception handler should eventually be removed when
@@ -500,7 +500,7 @@ class ProxyGenerator(object):
                 self.logger.warning("Could not close webdriver cleanly: %s", e)
 
     def _fp_coroutine(self, timeout=1, wait_time=120):
-        """A coroutine to continuosly yield free proxies
+        """A coroutine to continuously yield free proxies
 
         It takes back the proxies that stopped working and marks it as dirty.
         """

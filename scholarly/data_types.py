@@ -49,7 +49,7 @@ class PublicationSource(str, Enum):
     We also have publications that appear in the "author pages" of Google Scholar.
     These publications are often a set of publications "merged" together.
 
-    The snippet version of these publications conains the title of the publication,
+    The snippet version of these publications contains the title of the publication,
     a subset of the authors, the (sometimes truncated) venue, and the year of the publication
     and the number of papers that cite the publication.
 
@@ -183,7 +183,7 @@ class Publication(TypedDict, total=False):
                        the "citedby_url" will be a comma-separated list of values.
                        It is also used to return the "cluster" of all the different versions of the paper.
                        https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
-    :param cites_per_year: a dictionay containing the number of citations per year for this Publication
+    :param cites_per_year: a dictionary containing the number of citations per year for this Publication
                            (source: AUTHOR_PUBLICATION_ENTRY)
     :param eprint_url: digital version of the Publication. Usually it is a pdf.
     :param pub_url: url of the website providing the publication
