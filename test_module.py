@@ -244,7 +244,7 @@ class TestScholarly(unittest.TestCase):
     def test_search_author_id(self):
         """
         Test the search by author ID. Marie Skłodowska-Curie's ID is
-        EmD_lTEAAAAJ and these IDs are permenant
+        EmD_lTEAAAAJ and these IDs are permanent
         """
         author = scholarly.search_author_id('EmD_lTEAAAAJ')
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
@@ -254,7 +254,7 @@ class TestScholarly(unittest.TestCase):
     def test_search_author_id_filled(self):
         """
         Test the search by author ID. Marie Skłodowska-Curie's ID is
-        EmD_lTEAAAAJ and these IDs are permenant.
+        EmD_lTEAAAAJ and these IDs are permanent.
         As of July 2020, Marie Skłodowska-Curie has 1963 citations
         on Google Scholar and 179 publications
         """

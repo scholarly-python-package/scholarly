@@ -53,7 +53,7 @@ This means your code that uses an earlier version of `scholarly` is guaranteed t
 
 ## Tests
 
-To check if your installation is succesful, run the tests by executing the `test_module.py` file as:
+To check if your installation is successful, run the tests by executing the `test_module.py` file as:
 
 ```bash
 python3 test_module

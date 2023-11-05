@@ -428,7 +428,7 @@ class _Scholarly:
         parameters in the Advanced Search dialog box and then use the URL here
         to programmatically fetch the results.
 
-        :param url: custom url to seach for the publication
+        :param url: custom url to search for the publication
         :type url: string
         """
         return self.__nav.search_publications(url)
