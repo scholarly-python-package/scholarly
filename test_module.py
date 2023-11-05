@@ -571,7 +571,7 @@ class TestScholarly(unittest.TestCase):
         """
         author = scholarly.search_author_id('DW_bVcEAAAAJ')
         scholarly.fill(author, sections=['counts'])
-        cpy = {2014: 1, 2015: 2, 2016: 2, 2017: 0, 2018: 2, 2019: 1, 2020: 12, 2021: 21, 2022: 35}
+        cpy = {2014: 1, 2015: 2, 2016: 2, 2017: 0, 2018: 2, 2019: 0, 2020: 11, 2021: 21, 2022: 37}
         for year, count in cpy.items():
             self.assertEqual(author['cites_per_year'][year], count)
 
