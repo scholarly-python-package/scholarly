@@ -13,7 +13,7 @@ import time
 from requests.exceptions import Timeout
 from httpx import TimeoutException
 from selenium.webdriver.common.by import By
-from .publication_parser import _SearchScholarIterator
+from ._search_scholar_iterator import _SearchScholarIterator
 from .author_parser import AuthorParser
 from .publication_parser import PublicationParser
 from .data_types import Author, PublicationSource, ProxyMode

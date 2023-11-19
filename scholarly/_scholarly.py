@@ -12,7 +12,8 @@ from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
-from .publication_parser import PublicationParser, _SearchScholarIterator
+from .publication_parser import PublicationParser
+from ._search_scholar_iterator import _SearchScholarIterator
 from .data_types import Author, AuthorSource, CitesPerYear, Journal, Publication, PublicationSource
 
 _AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
