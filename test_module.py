@@ -690,7 +690,7 @@ class TestScholarlyWithProxy(unittest.TestCase):
         Test that we get the BiBTeX entry correctly
         """
 
-        with open("testdata/bibtex.txt", "r") as f:
+        with open("testdata/test_bibtex_result.txt", "r") as f:
             expected_result = "".join(f.readlines())
 
         pub = scholarly.search_single_pub("A distribution-based clustering algorithm for mining in large "
