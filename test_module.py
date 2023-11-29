@@ -78,6 +78,20 @@ class TestTorInternal(unittest.TestCase):
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
 
+class TestFreeProxy(unittest.TestCase):
+    luminati = os.getenv("USERNAME") and os.getenv("PASSWORD") and os.getenv("PORT")
+    scraperAPI = os.getenv('SCRAPER_API_KEY')
+    skipIf = (luminati is not None) or (scraperAPI is not None)
+
+    @unittest.skipIf(skipIf, reason="Other proxy is being used")
+    def test_freeproxy(self):
+        """
+        Test that we can set up FreeProxy successfully
+        """
+        proxy_generator = ProxyGenerator()
+        success = proxy_generator.FreeProxies()
+        self.assertTrue(success)
+        self.assertEqual(proxy_generator.proxy_mode, "FREE_PROXIES")
 
 class TestScholarly(unittest.TestCase):
 
@@ -690,7 +704,7 @@ class TestScholarlyWithProxy(unittest.TestCase):
         Test that we get the BiBTeX entry correctly
         """
 
-        with open("testdata/bibtex.txt", "r") as f:
+        with open("testdata/test_bibtex_result.txt", "r") as f:
             expected_result = "".join(f.readlines())
 
         pub = scholarly.search_single_pub("A distribution-based clustering algorithm for mining in large "
