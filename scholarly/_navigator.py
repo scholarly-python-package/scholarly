@@ -245,7 +245,7 @@ class Navigator(object, metaclass=Singleton):
             pass
         return res
 
-    def search_authors(self, url: str)->Author:
+    def search_authors(self, url: str) -> Generator[Author, None, None]:
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
 
