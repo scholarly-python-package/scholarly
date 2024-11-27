@@ -58,7 +58,7 @@ class _SearchScholarIterator(object):
         # this is temporary until setup json file
         self._soup = self._nav._get_soup(url)
         self._pos = 0
-        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl') + self._soup.find_all('div', class_='gsc_mpat_ttl')
+        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl') + self._soup.find_all('div', class_='gs_r gs_or gs_scl gs_fmar') + self._soup.find_all('div', class_='gsc_mpat_ttl')
 
     def _get_total_results(self):
         if self._soup.find("div", class_="gs_pda"):
@@ -70,7 +70,7 @@ class _SearchScholarIterator(object):
             match = re.match(pattern=r'(^|\s*About)\s*([0-9,\.\s’]+)', string=x.text)
             if match:
                 return int(re.sub(pattern=r'[,\.\s’]',repl='', string=match.group(2)))
-        return 0
+        return len(self._rows)
 
     # Iterator protocol
 
@@ -313,6 +313,7 @@ class PublicationParser(object):
                                 'YYYY/M/D',
                                 'YYYY/MM/D']
                     publication['bib']['pub_year'] = arrow.get(val.text, patterns).year
+                    publication['bib']['pub_date'] = val.text
                 elif key == 'description':
                     # try to find all the gsh_csp if they exist
                     abstract = val.find_all(class_='gsh_csp')
@@ -410,6 +411,11 @@ class PublicationParser(object):
             publication = self.fill(publication)
         a = BibDatabase()
         converted_dict = publication['bib']
+        try:
+            url = publication['eprint_url']
+        except KeyError:
+            url = publication.get('pub_url', '')
+        converted_dict['url'] = url
         converted_dict = remap_bib(converted_dict, _BIB_REVERSE_MAPPING)
         str_dict = {key: str(value) for key, value in converted_dict.items()}
         # convert every key of the dictionary to string to be Bibtex compatible

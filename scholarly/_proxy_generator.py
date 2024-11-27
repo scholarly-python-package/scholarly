@@ -109,7 +109,7 @@ class ProxyGenerator(object):
 
         :param http: http proxy address
         :type http: string
-        :param https: https proxy adress
+        :param https: https proxy address
         :type https: string
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
@@ -117,7 +117,7 @@ class ProxyGenerator(object):
         :Example::
 
             >>> pg = ProxyGenerator()
-            >>> success = pg.SingleProxy(http = <http proxy adress>, https = <https proxy adress>)
+            >>> success = pg.SingleProxy(http = <http proxy address>, https = <https proxy address>)
         """
         self.logger.info("Enabling proxies: http=%s https=%s", http, https)
         proxy_works = self._use_proxy(http=http, https=https)
@@ -136,7 +136,8 @@ class ProxyGenerator(object):
         :rtype: {bool}
         """
         with requests.Session() as session:
-            session.proxies = proxies
+            # Reformat proxy for requests. Requests and HTTPX use different proxy format.
+            session.proxies = {'http':proxies['http://'], 'https':proxies['https://']}
             try:
                 resp = session.get("http://httpbin.org/ip", timeout=self._TIMEOUT)
                 if resp.status_code == 200:
@@ -161,7 +162,7 @@ class ProxyGenerator(object):
     def _refresh_tor_id(self, tor_control_port: int, password: str) -> bool:
         """Refreshes the id by using a new Tor node.
 
-        :returns: Whether or not the refresh was succesful
+        :returns: Whether or not the refresh was successful
         :rtype: {bool}
         """
         try:
@@ -189,11 +190,12 @@ class ProxyGenerator(object):
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
-        if http[:4] != "http":
+        # Reformat proxy for HTTPX
+        if http[:4] not in ("http", "sock"):
             http = "http://" + http
         if https is None:
             https = http
-        elif https[:5] != "https":
+        elif https[:5] not in ("https", "socks"):
             https = "https://" + https
 
         proxies = {'http://': http, 'https://': https}
@@ -365,8 +367,8 @@ class ProxyGenerator(object):
     def _get_chrome_webdriver(self):
         if self._proxy_works:
             webdriver.DesiredCapabilities.CHROME['proxy'] = {
-                "httpProxy": self._proxies['http'],
-                "sslProxy": self._proxies['https'],
+                "httpProxy": self._proxies['http://'],
+                "sslProxy": self._proxies['https://'],
                 "proxyType": "MANUAL"
             }
 
@@ -381,8 +383,8 @@ class ProxyGenerator(object):
         if self._proxy_works:
             # Redirect webdriver through proxy
             webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
-                "httpProxy": self._proxies['http'],
-                "sslProxy": self._proxies['https'],
+                "httpProxy": self._proxies['http://'],
+                "sslProxy": self._proxies['https://'],
                 "proxyType": "MANUAL",
             }
 
@@ -432,7 +434,7 @@ class ProxyGenerator(object):
                 self.logger.info("Google thinks we are DOSing the captcha.")
                 raise e
             except (WebDriverException) as e:
-                self.logger.info("Browser seems to be disfunctional - closed by user?")
+                self.logger.info("Browser seems to be dysfunctional - closed by user?")
                 raise e
             except Exception as e:
                 # TODO: This exception handler should eventually be removed when
@@ -498,7 +500,7 @@ class ProxyGenerator(object):
                 self.logger.warning("Could not close webdriver cleanly: %s", e)
 
     def _fp_coroutine(self, timeout=1, wait_time=120):
-        """A coroutine to continuosly yield free proxies
+        """A coroutine to continuously yield free proxies
 
         It takes back the proxies that stopped working and marks it as dirty.
         """
