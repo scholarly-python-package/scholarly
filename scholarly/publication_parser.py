@@ -363,6 +363,15 @@ class PublicationParser(object):
                 publication['mandates'] = []
                 self._fill_public_access_mandates(publication)
 
+            scholar_bib_id = publication['url_related_articles'].split("q=related:")[1].split(":")[0]
+            url_scholarbib = f"/scholar?hl=en&q=info:{scholar_bib_id}:scholar.google.com/&output=cite&scirp=0&hl=en"
+            publication['url_scholarbib']=url_scholarbib
+
+            bibtex_url = self._get_bibtex(publication['url_scholarbib'])
+            bibtex = self.nav._get_page(bibtex_url)
+            parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+            parsed_bib = remap_bib(bibtexparser.loads(bibtex,parser).entries[-1], _BIB_MAPPING, _BIB_DATATYPES)
+            publication['bib'].update(parsed_bib)
             publication['filled'] = True
         elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             bibtex_url = self._get_bibtex(publication['url_scholarbib'])
