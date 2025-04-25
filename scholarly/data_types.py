@@ -1,16 +1,9 @@
-import sys
-
 from enum import Enum
-from typing import List, Dict
-
-if sys.version_info >= (3, 8):
-    from typing import TypedDict
-else:
-    from typing_extensions import TypedDict
+from typing import TypedDict
 
 
 class PublicationSource(str, Enum):
-    '''
+    """
     Defines the source of the publication. In general, a publication
     on Google Scholar has two forms:
     * Appearing as a PUBLICATION SNIPPET and
@@ -58,14 +51,15 @@ class PublicationSource(str, Enum):
     To fill in the publication, we open the "detailed view" of the paper
 
     Detailed view page: https://scholar.google.com/citations?view_op=view_citation&hl=en&citation_for_view=-Km63D4AAAAJ:d1gkVwhDpl0C
-    '''
+    """
+
     PUBLICATION_SEARCH_SNIPPET = "PUBLICATION_SEARCH_SNIPPET"
     AUTHOR_PUBLICATION_ENTRY = "AUTHOR_PUBLICATION_ENTRY"
     JOURNAL_CITATION_LIST = "JOURNAL_CITATION_LIST"
 
 
 class AuthorSource(str, Enum):
-    '''
+    """
     Defines the source of the HTML that will be parsed.
 
     Author page: https://scholar.google.com/citations?hl=en&user=yxUduqMAAAAJ
@@ -73,7 +67,8 @@ class AuthorSource(str, Enum):
     Search authors: https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=jordan&btnG=
 
     Coauthors: From the list of co-authors from an Author page
-    '''
+    """
+
     AUTHOR_PROFILE_PAGE = "AUTHOR_PROFILE_PAGE"
     SEARCH_AUTHOR_SNIPPETS = "SEARCH_AUTHOR_SNIPPETS"
     CO_AUTHORS_LIST = "CO_AUTHORS_LIST"
@@ -83,6 +78,7 @@ class ProxyMode(str, Enum):
     """
     Defines the different types supported.
     """
+
     FREE_PROXIES = "FREE_PROXIES"
     SCRAPERAPI = "SCRAPERAPI"
     LUMINATI = "LUMINATI"
@@ -92,14 +88,18 @@ class ProxyMode(str, Enum):
     TOR_INTERNAL = "TOR_INTERNAL"
 
 
-''' Lightweight Data Structure to keep distribution of citations of the years '''
-CitesPerYear = Dict[int, int]
+""" Lightweight Data Structure to keep distribution of citations of the years """
+CitesPerYear = dict[int, int]
 
 
-''' Lightweight Data Structure to hold the numbers articles available or
+""" Lightweight Data Structure to hold the numbers articles available or
     not available publicly according to funding mandates
-'''
-PublicAccess = TypedDict('PublicAccess', {"available": int, "not_available": int})
+"""
+
+
+class PublicAccess(TypedDict):
+    available: int
+    not_available: int
 
 
 class BibEntry(TypedDict, total=False):
@@ -122,6 +122,7 @@ class BibEntry(TypedDict, total=False):
     :param citation: Formatted citation string, usually containing journal name, volume and page numbers (source: AUTHOR_PUBLICATION_ENTRY)
     :param pub_url: url of the website providing the publication
     """
+
     pub_type: str
     bib_id: str
     abstract: str
@@ -149,6 +150,7 @@ class Mandate(TypedDict, total=False):
     :param acknowledgement: text in the paper acknowledging the funding
     :param grant: grant ID that supported this work
     """
+
     agency: str
     url_policy: str
     url_policy_cached: str
@@ -207,14 +209,14 @@ class Publication(TypedDict, total=False):
 
     bib: BibEntry
     gsrank: int
-    author_id: List[str]
+    author_id: list[str]
     num_citations: int
-    cites_id: List[str]
+    cites_id: list[str]
     citedby_url: str
     cites_per_year: CitesPerYear
     author_pub_id: str
     public_access: bool
-    mandates: List[Mandate]
+    mandates: list[Mandate]
     eprint_url: str
     pub_url: str
     url_add_sclib: str
@@ -223,6 +225,7 @@ class Publication(TypedDict, total=False):
     filled: bool
     source: PublicationSource
     container_type: str
+
 
 class Author(TypedDict, total=False):
     """
@@ -261,8 +264,8 @@ class Author(TypedDict, total=False):
     url_picture: str
     homepage: str
     citedby: int
-    filled: List[str]
-    interests: List[str]
+    filled: list[str]
+    interests: list[str]
     citedby5y: int
     hindex: int
     hindex5y: int
@@ -270,10 +273,11 @@ class Author(TypedDict, total=False):
     i10index5y: int
     cites_per_year: CitesPerYear
     public_access: PublicAccess
-    publications: List[Publication]
-    coauthors: List # List of authors. No self dict functionality available
+    publications: list[Publication]
+    coauthors: list  # List of authors. No self dict functionality available
     container_type: str
     source: AuthorSource
+
 
 class Journal(TypedDict, total=False):
     """
