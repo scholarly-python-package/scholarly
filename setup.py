@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open('README.md') as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -10,9 +10,8 @@ setuptools.setup(
     author_email='steven@cholewiak.com, panos@stern.nyu.edu, vsilva@ualberta.ca, arunkannawadi@astro.princeton.edu',
     description='Simple access to Google Scholar authors and citations',
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type='text/markdown',
     license='Unlicense',
-
     url='https://github.com/scholarly-python-package/scholarly',
     packages=setuptools.find_packages(),
     keywords=['Google Scholar', 'academics', 'citations'],
@@ -23,22 +22,23 @@ setuptools.setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Topic :: Software Development :: Libraries :: Python Modules'],
-    install_requires=['arrow',
-                      'beautifulsoup4',
-                      'bibtexparser',
-                      'deprecated',
-                      'fake_useragent',
-                      'free-proxy',
-                      'httpx',
-                      'python-dotenv',
-                      'requests[socks]',
-                      'selenium',
-                      'sphinx_rtd_theme',
-                      'typing_extensions'
-                      ],
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
+    install_requires=[
+        'arrow',
+        'beautifulsoup4',
+        'bibtexparser',
+        'deprecated',
+        'fake_useragent',
+        'free-proxy',
+        'httpx',
+        'python-dotenv',
+        'requests[socks]',
+        'selenium',
+        'sphinx_rtd_theme',
+    ],
     extras_require={
         'tor': ['stem'],
     },
-    test_suite="test_module.py"
+    test_suite='test_module.py',
 )
