@@ -515,7 +515,11 @@ class ProxyGenerator(object):
         while (time.time()-t1 < wait_time):
             proxy = all_proxies.pop()
             if not all_proxies:
-                all_proxies = freeproxy.get_proxy_list()
+                try:
+                    all_proxies = freeproxy.get_proxy_list(repeat=False)  # free-proxy >= 1.1.0
+                except TypeError:
+                    all_proxies = freeproxy.get_proxy_list()  # free-proxy < 1.1.0
+                all_proxies.reverse()  # Try the older proxies first
             if proxy in self._dirty_freeproxies:
                 continue
             proxies = {'http://': proxy, 'https://': proxy}
