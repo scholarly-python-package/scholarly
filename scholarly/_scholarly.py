@@ -309,7 +309,7 @@ class _Scholarly:
 
     def _citedby_long(self, object: Publication, years):
         # Extract cites_id. Note: There could be multiple ones, separated by commas.
-        m = re.search("cites=[\d+,]*", object["citedby_url"])
+        m = re.search(r"cites=[\d+,]*", object["citedby_url"])
         pub_id = m.group()[6:]
         for y_hi, y_lo in years:
             sub_citations = self.search_citedby(publication_id=pub_id, year_low=y_lo, year_high=y_hi)
