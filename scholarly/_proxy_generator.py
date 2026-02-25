@@ -446,6 +446,7 @@ class ProxyGenerator(object):
             cookie.pop("httpOnly", None)
             cookie.pop("expiry", None)
             cookie.pop("sameSite", None)
+            cookie.pop("secure", None)  # httpx Cookies.set() does not accept 'secure'
             self._session.cookies.set(**cookie)
 
         return self._session
