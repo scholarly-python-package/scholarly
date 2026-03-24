@@ -58,7 +58,7 @@ class _SearchScholarIterator(object):
         # this is temporary until setup json file
         self._soup = self._nav._get_soup(url)
         self._pos = 0
-        self._rows = self._soup.find_all('div', class_='gs_r gs_or gs_scl') + self._soup.find_all('div', class_='gsc_mpat_ttl')
+        self._rows = self._soup.select("div.gs_r.gs_or.gs_scl") + self._soup.select("div.gs_r.gs_or.gs_scl.gs_fmar") + self._soup.select("div.gsc_mpat_ttl")
 
     def _get_total_results(self):
         if self._soup.find("div", class_="gs_pda"):
@@ -70,7 +70,7 @@ class _SearchScholarIterator(object):
             match = re.match(pattern=r'(^|\s*About)\s*([0-9,\.\s’]+)', string=x.text)
             if match:
                 return int(re.sub(pattern=r'[,\.\s’]',repl='', string=match.group(2)))
-        return 0
+        return len(self._rows)
 
     # Iterator protocol
 
@@ -202,6 +202,10 @@ class PublicationParser(object):
         if title.find('a'):
             publication['pub_url'] = title.find('a')['href']
 
+        pdf_div = __data.find('div', class_='gs_ggs gs_fl')
+        if pdf_div and pdf_div.find('a', href=True):
+            publication['eprint_url'] = pdf_div.find('a')['href']
+
         author_div_element = databox.find('div', class_='gs_a')
         authorinfo = author_div_element.text
         authorinfo = authorinfo.replace(u'\xa0', u' ')       # NBSP
@@ -286,6 +290,10 @@ class PublicationParser(object):
             if soup.find('a', class_='gsc_oci_title_link'):
                 publication['pub_url'] = soup.find(
                     'a', class_='gsc_oci_title_link')['href']
+            if soup.find('div', class_='gsc_oci_title_ggi'):
+                link = soup.find('a', attrs={'data-clk': True})
+                if link:
+                    publication['eprint_url'] = link['href']
             for item in soup.find_all('div', class_='gs_scl'):
                 key = item.find(class_='gsc_oci_field').text.strip().lower()
                 val = item.find(class_='gsc_oci_value')
@@ -312,7 +320,13 @@ class PublicationParser(object):
                                 'YYYY/M/DD',
                                 'YYYY/M/D',
                                 'YYYY/MM/D']
-                    publication['bib']['pub_year'] = arrow.get(val.text, patterns).year
+                    try:
+                        publication['bib']['pub_year'] = arrow.get(val.text, patterns).year
+                    except ValueError:
+                        # fallback to regex year extraction if arrow fails
+                        match = re.search(r'\d{4}', val.text)
+                        publication['bib']['pub_year'] = match.group() if match else ""
+                    publication['bib']['pub_date'] = val.text
                 elif key == 'description':
                     # try to find all the gsh_csp if they exist
                     abstract = val.find_all(class_='gsh_csp')
@@ -401,6 +415,11 @@ class PublicationParser(object):
             publication = self.fill(publication)
         a = BibDatabase()
         converted_dict = publication['bib']
+        try:
+            url = publication['eprint_url']
+        except KeyError:
+            url = publication.get('pub_url', '')
+        converted_dict['url'] = url
         converted_dict = remap_bib(converted_dict, _BIB_REVERSE_MAPPING)
         str_dict = {key: str(value) for key, value in converted_dict.items()}
         # convert every key of the dictionary to string to be Bibtex compatible

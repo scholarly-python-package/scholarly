@@ -309,7 +309,7 @@ class _Scholarly:
 
     def _citedby_long(self, object: Publication, years):
         # Extract cites_id. Note: There could be multiple ones, separated by commas.
-        m = re.search("cites=[\d+,]*", object["citedby_url"])
+        m = re.search(r"cites=[\d+,]*", object["citedby_url"])
         pub_id = m.group()[6:]
         for y_hi, y_lo in years:
             sub_citations = self.search_citedby(publication_id=pub_id, year_low=y_lo, year_high=y_hi)
@@ -428,7 +428,7 @@ class _Scholarly:
         parameters in the Advanced Search dialog box and then use the URL here
         to programmatically fetch the results.
 
-        :param url: custom url to seach for the publication
+        :param url: custom url to search for the publication
         :type url: string
         """
         return self.__nav.search_publications(url)

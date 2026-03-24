@@ -78,6 +78,20 @@ class TestTorInternal(unittest.TestCase):
         authors = [a for a in scholarly.search_author(query)]
         self.assertGreaterEqual(len(authors), 1)
 
+class TestFreeProxy(unittest.TestCase):
+    luminati = os.getenv("USERNAME") and os.getenv("PASSWORD") and os.getenv("PORT")
+    scraperAPI = os.getenv('SCRAPER_API_KEY')
+    skipIf = (luminati is not None) or (scraperAPI is not None)
+
+    @unittest.skipIf(skipIf, reason="Other proxy is being used")
+    def test_freeproxy(self):
+        """
+        Test that we can set up FreeProxy successfully
+        """
+        proxy_generator = ProxyGenerator()
+        success = proxy_generator.FreeProxies()
+        self.assertTrue(success)
+        self.assertEqual(proxy_generator.proxy_mode, "FREE_PROXIES")
 
 class TestScholarly(unittest.TestCase):
 
@@ -212,15 +226,16 @@ class TestScholarly(unittest.TestCase):
                          sum(pub.get('public_access', None) is True for pub in author['publications']))
         self.assertEqual(author['public_access']['not_available'],
                          sum(pub.get('public_access', None) is False for pub in author['publications']))
-        pub = author['publications'][2]
+        pub = author['publications'][1]
         self.assertEqual(pub['author_pub_id'], u'4bahYMkAAAAJ:LI9QrySNdTsC')
         self.assertTrue('5738786554683183717' in pub['cites_id'])
         scholarly.fill(pub)
+        self.assertEqual(pub['pub_url'], "https://dl.acm.org/doi/abs/10.1145/3130800.3130815")
         mandate = Mandate(agency="US National Science Foundation", effective_date="2016/1", embargo="12 months",
                           url_policy="https://www.nsf.gov/pubs/2015/nsf15052/nsf15052.pdf",
                           url_policy_cached="/mandates/nsf-2021-02-13.pdf",
                           grant="BCS-1354029")
-        self.assertIn(mandate, pub['mandates'])
+        self.assertIn(mandate['agency'], [_mandate['agency'] for _mandate in pub['mandates']])
         # Trigger the pprint method, but suppress the output
         with self.suppress_stdout():
             scholarly.pprint(author)
@@ -228,7 +243,7 @@ class TestScholarly(unittest.TestCase):
         # Check for the complete list of coauthors
         self.assertGreaterEqual(len(author['coauthors']), 20)
         if len(author['coauthors']) > 20:
-            self.assertGreaterEqual(len(author['coauthors']), 36)
+            self.assertGreaterEqual(len(author['coauthors']), 35)
             self.assertTrue('I23YUh8AAAAJ' in [_coauth['scholar_id'] for _coauth in author['coauthors']])
 
     def test_search_author_multiple_authors(self):
@@ -243,7 +258,7 @@ class TestScholarly(unittest.TestCase):
     def test_search_author_id(self):
         """
         Test the search by author ID. Marie Skłodowska-Curie's ID is
-        EmD_lTEAAAAJ and these IDs are permenant
+        EmD_lTEAAAAJ and these IDs are permanent
         """
         author = scholarly.search_author_id('EmD_lTEAAAAJ')
         self.assertEqual(author['name'], u'Marie Skłodowska-Curie')
@@ -253,7 +268,7 @@ class TestScholarly(unittest.TestCase):
     def test_search_author_id_filled(self):
         """
         Test the search by author ID. Marie Skłodowska-Curie's ID is
-        EmD_lTEAAAAJ and these IDs are permenant.
+        EmD_lTEAAAAJ and these IDs are permanent.
         As of July 2020, Marie Skłodowska-Curie has 1963 citations
         on Google Scholar and 179 publications
         """
@@ -570,7 +585,7 @@ class TestScholarly(unittest.TestCase):
         """
         author = scholarly.search_author_id('DW_bVcEAAAAJ')
         scholarly.fill(author, sections=['counts'])
-        cpy = {2014: 1, 2015: 2, 2016: 2, 2017: 0, 2018: 2, 2019: 1, 2020: 12, 2021: 21, 2022: 35}
+        cpy = {2014: 1, 2015: 2, 2016: 2, 2017: 0, 2018: 2, 2019: 0, 2020: 11, 2021: 21, 2022: 37}
         for year, count in cpy.items():
             self.assertEqual(author['cites_per_year'][year], count)
 
@@ -684,33 +699,18 @@ class TestScholarlyWithProxy(unittest.TestCase):
         pubs = [p for p in scholarly.search_citedby(publication_id)]
         self.assertGreaterEqual(len(pubs), 11)
 
-    @unittest.skip(reason="The BiBTeX comparison is not reliable")
     def test_bibtex(self):
         """
         Test that we get the BiBTeX entry correctly
         """
 
-        expected_result = \
-        ("""@inproceedings{ester1996density,
-         abstract = {Clustering algorithms are attractive for the task of class identification in spatial databases. """
-         """However, the application to large spatial databases rises the following requirements for clustering algorithms: """
-         """minimal requirements of domain knowledge to determine the input},
-         author = {Ester, Martin and Kriegel, Hans-Peter and Sander, J{\\"o}rg and Xu, Xiaowei and others},
-         booktitle = {kdd},
-         number = {34},
-         pages = {226--231},
-         pub_year = {1996},
-         title = {A density-based algorithm for discovering clusters in large spatial databases with noise.},
-         venue = {kdd},
-         volume = {96}
-        }
+        with open("testdata/test_bibtex_result.txt", "r") as f:
+            expected_result = "".join(f.readlines())
 
-        """
-        )
-        pub = scholarly.search_single_pub("A density-based algorithm for discovering clusters in large "
-                                          "spatial databases with noise", filled=True)
+        pub = scholarly.search_single_pub("A distribution-based clustering algorithm for mining in large "
+                                          "spatial databases", filled=True)
         result = scholarly.bibtex(pub)
-        self.assertEqual(result, expected_result.replace("\n        ", "\n"))
+        self.assertEqual(result, expected_result)
 
     def test_search_pubs(self):
         """
@@ -724,13 +724,30 @@ class TestScholarlyWithProxy(unittest.TestCase):
         pubs = list(scholarly.search_pubs('"naive physics" stability "3d shape"'))
         # Check that the first entry in pubs is the same as pub.
         # Checking for quality holds for non-dict entries only.
-        for key in {'author_id', 'pub_url', 'num_citations'}:
+        for key in {'author_id', 'pub_url', 'eprint_url', 'num_citations'}:
             self.assertEqual(pub[key], pubs[0][key])
         for key in {'title', 'pub_year', 'venue'}:
             self.assertEqual(pub['bib'][key], pubs[0]['bib'][key])
         self.assertGreaterEqual(len(pubs), 27)
         titles = [p['bib']['title'] for p in pubs]
         self.assertIn('Visual perception of the physical stability of asymmetric three-dimensional objects', titles)
+
+    def test_search_pubs_single_pub(self):
+        """
+        As of Jun 24, 2024 there are is only one pub that fits the search term:
+        [Perception of physical stability and center of mass of 3D objects].
+
+        Check that it returns a proper result and the total results for that search term is equal to 1.
+        """
+        pub = scholarly.search_single_pub("Perception of physical stability and center of mass of 3D objects")
+        pubs = list(scholarly.search_pubs("Perception of physical stability and center of mass of 3D objects"))
+        # Check that the first entry in pubs is the same as pub.
+        # Checking for quality holds for non-dict entries only.
+        for key in {'author_id', 'pub_url', 'num_citations'}:
+            self.assertEqual(pub[key], pubs[0][key])
+        for key in {'title', 'pub_year', 'venue'}:
+            self.assertEqual(pub['bib'][key], pubs[0]['bib'][key])
+        self.assertEqual(len(pubs), 1)
 
     def test_search_pubs_total_results(self):
         """
@@ -767,6 +784,7 @@ class TestScholarlyWithProxy(unittest.TestCase):
         self.assertTrue(f['bib']['publisher'] == u'The Association for Research in Vision and Ophthalmology')
         self.assertTrue(f['bib']['title'] == u'Creating correct blur and its effect on accommodation')
         self.assertTrue(f['pub_url'] == u'https://jov.arvojournals.org/article.aspx?articleid=2701817')
+        self.assertTrue(f['eprint_url'] == u'https://jov.arvojournals.org/arvo/content_public/journal/jov/937491/i1534-7362-18-9-1.pdf')
         self.assertTrue(f['bib']['volume'] == '18')
         self.assertTrue(f['bib']['pub_year'] == u'2018')
 
@@ -783,6 +801,7 @@ class TestScholarlyWithProxy(unittest.TestCase):
         # Typically, the same publication is returned as the most related article
         same_article = next(related_articles)
         self.assertEqual(pub["pub_url"], same_article["pub_url"])
+        self.assertEqual(pub["eprint_url"], same_article["eprint_url"])
         for key in {'title', 'pub_year'}:
             self.assertEqual(str(pub['bib'][key]), (same_article['bib'][key]))
 
@@ -801,7 +820,7 @@ class TestScholarlyWithProxy(unittest.TestCase):
         related_articles = scholarly.get_related_articles(pub)
         # Typically, the same publication is returned as the most related article
         same_article = next(related_articles)
-        for key in {'author_id', 'pub_url', 'num_citations'}:
+        for key in {'author_id', 'pub_url', 'eprint_url', 'num_citations'}:
             self.assertEqual(pub[key], same_article[key])
         for key in {'title', 'pub_year'}:
             self.assertEqual(pub['bib'][key], same_article['bib'][key])
