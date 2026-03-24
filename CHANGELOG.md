@@ -8,7 +8,7 @@
 ### Bugfixes
 - Fix pprint failures on Windows #413.
 - Thoroughly handle 1000 or more publications that are available (or not) according to public access mandates #414.
-- Fix errors in `download_mandates_csv` that may occassionally occur for agencies without a policy link #413.
+- Fix errors in `download_mandates_csv` that may occasionally occur for agencies without a policy link #413.
 
 ## Changes in v1.6.3
 
@@ -35,7 +35,7 @@
 
 ### Features
 - Download table of funding agencies as a CSV file with URL to the funding mandates included
-- Downlad top-ranking journals in general, under sub-categories and in different languages as a CSV file
+- Download top-ranking journals in general, under sub-categories and in different languages as a CSV file
 
 ### Bugfixes
 - #392
@@ -58,7 +58,7 @@
 ## Changes in v1.5.0
 ### Features
 - Fetch the public access mandates information from a Scholar profile and mark the publications whether or not they satisfy the open-access mandate.
-- Fetch an author's organization identifer from their Scholar profile
+- Fetch an author's organization identifier from their Scholar profile
 - Search for all authors affiliated with an organization
 - Fetch homepage URL from a Scholar profile
 ### Enhancements

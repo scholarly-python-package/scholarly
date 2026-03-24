@@ -16,6 +16,12 @@ or use ``pip`` to install from github:
 
     pip install git+https://github.com/scholarly-python-package/scholarly.git
 
+or use ``conda`` to install from ``conda-forge``:
+
+.. code:: bash
+
+    conda install -c conda-forge scholarly
+
 or clone the package using git:
 
 .. code:: bash

@@ -152,14 +152,14 @@ class AuthorParser:
         while True:
             rows = soup.find_all('div', 'gsc_mnd_sec_na')
             if rows:
-                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gsc_mnd_link_font'):
                     author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
                                                row['data-href'])[0]
                     publications[author_pub_id]["public_access"] = False
 
             rows = soup.find_all('div', 'gsc_mnd_sec_avl')
             if rows:
-                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gs_nph gsc_mnd_link_font'):
+                for row in rows[0].find_all('a', 'gsc_mnd_art_rvw gsc_mnd_link_font'):
                     author_pub_id = re.findall(r"citation_for_view=([\w:-]*)",
                                                row['data-href'])[0]
                     publications[author_pub_id]["public_access"] = True
@@ -222,7 +222,7 @@ class AuthorParser:
     def _get_coauthors_long(self, author):
         """Get the long (>20) list of coauthors.
 
-        This method fetches the complete list of coauthors bu opening a new
+        This method fetches the complete list of coauthors by opening a new
         page filled with the complete coauthor list.
 
         Note:
@@ -283,7 +283,7 @@ class AuthorParser:
         :type sortby: string
         :param publication_limit: Select the max number of publications you want you want to fill for the author. Defaults to no limit.
         :type publication_limit: int
-        :returns: The filled object if fill was successfull, False otherwise.
+        :returns: The filled object if fill was successful, False otherwise.
         :rtype: Author or bool
 
         :Example::
