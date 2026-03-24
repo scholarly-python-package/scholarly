@@ -2,7 +2,7 @@ import unittest
 import os
 import sys
 from collections import Counter
-from scholarly import scholarly, ProxyGenerator
+from scholarly import scholarly, ProxyGenerator, MaxTriesExceededException
 from scholarly.data_types import Mandate
 from scholarly.publication_parser import PublicationParser
 import random
@@ -15,6 +15,7 @@ try:
     import pandas as pd
 except ImportError:
     pd = None
+from fp.errors import FreeProxyException
 
 
 class TestLuminati(unittest.TestCase):
@@ -100,9 +101,12 @@ class TestScholarly(unittest.TestCase):
         scholarly.set_timeout(5)
         scholarly.set_retries(5)
 
-        pg = ProxyGenerator()
-        pg.FreeProxies()
-        scholarly.use_proxy(pg, ProxyGenerator())
+        try:
+            pg = ProxyGenerator()
+            pg.FreeProxies()
+            scholarly.use_proxy(pg, ProxyGenerator())
+        except (FreeProxyException, MaxTriesExceededException) as e:
+            raise unittest.SkipTest(f"No working free proxy available: {e}") from e
 
         # Try storing the file temporarily as `scholarly.csv` and delete it.
         # If there exists already a file with that name, generate a random name
@@ -611,12 +615,18 @@ class TestScholarlyWithProxy(unittest.TestCase):
             cls.connection_method = os.getenv("CONNECTION_METHOD")
         else:
             cls.connection_method = "none"
-            scholarly.use_proxy(None)
+            try:
+                scholarly.use_proxy(None)
+            except (FreeProxyException, MaxTriesExceededException) as e:
+                raise unittest.SkipTest(f"No working free proxy available: {e}") from e
             return
 
         # Use dual proxies for unit testing
-        secondary_proxy_generator = ProxyGenerator()
-        secondary_proxy_generator.FreeProxies()
+        try:
+            secondary_proxy_generator = ProxyGenerator()
+            secondary_proxy_generator.FreeProxies()
+        except (FreeProxyException, MaxTriesExceededException) as e:
+            raise unittest.SkipTest(f"No working free proxy available: {e}") from e
 
         proxy_generator = ProxyGenerator()
         if cls.connection_method == "tor":

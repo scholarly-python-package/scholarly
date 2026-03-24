@@ -445,10 +445,15 @@ class ProxyGenerator(object):
         self.logger.info(f"Solved captcha in less than {cur} seconds.")
 
         for cookie in self._get_webdriver().get_cookies():
-            cookie.pop("httpOnly", None)
-            cookie.pop("expiry", None)
-            cookie.pop("sameSite", None)
-            self._session.cookies.set(**cookie)
+            # Construct a new dict containing only the kwargs supported by httpx.Cookies.set().
+            cookie_kwargs = {}
+            for key in ("name", "value", "domain", "path"):
+                if key in cookie:
+                    cookie_kwargs[key] = cookie[key]
+            # Map Selenium's 'expiry' field to httpx's 'expires' parameter, if present.
+            if "expiry" in cookie:
+                cookie_kwargs["expires"] = cookie["expiry"]
+            self._session.cookies.set(**cookie_kwargs)
 
         return self._session
 
@@ -478,8 +483,11 @@ class ProxyGenerator(object):
         init_kwargs.update(headers=_HEADERS)
 
         if self._proxy_works:
-            init_kwargs["proxies"] = proxies #.get("http", None)
             self._proxies = proxies
+            # httpx uses proxy= (single URL), not proxies= (dict)
+            proxy_url = proxies.get("https://") or proxies.get("http://")
+            if proxy_url:
+                init_kwargs["proxy"] = proxy_url
             if self.proxy_mode is ProxyMode.SCRAPERAPI:
                 # SSL Certificate verification must be disabled for
                 # ScraperAPI requests to work.
