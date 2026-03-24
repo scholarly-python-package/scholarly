@@ -15,12 +15,7 @@ try:
     import pandas as pd
 except ImportError:
     pd = None
-try:
-    from fp.errors import FreeProxyException
-except ImportError:
-    class FreeProxyException(Exception):
-        """Placeholder when free-proxy package is not installed."""
-        pass
+from fp.errors import FreeProxyException
 
 
 class TestLuminati(unittest.TestCase):
