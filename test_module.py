@@ -100,7 +100,7 @@ class TestScholarly(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """
-        Clean up the mandates csv fiile downloaded.
+        Clean up the mandates csv file downloaded.
         """
         if os.path.exists(cls.mandates_filename):
             os.remove(cls.mandates_filename)
@@ -121,7 +121,7 @@ class TestScholarly(unittest.TestCase):
         Test that sholarly.search_author('') returns no authors
         """
         authors = [a for a in scholarly.search_author('')]
-        self.assertIs(len(authors), 0)
+        self.assertEqual(len(authors), 0)
 
     def test_search_keywords(self):
         query = scholarly.search_keywords(['crowdsourcing', 'privacy'])
@@ -653,7 +653,7 @@ class TestScholarlyWithProxy(unittest.TestCase):
         Test that searching for an empty publication returns zero results
         """
         pubs = [p for p in scholarly.search_pubs('')]
-        self.assertIs(len(pubs), 0)
+        self.assertEqual(len(pubs), 0)
 
     def test_search_pubs_citedby(self):
         """
