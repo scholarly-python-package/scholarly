@@ -7,7 +7,7 @@ import csv
 import pprint
 import datetime
 import re
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -90,8 +90,8 @@ class _Scholarly:
 
     def search_pubs(self,
                     query: str, patents: bool = True,
-                    citations: bool = True, year_low: int = None,
-                    year_high: int = None, sort_by: str = "relevance",
+                    citations: bool = True, year_low: Optional[int] = None,
+                    year_high: Optional[int] = None, sort_by: str = "relevance",
                     include_last_year: str = "abstracts",
                     start_index: int = 0)->_SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
@@ -569,8 +569,8 @@ class _Scholarly:
 
     # TODO: Make it a public method in v1.6
     def _construct_url(self, baseurl: str, patents: bool = True,
-                       citations: bool = True, year_low: int = None,
-                       year_high: int = None, sort_by: str = "relevance",
+                       citations: bool = True, year_low: Optional[int] = None,
+                       year_high: Optional[int] = None, sort_by: str = "relevance",
                        include_last_year: str = "abstracts",
                        start_index: int = 0)-> str:
         """Construct URL from requested parameters."""
