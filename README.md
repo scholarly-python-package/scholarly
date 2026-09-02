@@ -81,7 +81,7 @@ first_author_result = next(search_query)
 scholarly.pprint(first_author_result)
 
 # Retrieve all the details for the author
-author = scholarly.fill(first_author_result )
+author = scholarly.fill(first_author_result)
 scholarly.pprint(author)
 
 # Take a closer look at the first publication
