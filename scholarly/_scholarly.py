@@ -7,7 +7,7 @@ import csv
 import pprint
 import datetime
 import re
-from typing import Dict, List, Union
+from typing import Dict, Generator, List, Union
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -433,7 +433,7 @@ class _Scholarly:
         """
         return self.__nav.search_publications(url)
 
-    def search_author_custom_url(self, url: str)->Author:
+    def search_author_custom_url(self, url: str)->Generator[Author, None, None]:
         """Search by custom URL and return a generator of Author objects
         URL should be of the form '/citation?q=...'
 

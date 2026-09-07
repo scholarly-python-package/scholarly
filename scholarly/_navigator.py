@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from typing import Generator
 from ._proxy_generator import ProxyGenerator, MaxTriesExceededException, DOSException
 
 from bs4 import BeautifulSoup
@@ -245,7 +246,7 @@ class Navigator(object, metaclass=Singleton):
             pass
         return res
 
-    def search_authors(self, url: str)->Author:
+    def search_authors(self, url: str)->Generator[Author, None, None]:
         """Generator that returns Author objects from the author search page"""
         soup = self._get_soup(url)
 
