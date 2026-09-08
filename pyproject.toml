@@ -1,10 +1,64 @@
+[project]
+name = "scholarly"
+version = "1.7.11"
+description = "Simple access to Google Scholar authors and citations"
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+    "arrow>=1.2",
+    "beautifulsoup4>=4.12",
+    "bibtexparser>=1.4",
+    "deprecated>=1.3",
+    "fake-useragent>=2.0",
+    "free-proxy>=1.1",
+    "httpx>=0.20",
+    "python-dotenv>=0.20",
+    "requests[socks]>=2.27",
+    "selenium>=3.141",
+    "stem>=1.8",
+]
+license = "Unlicense"
+keywords = ["Google Scholar", "academics", "citations"]
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'Natural Language :: English',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Topic :: Software Development :: Libraries :: Python Modules']
+authors = [
+    {name = "Steven A. Cholewiak", email = "steven@cholewiak.com"},
+    {name = "Panos Ipeirotis", email = "panos@stern.nyu.edu"},
+    {name = "Victor Silva", email = "vsilva@ualberta.ca"},
+    {name = "Arun Kannawadi", email = "arunkannawadi@astro.princeton.edu"}
+]
+
+[project.urls]
+Repository = "https://github.com/scholarly-python-package/scholarly.git"
+
+[project.optional-dependencies]
+tor = ['stem']
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
 
 [tool.codespell]
 # Ref: https://github.com/codespell-project/codespell#using-a-config-file
 skip = '.git*'
 check-hidden = true
 ignore-regex = '\b(assertIn|Ewha Womans|citeseerx.ist.psu.edu\S*)\b'
+
+[dependency-groups]
+dev = [
+    "coverage>=6.2",
+    "flake8>=4.0.1",
+    "pandas>=0.25.3",
+    "pytest>=7.0.1",
+    "sphinx-rtd-theme>=1.3.0",
+]
 # ignore-words-list = ''

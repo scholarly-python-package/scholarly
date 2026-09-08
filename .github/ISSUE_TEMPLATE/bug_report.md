@@ -21,7 +21,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - Proxy service: [e.g. ScraperAPI]
- - python version: [e.g. 3.8]
+ - python version: [e.g. 3.7]
  - OS: [e.g. macOS]
  - Version [e.g. 1.5]
 

@@ -53,16 +53,10 @@ This means your code that uses an earlier version of `scholarly` is guaranteed t
 
 ## Tests
 
-To check if your installation is successful, run the tests by executing the `test_module.py` file as:
+To check if your installation is successful, run the tests by executing pytest on your preferred build system:
 
 ```bash
-python3 test_module
-```
-
-or
-
-```bash
-python3 -m unittest -v test_module.py
+python3 -m pytest
 ```
 ## Documentation
 

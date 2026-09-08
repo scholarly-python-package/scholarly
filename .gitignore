@@ -28,3 +28,6 @@ vic.py
 .vscode/settings.json
 test.py
 *.swp
+
+# uv lock file
+uv.lock

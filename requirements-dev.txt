@@ -1,4 +1,0 @@
-coverage
-flake8
-pandas
-sphinx_rtd_theme

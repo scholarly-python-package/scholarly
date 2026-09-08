@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8]
+        python-version: [3.7]
 
     steps:
       - uses: actions/checkout@v3
@@ -22,15 +22,14 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
       - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install -r requirements-dev.txt
-          pip3 install -r requirements.txt
+        run: uv sync
       #- name: Typilus, Suggest Python Type Annotations
       #  uses: typilus/typilus-action@v0.9
-      - name: Run unittests
-        id: unittests
+      - name: Run pytest
+        id: pytests
         continue-on-error: true
         env:
           CONNECTION_METHOD: ${{ secrets.CONNECTION_METHOD }}
@@ -39,7 +38,7 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
-          coverage run -m unittest -v test_module.TestScholarlyWithProxy
+          coverage run -m pytest -k TestScholarlyWithProxy
       - name: Generate coverage report
         run: |
           curl --data-binary @.github/.codecov.yml https://codecov.io/validate | head -n 1
@@ -50,9 +49,9 @@ jobs:
           directory: ./
           fail_ci_if_error: false
           files: ./coverage.xml
-          flags: unittests
+          flags: pytests
           name: codecov-umbrella
           verbose: true
-      - name: Check if unittests failed
-        if: "steps.unittests.outcome == 'failure'"
+      - name: Check if pytest failed
+        if: "steps.pytest.outcome == 'failure'"
         run: exit 1

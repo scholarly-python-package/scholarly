@@ -18,7 +18,7 @@ Additionally, if you are interesting in contributing to the codebase, submit a p
 
 1. Create a fork of `scholarly-python-package/scholarly` repository. Make sure that "Copy the main branch only" is **not** checked off.
 2. After cloning your fork and checking out into the develop branch, run `python setup.py --help-commands` for more info on how to install dependencies and build. You may need to run it with `sudo`.
-3. If you add a new feature, try to include tests in already existing test cases, or create a new test case if that is not possible. For a comprehensive output, run `python -m unittest -v test_module.py`
+3. If you add a new feature, try to include tests in already existing test cases, or create a new test case if that is not possible. For a comprehensive output, run `python -m pytest`
 4. Make sure the unit tests pass before raising a PR. For all the unit tests to pass, you typically need to setup a premium proxy service such as `ScraperAPI` or `Luminati` (`Bright Data`). By default, `python setup.py install` will get `FreeProxy`. Without a proxy, 6 out of 17 test cases will be skipped.
 5. Check that the documentatation is consistent with the code. Check that the documentation builds successfully.
 6. Submit a PR, with `develop` as your base branch.
