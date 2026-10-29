@@ -1,8 +1,15 @@
 import re
 import bibtexparser
 import arrow
-from bibtexparser.bibdatabase import BibDatabase
 from .data_types import BibEntry, Mandate, Publication, PublicationSource
+
+try:  # bibtexparser >= 2.0
+    from bibtexparser.middlewares import AddEnclosingMiddleware
+    from bibtexparser.model import Entry, Field
+    _BIBTEXPARSER_V2 = True
+except ImportError:  # bibtexparser 1.x
+    from bibtexparser.bibdatabase import BibDatabase
+    _BIBTEXPARSER_V2 = False
 
 
 _SCHOLARPUBRE = r'cites=([\d,]*)'
@@ -28,6 +35,42 @@ _BIB_REVERSE_MAPPING = {
     'pub_type': 'ENTRYTYPE',
     'bib_id': 'ID',
 }
+
+def _parse_bibtex_entry(bibtex: str) -> dict:
+    """Parses a BibTeX string and returns its last entry as a dict, with
+    the field names as keys plus 'ENTRYTYPE' and 'ID' (the bibtexparser 1.x
+    entry format)."""
+    if _BIBTEXPARSER_V2:
+        entry = bibtexparser.parse_string(bibtex).entries[-1]
+        parsed = {field.key.lower(): field.value for field in entry.fields}
+        parsed['ENTRYTYPE'] = entry.entry_type.lower()
+        parsed['ID'] = entry.key
+        return parsed
+    parser = bibtexparser.bparser.BibTexParser(common_strings=True)
+    return bibtexparser.loads(bibtex, parser).entries[-1]
+
+
+def _dump_bibtex_entry(entry: dict) -> str:
+    """Formats a dict in the bibtexparser 1.x entry format as BibTeX, with
+    the fields sorted by name and enclosed in braces."""
+    if _BIBTEXPARSER_V2:
+        fields = dict(entry)
+        entry_type = fields.pop('ENTRYTYPE')
+        key = fields.pop('ID')
+        library = bibtexparser.Library(
+            [Entry(entry_type, key, [Field(k, v) for k, v in sorted(fields.items())])])
+        bibtex_format = bibtexparser.BibtexFormat()
+        bibtex_format.indent = ' '
+        return bibtexparser.write_string(
+            library,
+            unparse_stack=[AddEnclosingMiddleware(reuse_previous_enclosing=False,
+                                                  enclose_integers=True,
+                                                  default_enclosing='{')],
+            bibtex_format=bibtex_format)
+    database = BibDatabase()
+    database.entries = [entry]
+    return bibtexparser.dumps(database)
+
 
 def remap_bib(parsed_bib: dict, mapping: dict, data_types:dict ={}) -> BibEntry:
     for key, value in mapping.items():
@@ -381,8 +424,7 @@ class PublicationParser(object):
         elif publication['source'] == PublicationSource.PUBLICATION_SEARCH_SNIPPET:
             bibtex_url = self._get_bibtex(publication['url_scholarbib'])
             bibtex = self.nav._get_page(bibtex_url)
-            parser = bibtexparser.bparser.BibTexParser(common_strings=True)
-            parsed_bib = remap_bib(bibtexparser.loads(bibtex,parser).entries[-1], _BIB_MAPPING, _BIB_DATATYPES)
+            parsed_bib = remap_bib(_parse_bibtex_entry(bibtex), _BIB_MAPPING, _BIB_DATATYPES)
             publication['bib'].update(parsed_bib)
             publication['filled'] = True
         return publication
@@ -413,7 +455,6 @@ class PublicationParser(object):
         """
         if not publication['filled']:
             publication = self.fill(publication)
-        a = BibDatabase()
         converted_dict = publication['bib']
         try:
             url = publication['eprint_url']
@@ -423,8 +464,7 @@ class PublicationParser(object):
         converted_dict = remap_bib(converted_dict, _BIB_REVERSE_MAPPING)
         str_dict = {key: str(value) for key, value in converted_dict.items()}
         # convert every key of the dictionary to string to be Bibtex compatible
-        a.entries = [str_dict]
-        return bibtexparser.dumps(a)
+        return _dump_bibtex_entry(str_dict)
 
     def _get_bibtex(self, bib_url) -> str:
         """Retrieves the bibtex url"""
