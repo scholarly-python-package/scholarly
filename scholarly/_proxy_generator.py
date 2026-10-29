@@ -1,6 +1,7 @@
 from typing import Callable
 from fp.fp import FreeProxy
 import random
+import shutil
 import logging
 import time
 import requests
@@ -13,6 +14,9 @@ from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.common.proxy import Proxy, ProxyType
 from urllib.parse import urlparse
 from contextlib import contextmanager
 from deprecated import deprecated
@@ -190,13 +194,14 @@ class ProxyGenerator(object):
         :returns: whether or not the proxy was set up successfully
         :rtype: {bool}
         """
-        # Reformat proxy for HTTPX
-        if http[:4] not in ("http", "sock"):
+        # Reformat proxy for HTTPX. Only add a scheme when none is given, so
+        # that an http:// proxy for https and socks5:// proxies are kept as is.
+        if "://" not in http:
             http = "http://" + http
         if https is None:
             https = http
-        elif https[:5] not in ("https", "socks"):
-            https = "https://" + https
+        elif "://" not in https:
+            https = "http://" + https
 
         proxies = {'http://': http, 'https://': https}
         if self.proxy_mode == ProxyMode.SCRAPERAPI:
@@ -365,32 +370,23 @@ class ProxyGenerator(object):
                 self.logger.info("Neither Chrome nor Firefox/Geckodriver found in PATH")
 
     def _get_chrome_webdriver(self):
-        if self._proxy_works:
-            webdriver.DesiredCapabilities.CHROME['proxy'] = {
-                "httpProxy": self._proxies['http://'],
-                "sslProxy": self._proxies['https://'],
-                "proxyType": "MANUAL"
-            }
-
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
-        self._webdriver = webdriver.Chrome('chromedriver', options=options)
+        if self._proxy_works:
+            options.add_argument("--proxy-server=http={};https={}".format(
+                self._proxies['http://'], self._proxies['https://']))
+        self._webdriver = webdriver.Chrome(options=options, **self._driver_service('chromedriver', ChromeService))
         self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
 
         return self._webdriver
 
     def _get_firefox_webdriver(self):
-        if self._proxy_works:
-            # Redirect webdriver through proxy
-            webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
-                "httpProxy": self._proxies['http://'],
-                "sslProxy": self._proxies['https://'],
-                "proxyType": "MANUAL",
-            }
-
         options = FirefoxOptions()
         options.add_argument('--headless')
-        self._webdriver = webdriver.Firefox(options=options)
+        if self._proxy_works:
+            # Redirect webdriver through proxy
+            options.proxy = self._selenium_proxy(self._proxies)
+        self._webdriver = webdriver.Firefox(options=options, **self._driver_service('geckodriver', FirefoxService))
         self._webdriver.get("https://scholar.google.com")  # Need to pre-load to set cookies later
 
         # It might make sense to (pre)set cookies as well, e.g., to set a GSP ID.
@@ -493,6 +489,30 @@ class ProxyGenerator(object):
         self._webdriver = None
 
         return self._session
+
+    @staticmethod
+    def _driver_service(name, service_class):
+        """Use the driver found on PATH, if any. Otherwise Selenium Manager
+        looks for one (or downloads it, where it supports the platform).
+        """
+        driver = shutil.which(name)
+        return {"service": service_class(executable_path=driver)} if driver else {}
+
+    @staticmethod
+    def _selenium_proxy(proxies):
+        """Translate a {'http://': url, 'https://': url} mapping into a
+        Selenium Proxy (host:port entries, socks URLs as socksProxy).
+        """
+        cfg = {"proxyType": ProxyType.MANUAL}
+        for key, url in (("httpProxy", proxies['http://']),
+                         ("sslProxy", proxies['https://'])):
+            u = urlparse(url)
+            if u.scheme.startswith("socks"):
+                cfg.update(socksProxy=f"{u.hostname}:{u.port}",
+                           socksVersion=int(u.scheme[5:6] or 5))
+            else:
+                cfg[key] = f"{u.hostname}:{u.port}"
+        return Proxy(cfg)
 
     def _close_session(self):
         if self._session:
