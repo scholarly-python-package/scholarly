@@ -404,7 +404,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             "Binding %s:%d without authentication; anyone who can reach this port can "
             "drive Google Scholar queries through your proxy and IP.", args.host, args.port)
 
-    run_server(server, args.transport, args.host, args.port)
+    try:
+        run_server(server, args.transport, args.host, args.port)
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        # Ctrl+C is how a server is normally stopped by hand, not a failure: don't print a
+        # traceback and don't report an error status.
+        logging.getLogger(__name__).info("Shutting down")
     return 0
 
 

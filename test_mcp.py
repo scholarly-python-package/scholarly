@@ -274,6 +274,12 @@ class TestCli(unittest.TestCase):
             smcp.main(["--transport", "streamable-http", "--host", "0.0.0.0"])
         self.assertIn("without authentication", logs.output[0])
 
+    def test_main_treats_ctrl_c_as_a_clean_shutdown(self):
+        for stop in (KeyboardInterrupt(), asyncio.CancelledError()):
+            with mock.patch.object(smcp, "create_server"), mock.patch.object(smcp, "configure_proxy"), \
+                    mock.patch.object(smcp, "run_server", side_effect=stop):
+                self.assertEqual(smcp.main([]), 0, repr(stop))
+
     def test_run_server_dispatch_for_both_sdk_generations(self):
         class MCPServer:  # mcp >= 2: host/port are given at run time
             def run(self, **kwargs):
