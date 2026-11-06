@@ -42,6 +42,10 @@ jobs:
         continue-on-error: true
         run: |
           coverage run -m unittest -v test_module.TestScholarly
+      - name: Run MCP server unit tests
+        # Offline tests; the ones that need the MCP SDK (Python 3.10+) skip themselves on 3.8.
+        run: |
+          coverage run -a -m unittest -v test_mcp
       - name: Generate coverage report (macOS only)
         if:
           "matrix.os == 'macos-latest'"

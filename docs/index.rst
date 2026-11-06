@@ -12,6 +12,7 @@ Welcome to scholarly's documentation!
 
    quickstart
    scholarly
+   mcp
 
 
 Indices and tables

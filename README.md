@@ -51,6 +51,14 @@ This means your code that uses an earlier version of `scholarly` is guaranteed t
     ```
     **Note:** Tor option is unavailable with conda installation.
 
+- **MCP server** (Python 3.10+):
+
+    To expose `scholarly` to LLM agents and other [Model Context Protocol](https://modelcontextprotocol.io/) clients, install with the `mcp` tag as
+    ```bash
+    pip3 install scholarly[mcp]
+    ```
+    and see [Running as an MCP server](#running-as-an-mcp-server).
+
 ## Tests
 
 To check if your installation is successful, run the tests by executing the `test_module.py` file as:
@@ -124,6 +132,29 @@ It is therefore recommended to always set up a proxy in the beginning of your ap
 
 The developers use `ScraperAPI` to run the tests in Github Actions.
 The developers of `scholarly` are not affiliated with any of the proxy services and do not profit from them. If your favorite service is not supported, please submit an issue or even better, follow it up with a pull request.
+
+## Running as an MCP server
+
+`scholarly` can run as a [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server, so that LLM agents and MCP clients (Claude Desktop, IDE agents, agent gateways, ...) can query Google Scholar as a tool.
+
+```bash
+pip3 install scholarly[mcp]         # needs Python 3.10+
+scholarly-mcp                       # stdio transport, for clients that launch the server themselves
+scholarly-mcp --transport streamable-http --host 127.0.0.1 --port 8000
+scholarly-mcp --proxy free          # none (default) | free | tor | scraperapi
+```
+
+Example client configuration (Claude Desktop style `mcpServers` entry):
+
+```json
+{"mcpServers": {"scholarly": {"command": "scholarly-mcp", "args": ["--proxy", "free"]}}}
+```
+
+Tools: `search_authors`, `get_author`, `search_publications`, `get_publication`, `get_bibtex`, `get_citing_publications` and `get_related_articles`. All are read-only and take plain names, ids or titles, not Python objects.
+
+Google Scholar blocks automated clients quickly (see the **IMPORTANT** note above), and the server cannot avoid that, so keep `limit` small and use `--proxy`. Credentials are read from the environment, never from flags: `SCRAPER_API_KEY` for `--proxy scraperapi`, and `SCHOLARLY_TOR_SOCKS_PORT`, `SCHOLARLY_TOR_CONTROL_PORT` and `SCHOLARLY_TOR_PASSWORD` for `--proxy tor`.
+The network transports have no authentication, so they bind to `127.0.0.1` by default; do not expose them to untrusted networks.
+See the [documentation](https://scholarly.readthedocs.io/en/stable/mcp.html) for details.
 
 ## Contributing
 
