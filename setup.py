@@ -39,6 +39,13 @@ setuptools.setup(
                       ],
     extras_require={
         'tor': ['stem'],
+        # The MCP SDK needs Python 3.10+; the core library keeps working on older versions.
+        'mcp': ['mcp>=1.2; python_version >= "3.10"'],
+    },
+    entry_points={
+        'console_scripts': [
+            'scholarly-mcp=scholarly.mcp:main',
+        ],
     },
     test_suite="test_module.py"
 )
